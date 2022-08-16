@@ -69,17 +69,15 @@ HERO_DEFAULT_SCALE = 1.0
 
 PIXELS_AHEAD_VEHICLE = 150
 
-# ==============================================================================
-# -- Util -----------------------------------------------------------
-# ==============================================================================
-
 
 def get_actor_display_name(actor, truncate=250):
+    """Returns the name of the given actor"""
     name = ' '.join(actor.type_id.replace('_', '.').title().split('.')[1:])
     return (name[:truncate - 1] + u'\u2026') if len(name) > truncate else name
 
 
 class Util(object):
+    """Class providing utility functions"""
 
     @staticmethod
     def blits(destination_surface, source_surfaces, rect=None, blend_mode=0):
@@ -105,11 +103,6 @@ class Util(object):
         t = actor.get_transform()
         t.transform(corners)
         return corners
-
-
-# ==============================================================================
-# -- HUD -----------------------------------------------------------------
-# ==============================================================================
 
 
 class HUD (object):
@@ -211,15 +204,11 @@ class HUD (object):
                                 rect = pygame.Rect((bar_h_offset, v_offset + 8), (f * bar_width, 6))
                             pygame.draw.rect(display, COLOR_ALUMINIUM_0, rect)
                         item = item[0]
-                    if item:  # At this point has to be a str.
+                    if item:  # At this point has to be a str
                         surface = self._font_mono.render(item, True, COLOR_ALUMINIUM_0).convert_alpha()
                         display.blit(surface, (8, 18 * i + v_offset))
                     v_offset += 18
                 v_offset += 24
-
-# ==============================================================================
-# -- World ---------------------------------------------------------------------
-# ==============================================================================
 
 
 class MapImage(object):
@@ -244,10 +233,10 @@ class MapImage(object):
         self.width = max(max_x - min_x, max_y - min_y)
         self._world_offset = (min_x, min_y)
 
-        # Maximum size of a Pygame surface
+        # Maximum size of a surface
         width_in_pixels = (1 << 14) - 1
 
-        # Adapt Pixels per meter to make world fit in surface
+        # Adapt pixels per meter
         surface_pixel_per_meter = int(width_in_pixels / self.width)
         if surface_pixel_per_meter > PIXELS_PER_METER:
             surface_pixel_per_meter = PIXELS_PER_METER
@@ -497,7 +486,7 @@ class MapImage(object):
             for waypoint in topology:
                 waypoints = [waypoint]
 
-                # Generate waypoints of a road id. Stop when road id differs
+                # Generate waypoints of a road ID. Stop when road ID differs
                 nxt = waypoint.next(precision)
                 if len(nxt) > 0:
                     nxt = nxt[0]
@@ -744,26 +733,24 @@ class World(object):
         self.select_hero_actor()
 
     def select_hero_actor(self):
-        """Selects only one hero actor if there are more than one. If there are not any, it will spawn one."""
+        """Selects only one hero actor if there are more than one. If there are not any, a runtime error will be raised."""
         hero_vehicles = [actor for actor in self.world.get_actors()
                          if 'vehicle' in actor.type_id and actor.attributes['role_name'] == 'hero']
         if len(hero_vehicles) > 0:
             self.hero_actor = random.choice(hero_vehicles)
             self.hero_transform = self.hero_actor.get_transform()
         else:
-            # TODO: Ensure that no hero is ever spawned.
-            # self._spawn_hero()
-            pass
+            raise RuntimeError("No hero actor found.")
 
     def _spawn_hero(self):
         """Spawns the hero actor when the script runs"""
-        # Get a random blueprint.
+        # Get a random blueprint
         blueprint = random.choice(self.world.get_blueprint_library().filter(self.args.filter))
         blueprint.set_attribute('role_name', 'hero')
         if blueprint.has_attribute('color'):
             color = random.choice(blueprint.get_attribute('color').recommended_values)
             blueprint.set_attribute('color', color)
-        # Spawn the player.
+        # Spawn the player
         while self.hero_actor is None:
             spawn_points = self.world.get_map().get_spawn_points()
             spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
@@ -777,8 +764,6 @@ class World(object):
         """Retrieves the actors for Hero and Map modes and updates de HUD based on that"""
         actors = self.world.get_actors()
 
-        # We store the transforms also so that we avoid having transforms of
-        # previous tick and current tick when rendering them.
         self.actors_with_transforms = [(actor, actor.get_transform()) for actor in actors]
 
         if self.hero_actor is None:
@@ -839,7 +824,7 @@ class World(object):
         self._hud.add_info('NEARBY VEHICLES', info_text)
 
     def _split_actors(self):
-        """Splits the retrieved actors by type id"""
+        """Splits the retrieved actors by type ID"""
         vehicles = []
         walkers = []
 
@@ -877,6 +862,7 @@ class World(object):
                 color = COLOR_CHOCOLATE_1
             if v[0].attributes['role_name'] == 'hero':
                 color = COLOR_CHAMELEON_0
+
             # Compute bounding box points
             bb = v[0].bounding_box.extent
             corners = [carla.Location(x=-bb.x, y=-bb.y),
@@ -892,7 +878,6 @@ class World(object):
 
     def render_actors(self, surface, vehicles, walkers):
         """Renders all the actors"""
-        # Dynamic actors
         self._render_vehicles(surface, vehicles, self.map_image.world_to_pixel)
         self._render_walkers(surface, walkers, self.map_image.world_to_pixel)
 
@@ -908,7 +893,7 @@ class World(object):
             return
         self.result_surface.fill(COLOR_BLACK)
 
-        # Split the actors by vehicle type id
+        # Split the actors by vehicle type ID
         vehicles, walkers = self._split_actors()
 
         # Render Actors
@@ -967,16 +952,12 @@ class World(object):
         if self.spawned_hero is not None:
             self.spawned_hero.destroy()
 
-# ==============================================================================
-# -- Game Loop ---------------------------------------------------------------
-# ==============================================================================
-
 class Loop(object):
 
     def __init__(self, args):
-        """Initialized, Starts and runs all the needed modules for No Rendering Mode"""
+        """Initialized, starts and runs all the modules"""
         try:
-            # Init Pygame
+            # Init pygame
             pygame.init()
             self.display = pygame.display.set_mode(
                 (args.width, args.height),
@@ -991,7 +972,7 @@ class Loop(object):
             self.display.blit(text_surface, text_surface.get_rect(center=(args.width / 2, args.height / 2)))
             pygame.display.flip()
 
-            # Init
+            # Initialize
             self.hud = HUD(TITLE_HUD, args.width, args.height)
             self.world = World(TITLE_WORLD, args, timeout=2.0)
 
@@ -1001,7 +982,7 @@ class Loop(object):
 
             self.clock = pygame.time.Clock()
         except KeyboardInterrupt:
-            print('\nCancelled by user. Bye!')
+            print('\nCancelled by user.')
 
     def update(self, timestamp):
         # Tick server
@@ -1026,12 +1007,8 @@ class Loop(object):
         exit_game()
 
 def exit_game():
-    """Shuts down program and PyGame"""
+    """Shuts down program and pygame"""
     pygame.quit()
-
-# ==============================================================================
-# -- Main --------------------------------------------------------------------
-# ==============================================================================
 
 
 def start():

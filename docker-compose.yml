@@ -15,4 +15,4 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
-    command: /bin/bash ./CarlaUE4.sh -RenderOffScreen
+    command: /bin/bash ./CarlaUE4.sh -RenderOffScreen -quality-level=Epic

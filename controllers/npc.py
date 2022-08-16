@@ -5,7 +5,8 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import carla
-import visualizations.simple as Simple
+
+from visualizations.real import CameraView
 
 from agents.navigation.behavior_agent import BehaviorAgent
 
@@ -22,14 +23,14 @@ class NpcAgent(AutonomousAgent):
     def __init__(self, has_visualization):
         super().__init__("")
         if has_visualization:
-            self._visual = Simple.start()
+            self._visual = CameraView('center')
 
     def setup(self, _):
         self._agent = None
 
-    def run_step(self, _, timestamp):
+    def run_step(self, input_data, _):
         if self._visual is not None:
-            self._visual.update(timestamp)
+            self._visual.run(input_data)
         if not self._agent:
             hero_actor = None
             for actor in CarlaDataProvider.get_world().get_actors():
@@ -42,6 +43,20 @@ class NpcAgent(AutonomousAgent):
         else:
             return self._agent.run_step()
 
+    def sensors(self):
+        sensors = [
+            {
+                'type': 'sensor.camera.rgb',
+                'x': 0.7, 'y': 0.0, 'z': 1.60,
+                'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
+                'width': 800, 'height': 600, 'fov': 100,
+                'id': 'center'
+            }
+        ]
+
+        return sensors
+
+
     def destroy(self):
         if self._visual is not None:
-            self._visual.stop()
+            self._visual.quit()

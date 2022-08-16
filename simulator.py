@@ -8,7 +8,7 @@ import carla
 
 class Simulator:
 
-    def __init__(self, host, port, timeout, resolution = 0.1):
+    def __init__(self, host, port, timeout, resolution = 0.1, rendering=False):
         self.client = carla.Client(host, port)
         self.client.set_timeout(timeout)
 
@@ -16,7 +16,7 @@ class Simulator:
         settings = world.get_settings()
 
         settings = world.get_settings()
-        settings.no_rendering_mode = True
+        settings.no_rendering_mode = not rendering
         world.apply_settings(settings)
 
         settings.fixed_delta_seconds = resolution

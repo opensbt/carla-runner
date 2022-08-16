@@ -23,7 +23,12 @@ SCENARIO_DIR = 'scenarios'
 METRICS_DIR = 'metrics'
 
 def get_simulator(host, port, timeout):
-    return Simulator(host, port, timeout)
+    return Simulator(
+        host = host,
+        port = port,
+        timeout = timeout,
+        rendering = True
+    )
 
 def get_scenarios(directory):
     scenarios = None

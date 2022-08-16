@@ -733,14 +733,12 @@ class World(object):
         self.select_hero_actor()
 
     def select_hero_actor(self):
-        """Selects only one hero actor if there are more than one. If there are not any, a runtime error will be raised."""
+        """Selects only one hero actor if there are more than one."""
         hero_vehicles = [actor for actor in self.world.get_actors()
                          if 'vehicle' in actor.type_id and actor.attributes['role_name'] == 'hero']
         if len(hero_vehicles) > 0:
             self.hero_actor = random.choice(hero_vehicles)
             self.hero_transform = self.hero_actor.get_transform()
-        else:
-            raise RuntimeError("No hero actor found.")
 
     def _spawn_hero(self):
         """Spawns the hero actor when the script runs"""

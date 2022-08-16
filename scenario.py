@@ -1,3 +1,8 @@
+# Copyright (c) 2022 fortiss GmbH
+#
+# This work is licensed under the terms of the MIT license.
+# For a copy, see <https://opensource.org/licenses/MIT>.
+
 from pathlib import Path
 
 from srunner.scenarios.open_scenario import OpenScenario

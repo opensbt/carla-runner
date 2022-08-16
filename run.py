@@ -1,3 +1,8 @@
+# Copyright (c) 2022 fortiss GmbH
+#
+# This work is licensed under the terms of the MIT license.
+# For a copy, see <https://opensource.org/licenses/MIT>.
+
 import os
 
 import matplotlib.pyplot as plt
@@ -5,9 +10,7 @@ import matplotlib.pyplot as plt
 from simulator import Simulator
 from scenario import Scenario
 from recorder import Recorder
-
-from metrics.distance import DistanceBetweenVehicles
-
+from metrics.raw import RawData
 from controllers.npc import NpcAgent
 
 
@@ -33,7 +36,7 @@ def get_scenarios(directory):
     return scenarios
 
 def get_evaluator():
-    return DistanceBetweenVehicles()
+    return RawData()
 
 def get_controller():
     return NpcAgent
@@ -61,8 +64,10 @@ for recording in recordings:
         )
     )
 
-for (frame, dist) in evaluations:
-    plt.plot(frame, dist)
+for evaluation in evaluations:
+    time = evaluation["times"]
+    distance = evaluation["otherParams"]["distance"]
+    plt.plot(time, distance)
     plt.ylabel('Distance [m]')
     plt.xlabel('Frame number')
     plt.title('Distance')

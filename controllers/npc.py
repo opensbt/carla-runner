@@ -1,11 +1,11 @@
-#!/usr/bin/env python
-
+# Copyright (c) 2021 Universitat Autonoma de Barcelona (UAB)
+# Copyright (c) 2022 fortiss GmbH
+#
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import carla
-
-import visualization
+import visualizations.simple as Simple
 
 from agents.navigation.behavior_agent import BehaviorAgent
 
@@ -22,7 +22,7 @@ class NpcAgent(AutonomousAgent):
     def __init__(self, has_visualization):
         super().__init__("")
         if has_visualization:
-            self._visual = visualization.start()
+            self._visual = Simple.start()
 
     def setup(self, _):
         self._agent = None

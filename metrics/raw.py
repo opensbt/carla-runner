@@ -1,3 +1,9 @@
+# Copyright (c) 2020 Universitat Autonoma de Barcelona (UAB)
+# Copyright (c) 2022 fortiss GmbH
+#
+# This work is licensed under the terms of the MIT license.
+# For a copy, see <https://opensource.org/licenses/MIT>.
+
 import math
 
 from srunner.metrics.tools.metrics_log import MetricsLog
@@ -17,7 +23,6 @@ class RawData:
         ego_speed_profile = []
         adv_location_profile = []
         adv_speed_profile = []
-
 
         start_ego, end_ego = log.get_actor_alive_frames(ego_id)
         start_adv, end_adv = log.get_actor_alive_frames(adv_id)

@@ -5,6 +5,8 @@
 
 import os
 
+import docker
+
 import matplotlib.pyplot as plt
 
 from simulator import Simulator
@@ -13,11 +15,19 @@ from recorder import Recorder
 from metrics.raw import RawData
 from controllers.npc import NpcAgent
 
+NETWORK_NAME = 'carla-network'
 
-HOST_CARLA = 'localhost'
+client = docker.from_env()
+network = client.networks.get(NETWORK_NAME)
+addresses = [
+    container.attrs['NetworkSettings']['Networks'][NETWORK_NAME]['IPAddress']
+    for container in network.containers
+]
+
+HOST_CARLA = addresses[0]
 PORT_CARLA = 2000
 TIMEOUT_CARLA = 10
-RENDERING_CARLA = True
+RENDERING_CARLA = False
 RESOLUTION_CARLA = 0.1
 
 RECORDING_DIR = '/tmp/recordings'

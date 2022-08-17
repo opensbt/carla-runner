@@ -16,7 +16,7 @@ class Scenario:
     def __init__(self, xosc):
         self.xosc = xosc
 
-    def simulate(self, simulator, controller, recorder):
+    def simulate(self, simulator, agent, recorder):
         client = simulator.get_client()
 
         world = client.get_world()
@@ -44,7 +44,7 @@ class Scenario:
                 )
             )
 
-        agent = controller(True)
+        controller = agent(simulator)
 
         scenario = OpenScenario(
             world,
@@ -58,7 +58,7 @@ class Scenario:
         )
 
         manager = ScenarioManager()
-        manager.load_scenario(scenario, agent)
+        manager.load_scenario(scenario, controller)
         client.start_recorder(
             recording,
             True

@@ -29,7 +29,7 @@ class CameraView(object):
         """
         Run the GUI
         """
-        # Process sensor data
+        # Process data
         image_center = input_data[self._camera_id][1][:, :, -2::-1]
 
         # Display image

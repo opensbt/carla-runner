@@ -20,9 +20,9 @@ class NpcAgent(AutonomousAgent):
     _route_assigned = False
     _visual = None
 
-    def __init__(self, has_visualization):
+    def __init__(self, simulator):
         super().__init__("")
-        if has_visualization:
+        if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
 
     def setup(self, _):
@@ -44,19 +44,19 @@ class NpcAgent(AutonomousAgent):
             return self._agent.run_step()
 
     def sensors(self):
-        sensors = [
-            {
-                'type': 'sensor.camera.rgb',
-                'x': 0.7, 'y': 0.0, 'z': 1.60,
-                'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
-                'width': 800, 'height': 600, 'fov': 100,
-                'id': 'center'
-            }
-        ]
-
+        sensors = []
+        if self._visual is not None:
+            sensors.append(
+                {
+                    'type': 'sensor.camera.rgb',
+                    'x': 0.7, 'y': 0.0, 'z': 1.60,
+                    'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
+                    'width': 800, 'height': 600, 'fov': 100,
+                    'id': 'center'
+                }
+            )
         return sensors
-
 
     def destroy(self):
         if self._visual is not None:
-            self._visual.quit()
+            self._visual.quit = True

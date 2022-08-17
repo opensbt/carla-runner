@@ -8,7 +8,7 @@ import carla
 
 class Simulator:
 
-    def __init__(self, host, port, timeout, resolution = 0.1, rendering=False):
+    def __init__(self, host, port, timeout, resolution = 0.1, rendering = False):
         self.client = carla.Client(host, port)
         self.client.set_timeout(timeout)
 

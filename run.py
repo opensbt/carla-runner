@@ -17,17 +17,20 @@ from controllers.npc import NpcAgent
 HOST_CARLA = 'localhost'
 PORT_CARLA = 2000
 TIMEOUT_CARLA = 10
+RENDERING_CARLA = True
+RESOLUTION_CARLA = 0.1
 
 RECORDING_DIR = '/tmp/recordings'
 SCENARIO_DIR = 'scenarios'
 METRICS_DIR = 'metrics'
 
-def get_simulator(host, port, timeout):
+def get_simulator(host, port, timeout, rendering = True, resolution = 0.1):
     return Simulator(
         host = host,
         port = port,
         timeout = timeout,
-        rendering = True
+        rendering = rendering,
+        resolution = resolution
     )
 
 def get_scenarios(directory):
@@ -43,17 +46,23 @@ def get_scenarios(directory):
 def get_evaluator():
     return RawData()
 
-def get_controller():
+def get_agent():
     return NpcAgent
 
 def get_recorder(directory):
     return Recorder(directory)
 
-simulator = get_simulator(HOST_CARLA, PORT_CARLA, TIMEOUT_CARLA)
+simulator = get_simulator(
+    HOST_CARLA,
+    PORT_CARLA,
+    TIMEOUT_CARLA,
+    RENDERING_CARLA,
+    RESOLUTION_CARLA
+)
 scenarios = get_scenarios(SCENARIO_DIR)
 recorder = get_recorder(RECORDING_DIR)
 evaluator = get_evaluator()
-agent = get_controller()
+agent = get_agent()
 
 for scenario in scenarios:
     scenario.simulate(simulator, agent, recorder)
@@ -71,9 +80,9 @@ for recording in recordings:
 
 for evaluation in evaluations:
     time = evaluation["times"]
-    distance = evaluation["otherParams"]["distance"]
+    distance = evaluation["velocity"]["ego"]
     plt.plot(time, distance)
-    plt.ylabel('Distance [m]')
-    plt.xlabel('Frame number')
-    plt.title('Distance')
+    plt.ylabel('Velocity [m/s]')
+    plt.xlabel('Time [s]')
+    plt.title('Velocity')
     plt.show()

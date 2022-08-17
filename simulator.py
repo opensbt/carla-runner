@@ -24,7 +24,8 @@ class Simulator:
 
         world.apply_settings(settings)
 
-        traffic_manager = self.client.get_trafficmanager(int(8000))
+        traffic_manager_port = 8000 + int(host.split('.')[-1])
+        traffic_manager = self.client.get_trafficmanager(traffic_manager_port)
         traffic_manager.set_synchronous_mode(True)
 
     def get_client(self):

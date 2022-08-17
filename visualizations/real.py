@@ -6,7 +6,7 @@
 
 import pygame
 
-class CameraView(object):
+class CameraView:
 
     """
     CARLA Camera Visualization

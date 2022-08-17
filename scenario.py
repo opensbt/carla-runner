@@ -30,7 +30,9 @@ class Scenario:
             {}
         )
 
-        CarlaDataProvider.set_traffic_manager_port(int(8000))
+        CarlaDataProvider.set_traffic_manager_port(
+            simulator.get_traffic_manager_port()
+        )
 
         vehicles = []
         for vehicle in config.ego_vehicles:

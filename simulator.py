@@ -8,7 +8,11 @@ import carla
 
 class Simulator:
 
+    _host = None
+
     def __init__(self, host, port, timeout, resolution = 0.1, rendering = False):
+        self._host = host
+
         self.client = carla.Client(host, port)
         self.client.set_timeout(timeout)
 
@@ -24,9 +28,14 @@ class Simulator:
 
         world.apply_settings(settings)
 
-        traffic_manager_port = 8000 + int(host.split('.')[-1])
-        traffic_manager = self.client.get_trafficmanager(traffic_manager_port)
+        traffic_manager = self.client.get_trafficmanager(
+            self.get_traffic_manager_port()
+        )
         traffic_manager.set_synchronous_mode(True)
+
+    def get_traffic_manager_port(self):
+        print(8000 + int(self._host.split('.')[-1]))
+        return 8000 + int(self._host.split('.')[-1])
 
     def get_client(self):
         return self.client

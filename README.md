@@ -18,7 +18,7 @@ Instructions to install docker are available [here](https://docs.docker.com/engi
 
 To start the container with default settings, run `docker compose up` in this repository's root folder. Instructions on Docker Compose can be found [here](https://docs.docker.com/compose/).
 
-Once CARLA is up and running, execute the `run.py` script.
+Once CARLA is up and running, execute the `balancer.py` script.
 
 ### Visual Studio Code
 
@@ -32,9 +32,8 @@ If you use [Visual Studio Code](https://code.visualstudio.com/), the following l
             "name": "CARLA",
             "type": "python",
             "request": "launch",
-            "program": "run.py",
+            "program": "balancer.py",
             "console": "integratedTerminal",
-            "justMyCode": true,
             "env": {
                 "CARLA_ROOT": "~/Repositories/CARLA/Simulator",
                 "PYTHONPATH": "~/Repositories/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:~/Repositories/CARLA/Simulator/PythonAPI/carla/agents:~/Repositories/CARLA/Simulator/PythonAPI/carla:~/Repositories/CARLA/ScenarioRunner",

@@ -13,8 +13,10 @@ from srunner.scenariomanager.scenario_manager import ScenarioManager
 
 class Scenario:
 
+    _xosc = None
+
     def __init__(self, xosc):
-        self.xosc = xosc
+        self._xosc = xosc
 
     def simulate(self, simulator, agent, recorder):
         client = simulator.get_client()
@@ -25,7 +27,7 @@ class Scenario:
         CarlaDataProvider.set_world(world)
 
         config = OpenScenarioConfiguration(
-            self.xosc,
+            self._xosc,
             client,
             {}
         )
@@ -52,11 +54,11 @@ class Scenario:
             world,
             vehicles,
             config,
-            self.xosc
+            self._xosc
         )
 
         recording = recorder.add_recording(
-            Path(self.xosc.path).stem
+            Path(self._xosc.path).stem
         )
 
         manager = ScenarioManager()

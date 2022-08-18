@@ -56,6 +56,7 @@ class Runner:
                         recording
                     )
                 )
+                os.remove(recording)
 
             queue.task_done()
 

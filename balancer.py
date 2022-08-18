@@ -4,8 +4,10 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import os
+import time
 import multiprocessing as mp
 
+import carla
 import docker
 import matplotlib.pyplot as plt
 
@@ -33,6 +35,13 @@ servers = [
     for container in network.containers
 ]
 
+scenario_map = 'Town01'
+for server in servers:
+    client = carla.Client(server, 2000)
+    server_map = client.get_world().get_map().name.split('/')[-1]
+    if server_map != scenario_map:
+        client.load_world(scenario_map)
+
 scenarios = mp.JoinableQueue()
 with os.scandir(SCENARIO_DIR) as entries:
     for entry in entries:
@@ -40,6 +49,8 @@ with os.scandir(SCENARIO_DIR) as entries:
             scenarios.put(entry.name)
 
 with mp.Manager() as manager:
+    start_time = time.time()
+
     evaluations = manager.list()
     for server in servers:
         runner = Runner(
@@ -54,6 +65,10 @@ with mp.Manager() as manager:
         ).start()
 
     scenarios.join()
+
+    stop_time = time.time()
+
+    print('Time: {}s'.format(stop_time - start_time))
 
     for evaluation in evaluations:
         time = evaluation["times"]

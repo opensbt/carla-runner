@@ -17,15 +17,11 @@ class Simulator:
         self.client.set_timeout(timeout)
 
         world = self.client.get_world()
-        settings = world.get_settings()
 
         settings = world.get_settings()
         settings.no_rendering_mode = not rendering
-        world.apply_settings(settings)
-
         settings.fixed_delta_seconds = resolution
         settings.synchronous_mode = True
-
         world.apply_settings(settings)
 
         traffic_manager = self.client.get_trafficmanager(

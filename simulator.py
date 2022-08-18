@@ -34,7 +34,6 @@ class Simulator:
         traffic_manager.set_synchronous_mode(True)
 
     def get_traffic_manager_port(self):
-        print(8000 + int(self._host.split('.')[-1]))
         return 8000 + int(self._host.split('.')[-1])
 
     def get_client(self):

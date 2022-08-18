@@ -11,7 +11,7 @@ services:
     volumes:
       - /tmp/recordings:/tmp/recordings:rw
     deploy:
-      replicas: 1
+      replicas: 2
       resources:
         reservations:
           devices:

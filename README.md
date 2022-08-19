@@ -12,13 +12,15 @@ Make sure that the `PYTHONPATH` includes all of the dependencies required by the
 
 ### Docker
 
-Instructions to install docker are available [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
+Instructions to install Docker are available [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository). The NVIDIA Container Toolkit can be installed as described [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installation-guide).
 
 ## Getting Started
 
-To start the container with default settings, run `docker compose up` in this repository's root folder. Instructions on Docker Compose can be found [here](https://docs.docker.com/compose/).
+To start the container with default settings, run `docker compose up` in this repository's root folder. Instructions on Docker Compose can be found [here](https://docs.docker.com/compose/). By using the `--scale` flag, the number of CARLA servers to start can be adapted (e.g., `docker compose up --scale carla-server=3`). By default two instances will be launched.
 
 Once CARLA is up and running, execute the `balancer.py` script.
+
+The 3D visualization can be turned on by setting the `_rendering_carla` variable in the `runner.py` accordingly.
 
 ### Visual Studio Code
 

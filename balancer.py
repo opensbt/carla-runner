@@ -15,6 +15,7 @@ from runner import Runner
 
 from metrics.raw import RawData
 from controllers.npc import NpcAgent
+from controllers.fmi_agent import FMIAgent
 
 
 NETWORK_NAME = 'carla-network'
@@ -55,7 +56,7 @@ with mp.Manager() as manager:
     for server in servers:
         runner = Runner(
             server,
-            NpcAgent,
+            FMIAgent,
             RawData
         )
         mp.Process(

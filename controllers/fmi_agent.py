@@ -58,7 +58,7 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
                     'channels': 1, 'range': 10.0, 'points_per_second': 56000,
                     'rotation_frequency': 10.0, 'upper_fov': 1.0, 'lower_fov': 1.0,
-                    'horizontal_fov': 1.0, 'id': 'center'
+                    'horizontal_fov': 1.0, 'id': 'lidar'
                 }
             )
         return sensors

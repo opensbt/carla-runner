@@ -4,6 +4,7 @@ services:
   carla-server:
     image: carlasim/carla:0.9.13
     privileged: true
+    user: 1001:1001
     networks:
       - carla-network
     environment:
@@ -11,12 +12,23 @@ services:
     volumes:
       - /tmp/recordings:/tmp/recordings:rw
     deploy:
-      replicas: 2
+      replicas: 1
       resources:
         reservations:
           devices:
             - capabilities: [gpu]
     command: /bin/bash ./CarlaUE4.sh -RenderOffScreen -quality-level=Low
+  carla-client:
+    image: client-rosco
+    volumes:
+      - /home/pavel/Documents/bachelorarbeit/workspace/src/rosco:/opt/workspace/src/rosco:rw
+      - /home/pavel/Documents/bachelorarbeit/workspace/src/rosco/share:/opt/workspace/share:rw
+      - /home/pavel/Documents/bachelorarbeit/ff1_carla:/opt/ff1_carla:rw
+      - /home/pavel/Documents/bachelorarbeit/CARLA:/opt/CARLA/:rw
+      - /home/pavel/Documents/bachelorarbeit/scenario_runner:/opt/scenario_runner/:rw
+    command: /bin/bash
+    tty: true
+    stdin_open: true
 
 networks:
   carla-network:

@@ -15,6 +15,11 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
 RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
 RUN apt update
-RUN apt install -y cmake libjsoncpp-dev
+RUN apt install -y cmake libjsoncpp-dev python3.8 python3-pip
+RUN python3.8 -m pip install --upgrade pip
+ADD . /opt/ff1_carla
+RUN pip install -r /opt/ff1_carla/requirements.txt
 
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+
+#ENTRYPOINT [ "/opt/ff1_carla/setup.sh" ]

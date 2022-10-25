@@ -18,14 +18,20 @@ services:
           devices:
             - capabilities: [gpu]
     command: /bin/bash ./CarlaUE4.sh -RenderOffScreen -quality-level=Low
+    
   carla-client:
     image: client-rosco
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      #path to rosco repo
       - /home/pavel/Documents/bachelorarbeit/workspace/src/rosco:/opt/workspace/src/rosco:rw
+      #path to FMUs that should be executed by rosco
       - /home/pavel/Documents/bachelorarbeit/workspace/src/rosco/share:/opt/workspace/share:rw
-      - /home/pavel/Documents/bachelorarbeit/ff1_carla:/opt/ff1_carla:rw
-      - /home/pavel/Documents/bachelorarbeit/CARLA:/opt/CARLA/:rw
-      - /home/pavel/Documents/bachelorarbeit/scenario_runner:/opt/scenario_runner/:rw
+      #path to the carla simulation repo
+      - /home/pavel/Documents/bachelorarbeit/CARLA:/opt/CARLA/:r
+      #path to the carla scenario runner repo
+      - /home/pavel/Documents/bachelorarbeit/scenario_runner:/opt/scenario_runner/:r
+    network_mode: "host"
     command: /bin/bash
     tty: true
     stdin_open: true

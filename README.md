@@ -16,9 +16,9 @@ Instructions to install Docker are available [here](https://docs.docker.com/engi
 
 ## Getting Started
 
-To start the container with default settings, run `docker compose up` in this repository's root folder. Instructions on Docker Compose can be found [here](https://docs.docker.com/compose/). By using the `--scale` flag, the number of CARLA servers to start can be adapted (e.g., `docker compose up --scale carla-server=3`). By default two instances will be launched.
+First up, create an image for the docker container in which the `ff1_carla` and the `rosco` repository are running by executing the docker file in the this repositories root folder with the command `docker build -t client-rosco .` . All necessary dependencies will be installed by the Dockerfile. To start the container with default settings, run `docker compose up` in this repository's root folder. Instructions on Docker Compose can be found [here](https://docs.docker.com/compose/). By using the `--scale` flag, the number of CARLA servers to start can be adapted (e.g., `docker compose up --scale carla-server=3`). By default two instances will be launched. Afterwards run `xhost +local:root` to give the container necessary rights to launch the 3D visualization.
 
-Once CARLA is up and running, execute the `balancer.py` script.
+Once CARLA is up and running, execute the `balancer.py` script inside the carla-client container.
 
 The 3D visualization can be turned on by setting the `_rendering_carla` variable in the `runner.py` accordingly.
 
@@ -37,9 +37,9 @@ If you use [Visual Studio Code](https://code.visualstudio.com/), the following l
             "program": "balancer.py",
             "console": "integratedTerminal",
             "env": {
-                "CARLA_ROOT": "~/Repositories/CARLA/Simulator",
-                "PYTHONPATH": "~/Repositories/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:~/Repositories/CARLA/Simulator/PythonAPI/carla/agents:~/Repositories/CARLA/Simulator/PythonAPI/carla:~/Repositories/CARLA/ScenarioRunner",
-                "SCENARIO_RUNNER_ROOT": "~/Repositories/CARLA/ScenarioRunner"
+                "CARLA_ROOT": "/opt/CARLA",
+                "PYTHONPATH": "/opt/CARLA/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:/opt/CARLA/PythonAPI/carla/agents:/opt/CARLA/PythonAPI/carla:/opt/scenario_runner",
+                "SCENARIO_RUNNER_ROOT": "/opt/scenario_runner"
             }
         }
     ]

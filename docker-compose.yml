@@ -21,6 +21,8 @@ services:
     
   carla-client:
     image: client-rosco
+    environment:
+      - DISPLAY=${DISPLAY}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       #path to rosco repo

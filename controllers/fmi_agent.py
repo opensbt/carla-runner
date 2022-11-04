@@ -27,24 +27,36 @@ class FMIAgent(AutonomousAgent):
     def setup(self, _):
         self._agent = None
         
+        print('----   Setup function    ----')
+        
+        rospy.init_node('fmi_agent')
+        
         #initialize and call the masterInit service
         rospy.wait_for_service('master/init')
         init_master = rospy.ServiceProxy('master/init', MasterInitService)
-        init_master('/opt/workspace/src/rosco/share')
+        print('calling init/master service')
+        init_master('/opt/workspace/src/rosco/share/config.json')
         
         # initialize the doStepsUntil Service
         rospy.wait_for_service('master/doStepsUntil')
-        _do_step_service = rospy.ServiceProxy('master/doStepsUntil', DoStepsUntilService, persistent=True)
+        self._do_step_service = rospy.ServiceProxy('master/doStepsUntil', DoStepsUntilService, persistent=True)
+        print('initialized do step service')
 
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
-        
-        print('Amount of data points: ' +  str(len(input_data['lidar'][1])))
-        
+                
         #TODO manipulate all x values into one single distance value or publish each one (but this does too many service calls)
-        resp = _do_step_service(input_data['lidar'][1][0][1])
+        if(len(input_data['lidar'][1]) > 0):
+            print('calling do step service with value: %f', input_data['lidar'][1][0][0])
+            resp = self._do_step_service(input_data['lidar'][1][0][0], rospy.get_rostime())
+        else:
+            resp = self._do_step_service(10.0, rospy.get_rostime())
+            print('calling do step service with value: %f', 10.0)
+
+
         motorValue = resp.motorValue
+        print("Response of do step service is: %f", motorValue)
         
         #TODO manipulate the motorValue into a reasonable VehicleControl object
         if motorValue <= 0.3:

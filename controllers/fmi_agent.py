@@ -45,18 +45,20 @@ class FMIAgent(AutonomousAgent):
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
-                
+        
+        print('Amount of data points: ' + str(len(input_data['lidar'][1])))
+              
         #TODO manipulate all x values into one single distance value or publish each one (but this does too many service calls)
         if(len(input_data['lidar'][1]) > 0):
-            print('calling do step service with value: %f', input_data['lidar'][1][0][0])
+            print('calling do step service with value: ', input_data['lidar'][1][0][0])
             resp = self._do_step_service(input_data['lidar'][1][0][0], rospy.get_rostime())
         else:
-            resp = self._do_step_service(10.0, rospy.get_rostime())
-            print('calling do step service with value: %f', 10.0)
+            resp = self._do_step_service(15.0, rospy.get_rostime())
+            print('calling do step service with value: ', 15.0)
 
 
         motorValue = resp.motorValue
-        print("Response of do step service is: %f", motorValue)
+        print("Response of do step service is: ", motorValue)
         
         #TODO manipulate the motorValue into a reasonable VehicleControl object
         if motorValue <= 0.3:

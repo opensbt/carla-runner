@@ -33,6 +33,7 @@ services:
       - /home/pavel/Documents/bachelorarbeit/CARLA:/opt/CARLA/:r
       #path to the carla scenario runner repo
       - /home/pavel/Documents/bachelorarbeit/scenario_runner:/opt/scenario_runner/:r
+      - /tmp/recordings:/tmp/recordings:rw
     network_mode: "host"
     command: /bin/bash
     tty: true

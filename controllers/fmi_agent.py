@@ -9,6 +9,7 @@ import rospy
 from numpy.linalg import norm
 
 from rosco.srv import *
+from rosco.msg import *
 from visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 
@@ -19,6 +20,7 @@ class FMIAgent(AutonomousAgent):
     _route_assigned = False
     _visual = None
     _do_step_service = None
+    _speed = None
 
     def __init__(self, simulator):
         super().__init__("")
@@ -50,44 +52,43 @@ class FMIAgent(AutonomousAgent):
         print('Amount of data points: ' + str(len(input_data['lidar'][1])))
         print('Amount of left lidar data points: ' + str(len(input_data['lidar_left'][1])))
         print('Amount of right lidar data points: ' + str(len(input_data['lidar_right'][1])))
-
-        sensor_data = []
-        names = []
+        
+        signals = SignalsMessage()
               
         #TODO manipulate all x values into one single distance value or publish each one (but this does too many service calls)
         #distance_to_front
-        names.append("distance_to_front")
         if(len(input_data['lidar'][1]) > 0):
-            sensor_data.append(norm(input_data['lidar'][1][0][:-1]))
+            signals.floatSignals.append(FloatSignal("distance_to_front", norm(input_data['lidar'][1][0][:-1])))
             print('calling do step service with value: ', norm(input_data['lidar'][1][0][:-1]))
         else:
-            sensor_data.append(15.0)
+            signals.floatSignals.append(FloatSignal("distance_to_front", 15.0))
             print('calling do step service with value: ', 15.0)
           
         #distance_to_front_left
-        names.append("distance_to_front_left")
         if(len(input_data['lidar_left'][1]) > 0):
-            sensor_data.append(norm(input_data['lidar_left'][1][0][:-1]))
+            signals.floatSignals.append(FloatSignal("distance_to_front_left", norm(input_data['lidar_left'][1][0][:-1])))
             print('calling do step service with LEFT value: ', norm(input_data['lidar_left'][1][0][:-1]))
         else:
-            sensor_data.append(15.0)
+            signals.floatSignals.append(FloatSignal("distance_to_front_left", 15.0))
             print('calling do step service with LEFT value: ', 15.0)
            
         #distance_to_front_right
-        names.append("distance_to_front_right")
         if(len(input_data['lidar_right'][1]) > 0):
-            sensor_data.append(norm(input_data['lidar_right'][1][0][:-1]))
+            signals.floatSignals.append(FloatSignal("distance_to_front_right", norm(input_data['lidar_right'][1][0][:-1])))
             print('calling do step service with RIGHT value: ', norm(input_data['lidar_right'][1][0][:-1]))
         else:
-            sensor_data.append(15.0)
+            signals.floatSignals.append(FloatSignal("distance_to_front_right", 15.0))
             print('calling do step service with RIGHT value: ', 15.0)
 
-        resp = self._do_step_service(sensor_data, names, rospy.get_rostime())
-        motorValue = resp.motorValue
-        print("Response of do step service is: ", motorValue)
+        resp = self._do_step_service(signals, rospy.get_rostime())
+        
+        for float_signal in resp.result.floatSignals:
+            if float_signal.name == 'speed':
+                self._speed = float_signal.value
+                print("Response of do step service is: ", self._speed)
         
         #TODO manipulate the motorValue into a reasonable VehicleControl object
-        if motorValue <= 0.3:
+        if self._speed <= 0.3:
             return carla.VehicleControl(throttle=0.0,
                                         steer=0.0,
                                         brake=1.0,
@@ -96,7 +97,7 @@ class FMIAgent(AutonomousAgent):
                                         manual_gear_shift=False,
                                         gear=1)
         
-        return carla.VehicleControl(throttle=motorValue,
+        return carla.VehicleControl(throttle=self._speed,
                                            steer=0.0,
                                            brake=0.0,
                                            hand_brake=False,

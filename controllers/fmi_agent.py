@@ -14,7 +14,6 @@ from visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
-
 class FMIAgent(AutonomousAgent):
 
     _agent = None
@@ -64,9 +63,7 @@ class FMIAgent(AutonomousAgent):
             if (tmp < minDistance):
                 minDistance = tmp
         
-        signals.floatSignals.append(FloatSignal("DistanceToFrontLaser", minDistance))
-        print('calling do step service with value: ', minDistance)
-        
+        signals.floatSignals.append(FloatSignal("DistanceToFrontLaser", minDistance))        
           
         #distance_to_front_left
         minDistance = 2.0
@@ -75,9 +72,7 @@ class FMIAgent(AutonomousAgent):
             if (tmp < minDistance):
                 minDistance = tmp
         
-        signals.floatSignals.append(FloatSignal("DistanceToFrontUS_left", minDistance))
-        print('calling do step service with LEFT value: ', minDistance)
-        
+        signals.floatSignals.append(FloatSignal("DistanceToFrontUS_left", minDistance))        
            
         #distance_to_front_right
         minDistance = 2.0
@@ -87,22 +82,18 @@ class FMIAgent(AutonomousAgent):
                 minDistance = tmp
         
         signals.floatSignals.append(FloatSignal("DistanceToFrontUS_right", minDistance))
-        print('calling do step service with RIGHT value: ', minDistance)
         
         #VelocityIn
         signals.floatSignals.append(FloatSignal("VelocityIn", 0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0]))
-        print('calling do step service with velocity in value: ', 0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0])
 
         resp = self._do_step_service(signals, rospy.get_rostime())
         
         for float_signal in resp.result.floatSignals:
             if float_signal.name == 'MotorValue':
                 self._speed = float_signal.value
-                print("Response for ", float_signal.name, " is: ", self._speed)
                 
         if self._speed <= 0.2 and (self._previous_speed[0] > self._speed or 
                                    self._previous_speed[1] > self._speed or self._previous_speed[2] > self._speed):
-            print('full brake')
             self._previous_speed.pop()
             self._previous_speed.insert(0, self._speed)
             return carla.VehicleControl(throttle=0.0,
@@ -113,7 +104,6 @@ class FMIAgent(AutonomousAgent):
                                         manual_gear_shift=False,
                                         gear=1)
         elif self._previous_speed[0] > self._speed or self._previous_speed[1] > self._speed or self._previous_speed[2] > self._speed:
-            print('brake')
             self._previous_speed.pop()
             self._previous_speed.insert(0, self._speed)
             return carla.VehicleControl(throttle=0.0,

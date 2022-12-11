@@ -55,7 +55,7 @@ class FMIAgent(AutonomousAgent):
             self._visual.run(input_data)
         
         signals = SignalsMessage()
-              
+
         #distance_to_front
         minDistance = 2.0
         for point in input_data['lidar'][1]:
@@ -71,7 +71,7 @@ class FMIAgent(AutonomousAgent):
             tmp = norm(point[:-1])/10.0
             if (tmp < minDistance):
                 minDistance = tmp
-        
+                
         signals.floatSignals.append(FloatSignal("DistanceToFrontUS_left", minDistance))        
            
         #distance_to_front_right
@@ -119,7 +119,7 @@ class FMIAgent(AutonomousAgent):
 
         if self._speed > 0.4:
             self._speed = 0.4
-            
+                    
         return carla.VehicleControl(throttle=self._speed,
                                            steer=0.0,
                                            brake=0.0,
@@ -154,21 +154,21 @@ class FMIAgent(AutonomousAgent):
         sensors.append(
                 {
                     'type': 'sensor.lidar.ray_cast',
-                    'x': 1.6, 'y': -0.5, 'z': 1.60,
-                    'roll': 0.0, 'pitch': 0.0, 'yaw': 135.0,
-                    'channels': 8, 'range': 10.0, 'points_per_second': 100,
+                    'x': 1.6, 'y': -0.7, 'z': 1.60,
+                    'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
+                    'channels': 8, 'range': 20.0, 'points_per_second': 1000,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
-                    'horizontal_fov': 30, 'id': 'lidar_left'
+                    'horizontal_fov': 10, 'id': 'lidar_left'
                 }
             )
         sensors.append(
                 {
                     'type': 'sensor.lidar.ray_cast',
-                    'x': 1.6, 'y': 0.5, 'z': 1.60,
-                    'roll': 0.0, 'pitch': 0.0, 'yaw': 225.0,
-                    'channels': 8, 'range': 10.0, 'points_per_second': 100,
+                    'x': 1.6, 'y': 0.7, 'z': 1.60,
+                    'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
+                    'channels': 8, 'range': 20.0, 'points_per_second': 1000,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
-                    'horizontal_fov': 30, 'id': 'lidar_right'
+                    'horizontal_fov': 10, 'id': 'lidar_right'
                 }
             )
         return sensors

@@ -6,7 +6,7 @@
 
 import carla
 
-from visualizations.real import CameraView
+from carla_simulation.visualizations.real import CameraView
 
 from agents.navigation.behavior_agent import BehaviorAgent
 

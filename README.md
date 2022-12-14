@@ -1,5 +1,13 @@
 # CARLA Interface for Scenario-based Testing
 
+Evaluate scenarios using a highly paralellizable CARLA setup!
+
+```
+from carla_simulation import balancer
+
+traces = balancer.run_scenarios(scenario_dir="/tmp/scenarios")
+```
+
 ## Prerequisites
 
 ### CARLA
@@ -21,6 +29,12 @@ To start the container with default settings, run `docker compose up` in this re
 Once CARLA is up and running, execute the `balancer.py` script.
 
 The 3D visualization can be turned on by setting the `_rendering_carla` variable in the `runner.py` accordingly.
+
+### Python Wheel
+
+The easiest way to get the CARLA interface up and running is to build it as a Python package and install it.
+
+To build the package, run `python -m build` in the repository's root directory. Once completed, install the `*.whl` package found in the newly created `dist/` folder via `python -m pip install /path/to/the/package.whl`.
 
 ### Visual Studio Code
 

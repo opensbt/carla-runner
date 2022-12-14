@@ -5,9 +5,10 @@
 
 import os
 
-from simulator import Simulator
-from scenario import Scenario
-from recorder import Recorder
+from carla_simulation.simulator import Simulator
+from carla_simulation.scenario import Scenario
+from carla_simulation.recorder import Recorder
+
 
 class Runner:
 

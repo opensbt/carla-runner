@@ -24,10 +24,11 @@ class Runner:
     _agent_class = None
     _metric_class = None
 
-    def __init__(self, host, agent, metric):
+    def __init__(self, host, agent, metric, rendering=False):
         self._host_carla = host
         self._agent_class = agent
         self._metric_class = metric
+        self._rendering_carla = rendering
 
     def run(self, directory, queue, evaluations):
         while not queue.empty():

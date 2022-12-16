@@ -19,7 +19,7 @@ from carla_simulation.controllers.npc import NpcAgent
 
 NETWORK_NAME = 'carla-network'
 
-def run_scenarios(scenario_dir):
+def run_scenarios(scenario_dir, visualization_flag=False):
     client = docker.from_env()
     network = client.networks.get(NETWORK_NAME)
     servers = [
@@ -56,7 +56,8 @@ def run_scenarios(scenario_dir):
             runner = Runner(
                 server,
                 NpcAgent,
-                RawData
+                RawData,
+                visualization_flag
             )
             mp.Process(
                 target=runner.run,

@@ -19,63 +19,56 @@ from controllers.fmi_agent import FMIAgent
 
 
 NETWORK_NAME = 'carla-network'
-SCENARIO_DIR = 'scenarios'
 
-client = docker.from_env()
-network = client.networks.get(NETWORK_NAME)
-servers = [
-    container.attrs[
-        'NetworkSettings'
-    ][
-        'Networks'
-    ][
-        NETWORK_NAME
-    ][
-        'IPAddress'
+def run_scenarios(scenario_dir):
+    client = docker.from_env()
+    network = client.networks.get(NETWORK_NAME)
+    servers = [
+        container.attrs[
+            'NetworkSettings'
+        ][
+            'Networks'
+        ][
+            NETWORK_NAME
+        ][
+            'IPAddress'
+        ]
+        for container in network.containers
     ]
-    for container in network.containers
-]
 
-scenario_map = 'Town01'
-for server in servers:
-    client = carla.Client(server, 2000)
-    server_map = client.get_world().get_map().name.split('/')[-1]
-    if server_map != scenario_map:
-        client.load_world(scenario_map)
-
-scenarios = mp.JoinableQueue()
-with os.scandir(SCENARIO_DIR) as entries:
-    for entry in entries:
-        if entry.name.endswith('.xosc') and entry.is_file():
-            scenarios.put(entry.name)
-
-with mp.Manager() as manager:
-    start_time = time.time()
-
-    evaluations = manager.list()
+    scenario_map = 'Town01'
     for server in servers:
-        runner = Runner(
-            server,
-            FMIAgent,
-            RawData
-        )
-        mp.Process(
-            target=runner.run,
-            args=(SCENARIO_DIR, scenarios, evaluations),
-            daemon = True
-        ).start()
+        client = carla.Client(server, 2000)
+        server_map = client.get_world().get_map().name.split('/')[-1]
+        if server_map != scenario_map:
+            client.load_world(scenario_map)
 
-    scenarios.join()
+    scenarios = mp.JoinableQueue()
+    with os.scandir(scenario_dir) as entries:
+        for entry in entries:
+            if entry.name.endswith('.xosc') and entry.is_file():
+                scenarios.put(entry.name)
 
-    stop_time = time.time()
+    with mp.Manager() as manager:
+        start_time = time.time()
 
-    print('Time: {}s'.format(stop_time - start_time))
+        evaluations = manager.list()
+        for server in servers:
+            runner = Runner(
+                server,
+                FMIAgent,
+                RawData
+            )
+            mp.Process(
+                target=runner.run,
+                args=(scenario_dir, scenarios, evaluations),
+                daemon = True
+            ).start()
 
-    for evaluation in evaluations:
-        time = evaluation["times"]
-        distance = evaluation["velocity"]["ego"]
-        plt.plot(time, distance)
-        plt.ylabel('Velocity [m/s]')
-        plt.xlabel('Time [s]')
-        plt.title('Velocity')
-        plt.show()
+        scenarios.join()
+
+        stop_time = time.time()
+
+        print('Time: {}s'.format(stop_time - start_time))
+
+        return list(evaluations)

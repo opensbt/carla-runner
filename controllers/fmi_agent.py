@@ -80,7 +80,7 @@ class FMIAgent(AutonomousAgent):
             tmp = norm(point[:-1])/10.0
             if (tmp < minDistance):
                 minDistance = tmp
-        
+         
         signals.floatSignals.append(FloatSignal("DistanceToFrontUS_right", minDistance))
         
         #VelocityIn
@@ -131,7 +131,7 @@ class FMIAgent(AutonomousAgent):
     def sensors(self):
         sensors = []
         if self._visual is not None:
-            sensors.append(
+            """sensors.append(
                 {
                     'type': 'sensor.camera.rgb',
                     'x': 0.7, 'y': 0.0, 'z': 1.60,
@@ -139,7 +139,7 @@ class FMIAgent(AutonomousAgent):
                     'width': 800, 'height': 600, 'fov': 100,
                     'id': 'center'
                 }
-            )
+            )"""
             
         sensors.append(
                 {
@@ -156,7 +156,7 @@ class FMIAgent(AutonomousAgent):
                     'type': 'sensor.lidar.ray_cast',
                     'x': 1.6, 'y': -0.7, 'z': 1.60,
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
-                    'channels': 8, 'range': 20.0, 'points_per_second': 1000,
+                    'channels': 8, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
                     'horizontal_fov': 10, 'id': 'lidar_left'
                 }
@@ -166,11 +166,16 @@ class FMIAgent(AutonomousAgent):
                     'type': 'sensor.lidar.ray_cast',
                     'x': 1.6, 'y': 0.7, 'z': 1.60,
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
-                    'channels': 8, 'range': 20.0, 'points_per_second': 1000,
+                    'channels': 8, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
                     'horizontal_fov': 10, 'id': 'lidar_right'
                 }
             )
+        """sensors.append(
+                {
+                    'type': 'sensor.other.collision', 'x': 1.6, 'y': 0.0, 'z': 1.0, 'id': 'collision'
+                }
+            )"""
         return sensors
 
     def destroy(self):

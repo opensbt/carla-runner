@@ -14,7 +14,7 @@ class Runner:
     _host_carla = None
     _port_carla = 2000
     _timeout_carla = 10
-    _rendering_carla = True
+    _rendering_carla = False
     _resolution_carla = 0.1
 
     _recording_dir = '/tmp/recordings'

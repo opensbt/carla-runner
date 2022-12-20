@@ -23,5 +23,3 @@ ADD . /opt/ff1_carla
 RUN pip install -r /opt/ff1_carla/requirements.txt
 
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
-
-#ENTRYPOINT [ "/opt/ff1_carla/setup.sh" ]

@@ -5,9 +5,10 @@
 
 import os
 
-from simulator import Simulator
-from scenario import Scenario
-from recorder import Recorder
+from carla_simulation.simulator import Simulator
+from carla_simulation.scenario import Scenario
+from carla_simulation.recorder import Recorder
+
 
 class Runner:
 
@@ -23,10 +24,11 @@ class Runner:
     _agent_class = None
     _metric_class = None
 
-    def __init__(self, host, agent, metric):
+    def __init__(self, host, agent, metric, rendering=False):
         self._host_carla = host
         self._agent_class = agent
         self._metric_class = metric
+        self._rendering_carla = rendering
 
     def run(self, directory, queue, evaluations):
         while not queue.empty():

@@ -2,5 +2,5 @@ pygame
 numpy
 matplotlib
 docker
-carla
+carla=0.9.13
 build

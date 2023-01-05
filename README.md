@@ -1,6 +1,6 @@
 # CARLA Interface for Scenario-based Testing
 
-Evaluate scenarios using a highly paralellizable CARLA setup!
+Evaluate scenarios using a highly parallelizable CARLA setup!
 
 ```
 from carla_simulation import balancer

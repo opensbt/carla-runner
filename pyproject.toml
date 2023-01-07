@@ -17,9 +17,9 @@ classifiers = [
   "Operating System :: POSIX :: Linux",
 ]
 dependencies = [
-  "pygame",
-  "numpy",
-  "matplotlib",
-  "docker",
-  "carla",
+  "pygame==2.1.2",
+  "numpy==1.23.5",
+  "matplotlib==3.5.2",
+  "docker==5.0.3",
+  "carla==0.9.13",
 ]

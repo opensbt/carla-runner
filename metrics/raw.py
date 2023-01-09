@@ -148,9 +148,16 @@ class RawData:
             adv_id: "adversary"
         }
         result["otherParams"]["distance"] = distance_profile
-        if len(result["collisions"]) > 0:
-            result["otherParams"]["isCollision"] = True
-        else:
-            result["otherParams"]["isCollision"] = False
+        
+        result["otherParams"]["isCollision"] = False
+        
+        for temp in result["otherParams"]["distance"]:
+            print(temp)
+            if temp < 1:
+                print("------------------------------------")
+                print("collision")
+                print("-------------------------------------")
+                result["otherParams"]["isCollision"] = True
+                break
 
         return result

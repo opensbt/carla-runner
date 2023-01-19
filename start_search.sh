@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /opt/search-test
+cd /opt/search-based-test-case-generation
 
 echo "Executing run.py"
 export CARLA_ROOT="/opt/CARLA"
@@ -9,4 +9,4 @@ export SCENARIO_RUNNER_ROOT="/opt/scenario_runner"
 
 source ../workspace/devel/setup.bash
 
-python3.8 run.py -e 1 -i 3 -n 3 -a 1
+python3.8 run.py -e 1 -i 3 -n 3

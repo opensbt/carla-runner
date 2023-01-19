@@ -20,7 +20,7 @@ services:
     command: /bin/bash ./CarlaUE4.sh -RenderOffScreen -quality-level=Low
     
   carla-client:
-    image: client-search
+    image: client-search-new
     environment:
       - DISPLAY=${DISPLAY}
     volumes:
@@ -35,7 +35,7 @@ services:
       - /home/pavel/Documents/bachelorarbeit/scenario_runner:/opt/scenario_runner/:r
       - /tmp/recordings:/tmp/recordings:rw
       # path to the search
-      - /home/pavel/Documents/bachelorarbeit/search-test:/opt/search-test/:rw
+      - /home/pavel/Documents/bachelorarbeit/search-based-test-case-generation:/opt/search-based-test-case-generation/:rw
     network_mode: "host"
     ipc: host
     command: /bin/bash

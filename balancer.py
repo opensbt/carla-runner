@@ -20,7 +20,7 @@ from controllers.fmi_agent import FMIAgent
 
 NETWORK_NAME = 'carla-network'
 
-def run_scenarios(scenario_dir):
+def run_scenarios(scenario_dir, visualization_flag=False):
     client = docker.from_env()
     network = client.networks.get(NETWORK_NAME)
     servers = [

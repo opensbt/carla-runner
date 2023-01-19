@@ -53,8 +53,6 @@ class RawData:
         end = min(end_ego, end_adv)
 
         collisions = log.get_actor_collisions(ego_id)
-        #TODO remove
-        print('----------------------------' + str(collisions) + '------------------------------')
 
         simTime = log.get_elapsed_time(log.get_total_frame_count() - 1)
 
@@ -152,11 +150,7 @@ class RawData:
         result["otherParams"]["isCollision"] = False
         
         for temp in result["otherParams"]["distance"]:
-            print(temp)
-            if temp < 1:
-                print("------------------------------------")
-                print("collision")
-                print("-------------------------------------")
+            if temp < 2.5:
                 result["otherParams"]["isCollision"] = True
                 break
 

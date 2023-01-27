@@ -60,7 +60,7 @@ class RawData:
 
         for id, actor in actor_list.items():
             if "role_name" in actor:
-                print(actor)
+                # print(actor)
                 name = actor["role_name"]
                 if actor["type_id"].startswith(type_ped) and name != "adversary" and name != "hero":
                     peds[id] = (actor)

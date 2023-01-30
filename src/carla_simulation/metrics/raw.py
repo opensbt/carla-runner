@@ -8,7 +8,7 @@ import math
 
 from srunner.metrics.tools.metrics_log import MetricsLog
 
-DEBUG = False 
+DEBUG = False
 
 class RawData:
 
@@ -46,7 +46,7 @@ class RawData:
 
         type_ped = "walker.pedestrian"
         type_vehicle = "vehicle"
-        
+
         peds = {}
         vehicles = {}
 
@@ -55,47 +55,33 @@ class RawData:
 
         # assumption is there is one actor name "adversary" and one "hero" == ego agent
         # actor is defined by its role name (should be unique)
-        
-        actor_list = log._actors 
+
+        actor_list = log._actors
 
         for id, actor in actor_list.items():
             if "role_name" in actor:
-                # print(actor)
                 name = actor["role_name"]
-                if actor["type_id"].startswith(type_ped) and name != "adversary" and name != "hero":
-                    peds[id] = (actor)
-                if actor["type_id"].startswith(type_vehicle) and name != "adversary" and name != "hero":
-                    vehicles[id] = actor
                 if name == "adversary":
-                    adversary = actor
                     adv_id = id
-                if name == "hero":
-                    ego = actor
+                elif name == "hero":
                     ego_id = id
-        #print(peds)
-        #print(vehicles)
-        #print(ego_id)
-        #print(adv_id)
-        ############
+                elif actor["type_id"].startswith(type_ped):
+                    peds[id] = (actor)
+                elif actor["type_id"].startswith(type_vehicle):
+                    vehicles[id] = actor
 
         start, end = log.get_actor_alive_frames(ego_id)
 
-        for actor_id, actor in vehicles.items():           
+        for actor_id, actor in vehicles.items():
             start_adv, end_adv = log.get_actor_alive_frames(actor_id)
-
-            #assert start == start_adv
-            #assert end == end_adv
 
             name = actor["role_name"]
 
             if name != "hero":
                 set_state_result_actor(log, name, actor_id, result, start_adv, end_adv)
 
-        for actor_id, actor in peds.items():           
+        for actor_id, actor in peds.items():
             start_adv, end_adv = log.get_actor_alive_frames(actor_id)
-
-            #assert start == start_adv
-            #assert end == end_adv
 
             name = actor["role_name"]
             set_state_result_actor(log, name,actor_id, result, start_adv, end_adv)
@@ -114,7 +100,7 @@ class RawData:
         result["actors"] = {
             "ego" : "ego",
             "adversary" : "adversary",
-            "vehicles" : [ actor["role_name"] for actor in vehicles.values()],
+            "vehicles" : [actor["role_name"] for actor in vehicles.values()],
             "pedestrians" : [actor["role_name"] for actor in peds.values()]
         }
         if len(result["collisions"]) > 0:
@@ -122,12 +108,6 @@ class RawData:
         else:
             result["otherParams"]["isCollision"] = False
 
-        ####
-
-        #print(result["actors"])
-        #print(result["location"].keys())
-
-        ###
         return result
 
 def set_state_result_actor(log, name, adv_id, result, start, end):

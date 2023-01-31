@@ -171,11 +171,6 @@ class FMIAgent(AutonomousAgent):
                     'horizontal_fov': 10, 'id': 'lidar_right'
                 }
             )
-        """sensors.append(
-                {
-                    'type': 'sensor.other.collision', 'x': 1.6, 'y': 0.0, 'z': 1.0, 'id': 'collision'
-                }
-            )"""
         return sensors
 
     def destroy(self):

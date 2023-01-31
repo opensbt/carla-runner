@@ -30,12 +30,7 @@ class FMIAgent(AutonomousAgent):
             self._visual = CameraView('center')
 
     def setup(self, _):
-        self._agent = None
-        
-        for actor in CarlaDataProvider.get_world().get_actors():
-            if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'hero':
-                self._ego = actor
-                break        
+        self._agent = None      
         
         rospy.init_node('fmi_agent')
         

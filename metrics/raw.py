@@ -150,7 +150,6 @@ class RawData:
         result["otherParams"]["isCollision"] = False
         
         for temp in result["otherParams"]["distance"]:
-            print(temp)
             if temp < 2.5:
                 result["otherParams"]["isCollision"] = True
                 break

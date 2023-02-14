@@ -18,29 +18,34 @@ services:
           devices:
             - capabilities: [gpu]
     command: /bin/bash ./CarlaUE4.sh -RenderOffScreen -quality-level=Low
-    
+
   carla-client:
-    image: client-search-new
+    build:
+      context: .
     environment:
       - DISPLAY=${DISPLAY}
+      - CARLA_ROOT=/opt/CARLA/Simulator
+      - PYTHONPATH=/opt/OpenSBT/Runner:/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:/opt/CARLA/Simulator/PythonAPI/carla/agents:/opt/CARLA/Simulator/PythonAPI/carla:/opt/CARLA/Runner
+      - SCENARIO_RUNNER_ROOT=/opt/CARLA/Runner
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      #path to rosco repo
-      - /home/pavel/Documents/bachelorarbeit/workspace/src/rosco:/opt/workspace/src/rosco:rw
-      #path to FMUs that should be executed by rosco
-      - /home/pavel/Documents/bachelorarbeit/workspace/src/rosco/share:/opt/workspace/share:rw
-      #path to the carla simulation repo
-      - /home/pavel/Documents/bachelorarbeit/CARLA:/opt/CARLA/:r
-      #path to the carla scenario runner repo
-      - /home/pavel/Documents/bachelorarbeit/scenario_runner:/opt/scenario_runner/:r
       - /tmp/recordings:/tmp/recordings:rw
-      # path to the search
-      - /home/pavel/Documents/bachelorarbeit/search-based-test-case-generation:/opt/search-based-test-case-generation/:rw
+      - ${ROSCO_PATH}:/opt/workspace/src/rosco:rw
+      - ${SHARE_PATH}:/opt/workspace/share:rw
+      - ${CARLA_PATH}:/opt/CARLA/Simulator:r
+      - ${SCENARIORUNNER_PATH}:/opt/CARLA/Runner:r
+      - ${OPENSBT_CORE_PATH}:/opt/OpenSBT/Core:rw
+      - ${OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
     network_mode: "host"
     ipc: host
-    command: /bin/bash
-    tty: true
-    stdin_open: true
+    command: sleep infinity
+    depends_on:
+      - carla-server
 
 networks:
   carla-network:

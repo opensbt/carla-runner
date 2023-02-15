@@ -30,17 +30,17 @@ class FMIAgent(AutonomousAgent):
             self._visual = CameraView('center')
 
     def setup(self, _):
-        self._agent = None      
-        
+        self._agent = None
+
         rospy.init_node('fmi_agent')
-        
-        #initialize and call the masterInit service
+
+        # Initialize and call the masterInit service.
         rospy.wait_for_service('master/init')
         init_master = rospy.ServiceProxy('master/init', MasterInitService)
         print('calling init/master service')
         init_master('/opt/workspace/src/rosco/share/config.json')
-        
-        # initialize the doStepsUntil Service
+
+        # Initialize the doStepsUntil service.
         rospy.wait_for_service('master/doStepsUntil')
         self._do_step_service = rospy.ServiceProxy('master/doStepsUntil', DoStepsUntilService, persistent=True)
         print('initialized do step service')
@@ -48,46 +48,46 @@ class FMIAgent(AutonomousAgent):
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
-        
+
         signals = SignalsMessage()
 
-        #distance_to_front
+        # distance_to_front
         minDistance = 2.0
         for point in input_data['lidar'][1]:
             tmp = norm(point[:-1])/10.0
             if (tmp < minDistance):
                 minDistance = tmp
-        
-        signals.floatSignals.append(FloatSignal("DistanceToFrontLaser", minDistance))        
-          
-        #distance_to_front_left
+
+        signals.floatSignals.append(FloatSignal("DistanceToFrontLaser", minDistance))
+
+        # distance_to_front_left
         minDistance = 2.0
         for point in input_data['lidar_left'][1]:
             tmp = norm(point[:-1])/10.0
             if (tmp < minDistance):
                 minDistance = tmp
-                
-        signals.floatSignals.append(FloatSignal("DistanceToFrontUS_left", minDistance))        
-           
-        #distance_to_front_right
+
+        signals.floatSignals.append(FloatSignal("DistanceToFrontUS_left", minDistance))
+
+        # distance_to_front_right
         minDistance = 2.0
         for point in input_data['lidar_right'][1]:
             tmp = norm(point[:-1])/10.0
             if (tmp < minDistance):
                 minDistance = tmp
-         
+
         signals.floatSignals.append(FloatSignal("DistanceToFrontUS_right", minDistance))
-        
-        #VelocityIn
+
+        # VelocityIn
         signals.floatSignals.append(FloatSignal("VelocityIn", 0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0]))
 
         resp = self._do_step_service(signals, rospy.get_rostime())
-        
+
         for float_signal in resp.result.floatSignals:
             if float_signal.name == 'MotorValue':
                 self._speed = float_signal.value
-                
-        if self._speed <= 0.2 and (self._previous_speed[0] > self._speed or 
+
+        if self._speed <= 0.2 and (self._previous_speed[0] > self._speed or
                                    self._previous_speed[1] > self._speed or self._previous_speed[2] > self._speed):
             self._previous_speed.pop()
             self._previous_speed.insert(0, self._speed)
@@ -108,13 +108,13 @@ class FMIAgent(AutonomousAgent):
                                         reverse=False,
                                         manual_gear_shift=False,
                                         gear=1)
-        
+
         self._previous_speed.pop()
         self._previous_speed.insert(0, self._speed)
 
         if self._speed > 0.4:
             self._speed = 0.4
-                    
+
         return carla.VehicleControl(throttle=self._speed,
                                            steer=0.0,
                                            brake=0.0,
@@ -126,7 +126,7 @@ class FMIAgent(AutonomousAgent):
     def sensors(self):
         sensors = []
         if self._visual is not None:
-            """sensors.append(
+            sensors.append(
                 {
                     'type': 'sensor.camera.rgb',
                     'x': 0.7, 'y': 0.0, 'z': 1.60,
@@ -134,8 +134,8 @@ class FMIAgent(AutonomousAgent):
                     'width': 800, 'height': 600, 'fov': 100,
                     'id': 'center'
                 }
-            )"""
-            
+            )
+
         sensors.append(
                 {
                     'type': 'sensor.lidar.ray_cast',
@@ -166,6 +166,7 @@ class FMIAgent(AutonomousAgent):
                     'horizontal_fov': 10, 'id': 'lidar_right'
                 }
             )
+
         return sensors
 
     def destroy(self):

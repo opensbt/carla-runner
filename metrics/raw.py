@@ -8,16 +8,17 @@ import math
 
 from srunner.metrics.tools.metrics_log import MetricsLog
 
-DEBUG = False 
-
 class RawData:
 
     def evaluate(self, simulator, recording):
         info = simulator.get_client().show_recorder_file_info(recording, True)
         log = MetricsLog(info)
 
-        ego_id = log.get_actor_ids_with_role_name("hero")[0]
-        adv_id = log.get_actor_ids_with_role_name("adversary")[0]
+        ego_name = "hero"
+        adversary_name = "adversary"
+
+        ego_id = log.get_actor_ids_with_role_name(ego_name)[0]
+        adv_id = log.get_actor_ids_with_role_name(adversary_name)[0]
 
         distance_profile = []
         frames_time_list = []
@@ -95,33 +96,28 @@ class RawData:
             ego_acceleration_profile.append((ego_acceleration.x, ego_acceleration.y, ego_acceleration.z))
             adv_acceleration_profile.append((adv_acceleration.x, adv_acceleration.y, adv_acceleration.z))
 
-        if DEBUG:
-            print("ego location profile, speed profile:")
-            #print(ego_location_profile)
-            print(ego_speed_profile)
-        
         result = {
             "simTime": 0,
             "times": [],
             "location": {
-                "ego": [],
-                "adversary": []
+                ego_name: [],
+                adversary_name: []
             },
             "velocity": {
-                "ego": [],
-                "adversary": []
+                ego_name: [],
+                adversary_name: []
             },
             "speed": {
-                "ego": [],
-                "adversary": []
+                ego_name: [],
+                adversary_name: []
             },
             "acceleration": {
-                "ego": [],
-                "adversary": []
+                ego_name: [],
+                adversary_name: []
             },
             "yaw": {
-                "ego": [],
-                "adversary": []
+                ego_name: [],
+                adversary_name: []
             },
             "collisions": {},
             "actors": {},
@@ -130,25 +126,30 @@ class RawData:
 
         result["simTime"] = simTime
         result["times"] = frames_time_list
-        result["location"]["ego"] = ego_location_profile
-        result["location"]["adversary"] = adv_location_profile
-        result["velocity"]["ego"][0:2] = ego_velocity_profile
-        result["velocity"]["adversary"] = adv_velocity_profile
-        result["speed"]["ego"] = ego_speed_profile
-        result["speed"]["adversary"] = adv_speed_profile
-        result["acceleration"]["ego"] = ego_acceleration_profile
-        result["acceleration"]["adversary"] = adv_acceleration_profile
-        result["yaw"]["ego"] = ego_yaw_profile
-        result["yaw"]["adversary"] = adv_yaw_profile
+        result["location"][ego_name] = ego_location_profile
+        result["location"][adversary_name] = adv_location_profile
+        result["velocity"][ego_name][0:2] = ego_velocity_profile
+        result["velocity"][adversary_name] = adv_velocity_profile
+        result["speed"][ego_name] = ego_speed_profile
+        result["speed"][adversary_name] = adv_speed_profile
+        result["acceleration"][ego_name] = ego_acceleration_profile
+        result["acceleration"][adversary_name] = adv_acceleration_profile
+        result["yaw"][ego_name] = ego_yaw_profile
+        result["yaw"][adversary_name] = adv_yaw_profile
         result["collisions"] = collisions
         result["actors"] = {
-            ego_id: "ego",
-            adv_id: "adversary"
+            "ego": ego_name,
+            "adversary": adversary_name,
+            "vehicles" : [
+                ego_name
+            ],
+            "pedestrians" : [
+                adversary_name
+            ]
         }
         result["otherParams"]["distance"] = distance_profile
-        
+
         result["otherParams"]["isCollision"] = False
-        
         for temp in result["otherParams"]["distance"]:
             if temp < 2.5:
                 result["otherParams"]["isCollision"] = True

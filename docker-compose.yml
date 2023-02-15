@@ -22,6 +22,7 @@ services:
   carla-client:
     build:
       context: .
+    privileged: true
     environment:
       - DISPLAY=${DISPLAY}
       - CARLA_ROOT=/opt/CARLA/Simulator

@@ -15,7 +15,7 @@ from runner import Runner
 
 from metrics.raw import RawData
 from controllers.npc import NpcAgent
-from controllers.fmi_agent import FMIAgent
+from controllers.fmi import FMIAgent
 
 
 NETWORK_NAME = 'carla-network'

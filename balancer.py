@@ -9,12 +9,10 @@ import multiprocessing as mp
 
 import carla
 import docker
-import matplotlib.pyplot as plt
 
 from runner import Runner
 
 from metrics.raw import RawData
-from controllers.npc import NpcAgent
 from controllers.fmi import FMIAgent
 
 

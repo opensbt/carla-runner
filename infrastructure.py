@@ -24,9 +24,10 @@ class Infrastructure:
     def __init__(self,
         jobs = 1,
         scenarios = SCENARIO_DIR,
-        recordings = RECORDING_DIR
+        recordings = RECORDING_DIR,
     ):
         self.jobs = jobs
+        self.network = self.NETWORK
         self.scenarios = scenarios
         self.recordings = recordings
         self.client = docker.from_env()
@@ -74,7 +75,7 @@ class Infrastructure:
             privileged = True,
             remove = True,
             user = '1001:1001',
-            network_mode = self.NETWORK,
+            network_mode = self.network,
             environment = [
                 'DISPLAY={}'.format(
                     os.environ['DISPLAY']
@@ -124,9 +125,8 @@ class Infrastructure:
             name = client_name,
             detach = True,
             privileged = True,
-            user = '1001:1001',
             remove = True,
-            network_mode = self.NETWORK,
+            network_mode = self.network,
             ipc_mode = 'host',
             environment = [
                 'DISPLAY={DISPLAY}'.format(
@@ -222,7 +222,7 @@ class Infrastructure:
         ][
             'Networks'
         ][
-            self.NETWORK
+            self.network
         ][
             'IPAddress'
         ]

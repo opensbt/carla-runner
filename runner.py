@@ -23,7 +23,7 @@ class Runner:
         self._agent_name = agent
         self._metric_name = metric
 
-    def run(self, directory, queue, evaluations):
+    def run(self, queue, evaluations):
         while not queue.empty():
             pattern = queue.get()
 
@@ -52,6 +52,5 @@ class Runner:
                         with open(entry, 'r') as file:
                             obj = json.loads(file.read())
                             evaluations.append(obj)
-                        os.remove(entry)
 
             queue.task_done()

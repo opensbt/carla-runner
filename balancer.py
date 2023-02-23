@@ -5,17 +5,17 @@
 
 import os
 import time
-import multiprocessing as mp
-
 import carla
+import multiprocessing as mp
 
 from infrastructure import Infrastructure
 from runner import Runner
 
-def run_scenarios(scenario_dir, visualization_flag=False):
+def run_scenarios(scenario_dir, visualization_flag = False):
     i = Infrastructure(
+        jobs = 1,
         scenarios = scenario_dir,
-        jobs = 1)
+    )
     i.start()
 
     map_name = 'Town01'
@@ -50,7 +50,7 @@ def run_scenarios(scenario_dir, visualization_flag=False):
             )
             mp.Process(
                 target=runner.run,
-                args=(scenario_dir, scenarios, evaluations),
+                args=(scenarios, evaluations),
                 daemon = True
             ).start()
 

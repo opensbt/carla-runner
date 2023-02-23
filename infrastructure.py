@@ -15,22 +15,27 @@ class Infrastructure:
     CLIENT_IMAGE = 'carla-client'
     SERVER_PREFIX = 'carla-server'
     CLIENT_PREFIX = 'carla-client'
-    NETWORK_NAME = 'carla-network'
 
-    def __init__(self):
+    NETWORK = 'bridge'
+
+    RECORDING_DIR = '/tmp/recordings'
+    SCENARIO_DIR = '/tmp/scenarios'
+
+    def __init__(self,
+        jobs = 1,
+        scenarios = SCENARIO_DIR,
+        recordings = RECORDING_DIR
+    ):
+        self.jobs = jobs
+        self.scenarios = scenarios
+        self.recordings = recordings
         self.client = docker.from_env()
-        self.network = None
         self.clients = []
         self.servers = []
 
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
-        os.makedirs('/tmp/recordings', exist_ok=True)
-
-        network = self.client.networks.create(
-            self.NETWORK_NAME
-        )
-        self.network = network
+        os.makedirs(self.recordings, exist_ok=True)
 
         server = self.create_server(
             id = 1
@@ -42,12 +47,11 @@ class Infrastructure:
         )
         self.clients.append(client)
 
-    def get_addresses(self):
-        addresses = [
-            self._get_address(container)
-            for container in self.servers
-        ]
-        return addresses
+    def get_servers(self):
+        return self.servers
+
+    def get_clients(self):
+        return self.clients
 
     def stop(self):
         containers = self.servers + self.clients
@@ -55,10 +59,6 @@ class Infrastructure:
             for container in containers:
                 container.stop()
             containers.clear()
-
-        if self.network is not None:
-            self.network.remove()
-            self.network = None
 
     def create_server(self, id = None):
         server_name = self.SERVER_PREFIX
@@ -74,14 +74,20 @@ class Infrastructure:
             privileged = True,
             remove = True,
             user = '1001:1001',
-            network = self.NETWORK_NAME,
+            network_mode = self.NETWORK,
             environment = [
                 'DISPLAY={}'.format(
                     os.environ['DISPLAY']
                 )
             ],
             volumes = [
-                '/tmp/recordings:/tmp/recordings:rw',
+                '{}:{}:ro'.format(
+                    self.scenarios,
+                    self.SCENARIO_DIR),
+                '{}:{}:rw'.format(
+                    self.recordings,
+                    self.RECORDING_DIR
+                ),
             ],
             device_requests = [
                 docker.types.DeviceRequest(
@@ -97,7 +103,7 @@ class Infrastructure:
             ]
         )
 
-        while not self._get_address(container):
+        while not self.get_address(container):
             container.reload()
             sleep(1)
 
@@ -118,8 +124,9 @@ class Infrastructure:
             name = client_name,
             detach = True,
             privileged = True,
+            user = '1001:1001',
             remove = True,
-            network = 'host',
+            network_mode = self.NETWORK,
             ipc_mode = 'host',
             environment = [
                 'DISPLAY={DISPLAY}'.format(
@@ -137,7 +144,13 @@ class Infrastructure:
             ],
             volumes = [
                 '/var/run/docker.sock:/var/run/docker.sock',
-                '/tmp/recordings:/tmp/recordings:rw',
+                '{}:{}:ro'.format(
+                    self.scenarios,
+                    self.SCENARIO_DIR),
+                '{}:{}:rw'.format(
+                    self.recordings,
+                    self.RECORDING_DIR
+                ),
                 '{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
                     ROSCO_PATH = os.environ['ROSCO_PATH']
                 ),
@@ -165,6 +178,10 @@ class Infrastructure:
             ],
             command = 'sleep infinity'
         )
+
+        while not self.get_address(container):
+            container.reload()
+            sleep(1)
 
         container.exec_run(
             cmd = '/bin/bash -c "{}"'.format(
@@ -199,13 +216,13 @@ class Infrastructure:
 
         return container
 
-    def _get_address(self, container):
+    def get_address(self, container):
         address = container.attrs[
             'NetworkSettings'
         ][
             'Networks'
         ][
-            self.NETWORK_NAME
+            self.NETWORK
         ][
             'IPAddress'
         ]

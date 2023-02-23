@@ -14,7 +14,7 @@ from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 
-class NpcAgent(AutonomousAgent):
+class NPCAgent(AutonomousAgent):
 
     _agent = None
     _route_assigned = False

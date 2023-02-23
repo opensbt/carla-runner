@@ -8,38 +8,28 @@ import time
 import multiprocessing as mp
 
 import carla
-import docker
 
+from infrastructure import Infrastructure
 from runner import Runner
 
-from metrics.raw import RawData
-from controllers.fmi import FMIAgent
-
-
-NETWORK_NAME = 'carla-network'
-
 def run_scenarios(scenario_dir, visualization_flag=False):
-    client = docker.from_env()
-    network = client.networks.get(NETWORK_NAME)
-    servers = [
-        container.attrs[
-            'NetworkSettings'
-        ][
-            'Networks'
-        ][
-            NETWORK_NAME
-        ][
-            'IPAddress'
-        ]
-        for container in network.containers
-    ]
+    i = Infrastructure(
+        scenarios = scenario_dir,
+        jobs = 1)
+    i.start()
 
-    scenario_map = 'Town01'
+    map_name = 'Town01'
+    agent_name = 'FMIAdapter'
+    metric_name = 'RawData'
+
+    servers = i.get_servers()
+    clients = i.get_clients()
+
     for server in servers:
-        client = carla.Client(server, 2000)
+        client = carla.Client(i.get_address(server), 2000)
         server_map = client.get_world().get_map().name.split('/')[-1]
-        if server_map != scenario_map:
-            client.load_world(scenario_map)
+        if server_map != map_name:
+            client.load_world(map_name)
 
     scenarios = mp.JoinableQueue()
     with os.scandir(scenario_dir) as entries:
@@ -51,11 +41,12 @@ def run_scenarios(scenario_dir, visualization_flag=False):
         start_time = time.time()
 
         evaluations = manager.list()
-        for server in servers:
-            runner = Runner(
+        for server, client in zip(servers, clients):
+            runner = Runner(i,
                 server,
-                FMIAgent,
-                RawData
+                client,
+                agent_name,
+                metric_name
             )
             mp.Process(
                 target=runner.run,
@@ -68,5 +59,7 @@ def run_scenarios(scenario_dir, visualization_flag=False):
         stop_time = time.time()
 
         print('Time: {}s'.format(stop_time - start_time))
+
+        i.stop()
 
         return list(evaluations)

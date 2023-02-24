@@ -41,7 +41,7 @@ class Executor:
     _recording_dir = None
     _scenario_dir = None
 
-    def __init__(self, host, scenario_dir, recording_dir, agent, metric):
+    def __init__(self, host, scenario_dir, recording_dir, agent, metric, visualize):
         self._host_carla = host
 
         self._recording_dir = recording_dir
@@ -49,6 +49,8 @@ class Executor:
 
         self._agent_class = self.agents.get(agent)
         self._metric_class = self.metrics.get(metric)
+
+        self._rendering_carla = visualize
 
     def execute(self, pattern):
         simulator = self.get_simulator(
@@ -126,9 +128,12 @@ def main():
     parser.add_argument(
         '--pattern', help='Pattern for selecting the scenarios.', required=True
     )
+    parser.add_argument(
+        '--visualize', help='Pattern for selecting the scenarios.', required=False, action='store_true'
+    )
     args = parser.parse_args()
 
-    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric)
+    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.visualize)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

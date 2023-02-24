@@ -27,20 +27,22 @@ class Runner:
         while not queue.empty():
             pattern = queue.get()
 
+            configuration = " ".join([
+                "--host {}".format(self._infrastructure.get_address(self._server)),
+                "--recordings {}".format(self._infrastructure.RECORDING_DIR),
+                "--scenarios {}".format(self._infrastructure.SCENARIO_DIR),
+                "--pattern {}".format(pattern),
+                "--agent {}".format(self._agent_name),
+                "--metric {}".format(self._metric_name)
+            ])
+            if (self._infrastructure.visualization):
+                configuration = "{} --visualize".format(configuration)
+
             self._client.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
                         "source /opt/workspace/devel/setup.bash",
-                        "python3.8 executor.py {}".format(
-                            " ".join([
-                                "--host {}".format(self._infrastructure.get_address(self._server)),
-                                "--recordings {}".format(self._infrastructure.RECORDING_DIR),
-                                "--scenarios {}".format(self._infrastructure.SCENARIO_DIR),
-                                "--pattern {}".format(pattern),
-                                "--agent {}".format(self._agent_name),
-                                "--metric {}".format(self._metric_name),
-                            ])
-                        ),
+                        "python3.8 executor.py {}".format(configuration),
                     ])
                 ),
                 workdir = '/opt/OpenSBT/Runner'

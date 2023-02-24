@@ -25,6 +25,7 @@ class Infrastructure:
         jobs = 1,
         scenarios = SCENARIO_DIR,
         recordings = RECORDING_DIR,
+        visualization = False
     ):
         self.jobs = jobs
         self.network = self.NETWORK
@@ -33,6 +34,7 @@ class Infrastructure:
         self.client = docker.from_env()
         self.clients = []
         self.servers = []
+        self.visualization = visualization
 
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
@@ -144,6 +146,7 @@ class Infrastructure:
                 'SCENARIO_RUNNER_ROOT=/opt/CARLA/Runner',
             ],
             volumes = [
+                '/tmp/.X11-unix:/tmp/.X11-unix',
                 '/var/run/docker.sock:/var/run/docker.sock',
                 '{}:{}:ro'.format(
                     self.scenarios,

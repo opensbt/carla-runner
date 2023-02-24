@@ -19,6 +19,7 @@ class Balancer:
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
+            visualization = visualization
         )
 
     def start(self):

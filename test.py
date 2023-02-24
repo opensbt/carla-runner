@@ -1,8 +1,9 @@
 from balancer import Balancer
 
 b = Balancer(
-    directory = '/home/munaro/Repositories/ASCRIBE/Simulation/scenarios',
-    jobs = 1
+    directory = '/tmp/scenarios',
+    jobs = 1,
+    visualization = True
 )
 
 b.start()
@@ -15,7 +16,3 @@ except:
 print(e)
 
 b.stop()
-
-# Reuse
-# Visualization
-# Parallelization

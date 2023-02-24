@@ -38,15 +38,16 @@ class Infrastructure:
         subprocess.run('xhost +local:root', shell=True)
         os.makedirs(self.recordings, exist_ok=True)
 
-        server = self.create_server(
-            id = 1
-        )
-        self.servers.append(server)
+        for job in range(self.jobs):
+            server = self.create_server(
+                id = job
+            )
+            self.servers.append(server)
 
-        client = self.create_client(
-            id = 1
-        )
-        self.clients.append(client)
+            client = self.create_client(
+                id = job
+            )
+            self.clients.append(client)
 
     def get_servers(self):
         return self.servers
@@ -115,10 +116,10 @@ class Infrastructure:
         if id is not None:
             client_name += '-{}'.format(id)
 
-        self.client.images.build(
-            tag = self.CLIENT_IMAGE,
-            path = './',
-        )
+        # self.client.images.build(
+        #     tag = self.CLIENT_IMAGE,
+        #     path = './',
+        # )
 
         container = self.client.containers.run(
             self.CLIENT_IMAGE,

@@ -75,9 +75,7 @@ class Executor:
                     simulator,
                     recording
                 )
-                file.write(
-                    json.dumps(evaluation)
-                )
+                json.dump(evaluation, file)
             os.remove(recording)
 
     def get_simulator(self, host, port, timeout, rendering = True, resolution = 0.1):

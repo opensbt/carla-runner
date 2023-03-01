@@ -1,4 +1,3 @@
-# Copyright (c) 2021 Universitat Autonoma de Barcelona (UAB)
 # Copyright (c) 2022 fortiss GmbH
 #
 # This work is licensed under the terms of the MIT license.
@@ -10,7 +9,7 @@ from numpy.linalg import norm
 
 from rosco.srv import *
 from rosco.msg import *
-from visualizations.real import CameraView
+from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 

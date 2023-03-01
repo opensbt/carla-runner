@@ -6,6 +6,7 @@
 import os
 import json
 
+
 class Runner:
 
     _infrastructure = None
@@ -45,7 +46,7 @@ class Runner:
                         "python3.8 executor.py {}".format(configuration),
                     ])
                 ),
-                workdir = '/opt/OpenSBT/Runner'
+                workdir = '/opt/OpenSBT/Runner/src/carla_simulation/'
             )
 
             pattern = pattern.replace('xosc', 'json')

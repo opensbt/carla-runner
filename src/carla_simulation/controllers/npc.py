@@ -6,7 +6,7 @@
 
 import carla
 
-from visualizations.real import CameraView
+from carla_simulation.visualizations.real import CameraView
 
 from agents.navigation.behavior_agent import BehaviorAgent
 
@@ -49,8 +49,8 @@ class NPCAgent(AutonomousAgent):
             sensors.append(
                 {
                     'type': 'sensor.camera.rgb',
-                    'x': 0.7, 'y': 0.0, 'z': 1.60,
-                    'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
+                    'x': -7.0, 'y': 0.0, 'z': 5.0,
+                    'roll': 0.0, 'pitch': -20.0, 'yaw': 0.0,
                     'width': 800, 'height': 600, 'fov': 100,
                     'id': 'center'
                 }

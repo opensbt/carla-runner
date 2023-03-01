@@ -9,6 +9,7 @@ import subprocess
 
 from time import sleep
 
+
 class Infrastructure:
 
     SERVER_IMAGE = 'carlasim/carla:0.9.13'
@@ -197,6 +198,15 @@ class Infrastructure:
             environment = {
                 "SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL": True
             }
+        )
+        container.exec_run(
+            cmd = '/bin/bash -c "{}"'.format(
+                " && ".join([
+                    "python3.8 -m build",
+                    "pip install ~/Repositories/ASCRIBE/Simulation/dist/*.whl",
+                ])
+            ),
+            workdir = '/opt/OpenSBT/Runner'
         )
         container.exec_run(
             cmd = '/bin/bash -c "{}"'.format(

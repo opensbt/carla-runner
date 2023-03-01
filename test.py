@@ -1,4 +1,4 @@
-from balancer import Balancer
+from carla_simulation.balancer import Balancer
 
 b = Balancer(
     directory = '/tmp/scenarios',
@@ -8,11 +8,7 @@ b = Balancer(
 
 b.start()
 
-e = None
-try:
-    e = b.run()
-except:
-    pass
+e = b.run()
 print(e)
 
 b.stop()

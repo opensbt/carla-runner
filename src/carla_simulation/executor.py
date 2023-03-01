@@ -8,14 +8,15 @@ import sys
 import json
 import argparse
 
-from simulator import Simulator
-from scenario import Scenario
-from recorder import Recorder
+from carla_simulation.simulator import Simulator
+from carla_simulation.scenario import Scenario
+from carla_simulation.recorder import Recorder
 
-from metrics.raw import RawData
+from carla_simulation.metrics.raw import RawData
 
-from controllers.fmi import FMIAgent
-from controllers.npc import NPCAgent
+from carla_simulation.controllers.fmi import FMIAgent
+from carla_simulation.controllers.npc import NPCAgent
+
 
 class Executor:
 

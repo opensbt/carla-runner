@@ -8,8 +8,9 @@ import time
 import carla
 import multiprocessing as mp
 
-from infrastructure import Infrastructure
-from runner import Runner
+from carla_simulation.infrastructure import Infrastructure
+from carla_simulation.runner import Runner
+
 
 class Balancer:
 

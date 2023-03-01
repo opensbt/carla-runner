@@ -19,6 +19,7 @@ RUN apt update && \
     apt install -y cmake \
         libjsoncpp-dev \
         python3.8 \
+        python3.8-venv \
         python3-pip
 
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'

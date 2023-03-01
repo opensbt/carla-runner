@@ -48,11 +48,12 @@ class Runner:
                 workdir = '/opt/OpenSBT/Runner'
             )
 
+            pattern = pattern.replace('xosc', 'json')
             with os.scandir(self._infrastructure.recordings) as entries:
                 for entry in entries:
-                    if entry.name.endswith('.json') and entry.is_file():
+                    if entry.name.endswith(pattern) and entry.is_file():
                         with open(entry, 'r') as file:
-                            obj = json.load(file)
+                            obj = json.loads(file.read())
                             evaluations.append(obj)
                         os.remove(entry)
 

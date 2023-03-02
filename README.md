@@ -25,6 +25,7 @@ b.stop()
 Make sure that the following environment variables are set correctly:
 
 * All `*_PATH` variables must point to the respective local repositories to be cloned from the following URLs:
+    * `ROSCO_PATH`: https://git.fortiss.org/ff1/rosco.git
     * `OPENSBT_CORE_PATH`: https://git.fortiss.org/opensbt/opensbt-core.git
     * `OPENSBT_RUNNER_PATH`: https://git.fortiss.org/opensbt/carla-runner.git
     * `CARLA_PATH`: https://github.com/carla-simulator/carla.git

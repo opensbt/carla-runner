@@ -7,7 +7,11 @@ import os
 import docker
 import subprocess
 
+import carla_simulation
+
 from time import sleep
+
+import importlib.resources as pkg_resources
 
 
 class Infrastructure:
@@ -119,10 +123,12 @@ class Infrastructure:
         if id is not None:
             client_name += '-{}'.format(id)
 
-        # self.client.images.build(
-        #     tag = self.CLIENT_IMAGE,
-        #     path = './',
-        # )
+        with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
+            path = str(file.resolve().parents[0])
+            self.client.images.build(
+                tag = self.CLIENT_IMAGE,
+                path = path,
+            )
 
         container = self.client.containers.run(
             self.CLIENT_IMAGE,
@@ -203,7 +209,7 @@ class Infrastructure:
             cmd = '/bin/bash -c "{}"'.format(
                 " && ".join([
                     "python3.8 -m build",
-                    "pip install ~/Repositories/ASCRIBE/Simulation/dist/*.whl",
+                    "pip install /opt/OpenSBT/Runner/dist/*.whl",
                 ])
             ),
             workdir = '/opt/OpenSBT/Runner'

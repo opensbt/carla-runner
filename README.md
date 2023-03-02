@@ -3,20 +3,33 @@
 Evaluate scenarios using a highly parallelizable CARLA setup!
 
 ```
-from carla_simulation import balancer
+from carla_simulation.balancer import Balancer
 
-traces = balancer.run_scenarios(scenario_dir="/tmp/scenarios")
+b = Balancer(
+    directory = '/tmp/scenarios',
+    jobs = 1,
+    visualization = True
+)
+
+b.start()
+
+evaluation = b.run()
+
+b.stop()
 ```
 
 ## Prerequisites
 
-### CARLA
+### Environment
 
-The CARLA server must already be running when the simulation is started. Due to its lightweight, ease of use, and modularity, a Docker-based setup is preferred. Instructions can be found [here](https://carla.readthedocs.io/en/latest/build_docker/).
+Make sure that the following environment variables are set correctly:
 
-The CARLA interface will instruct the server to record the simulation runs and to store the data in the container's `/tmp/recordings` folder. In order to access these files, this directory is mounted by the host as well. However, make sure that the user with ID `1000` must be the directory's owner!
-
-Make sure that the `PYTHONPATH` includes all of the dependencies required by the CARLA Scenario Runner and the `CARLA_ROOT` and `SCENARIO_RUNNER_ROOT` point to the respective local repositories (to be cloned from [here](https://github.com/carla-simulator/carla) and [here](https://github.com/carla-simulator/scenario_runner) respectively).
+* All `*_PATH` variables must point to the respective local repositories to be cloned from the following URLs:
+    * `OPENSBT_CORE_PATH`: https://git.fortiss.org/opensbt/opensbt-core.git
+    * `OPENSBT_RUNNER_PATH`: https://git.fortiss.org/opensbt/carla-runner.git
+    * `CARLA_PATH`: https://github.com/carla-simulator/carla.git
+    * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git
+* In case the [FMI](https://fmi-standard.org/)-based agent shall be used, the `SHARE_PATH` must point to the directory containing the Functional Mock-up Units (FMUs).
 
 ### Docker
 
@@ -24,17 +37,49 @@ Instructions to install Docker are available [here](https://docs.docker.com/engi
 
 ## Getting Started
 
-First up, create an image for the docker container in which the `ff1_carla` and the `rosco` repository are running by executing the docker file in the this repositories root folder with the command `docker build -t client-rosco .` . All necessary dependencies will be installed by the Dockerfile. To start the container with default settings, run `docker compose up` in this repository's root folder. Instructions on Docker Compose can be found [here](https://docs.docker.com/compose/). By using the `--scale` flag, the number of CARLA servers to start can be adapted (e.g., `docker compose up --scale carla-server=3`). By default two instances will be launched. Afterwards run `xhost +local:root` to give the container necessary rights to launch the 3D visualization.
-
-Once CARLA is up and running, execute the `balancer.py` script inside the carla-client container.
-
-The 3D visualization can be turned on by setting the `_rendering_carla` variable in the `runner.py` accordingly.
-
-### Python Wheel
-
 The easiest way to get the CARLA interface up and running is to build it as a Python package and install it.
 
 To build the package, run `python -m build` in the repository's root directory. Once completed, install the `*.whl` package found in the newly created `dist/` folder via `python -m pip install /path/to/the/package.whl`.
+
+Next, import the package:
+
+```
+from carla_simulation.balancer import Balancer
+```
+
+Now, an instance of the `Balancer` can be created:
+
+```
+b = Balancer(
+    directory = '/tmp/scenarios',
+    jobs = 1,
+    visualization = True
+)
+```
+
+Here, the directory containing the scenarios to be executed must be specified. The `jobs` variable can be used set the degree of parallelization. It is optional an set to `1` by default. The `visualization` can be set to `True` in case a 3D rendering of the scenario execution shall be shown. It is off by default, as the visualization severly impacts the framework's performance.
+
+The balancer's infrastructure can be started as follows:
+
+```
+b.start()
+```
+
+This can take some time, especially if the necessary Docker images are not yet available and need to be built first. Next, a server and a client container will be started for each job specified in the balancer's constructor.
+
+Now, the scenarios can be run:
+
+```
+evaluation = b.run()
+```
+
+The `run()` function will execute all scenarios in the directory specified in the balancer's constructor and return a list of evaluation metrics - a set of metrics for each scenario.
+
+Finally, the balancer's Docker infrastructure can be stopped and removed via its `stop()` function:
+
+```
+b.stop()
+```
 
 ### Visual Studio Code
 
@@ -45,15 +90,19 @@ If you use [Visual Studio Code](https://code.visualstudio.com/), the following l
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "CARLA",
+            "name": "Start",
             "type": "python",
             "request": "launch",
-            "program": "balancer.py",
+            "program": "test.py",
             "console": "integratedTerminal",
+            "justMyCode": false,
             "env": {
-                "CARLA_ROOT": "/opt/CARLA",
-                "PYTHONPATH": "/opt/CARLA/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:/opt/CARLA/PythonAPI/carla/agents:/opt/CARLA/PythonAPI/carla:/opt/scenario_runner",
-                "SCENARIO_RUNNER_ROOT": "/opt/scenario_runner"
+                "ROSCO_PATH": "/opt/ROSCo",
+                "SHARE_PATH": "/tmp/FMUs",
+                "CARLA_PATH": "/opt/CARLA/Simulator",
+                "SCENARIORUNNER_PATH": "/opt/CARLA/ScenarioRunner",
+                "OPENSBT_CORE_PATH": "/opt/OpenSBT/Core",
+                "OPENSBT_RUNNER_PATH": "/opt/OpenSBT/Runner",
             }
         }
     ]

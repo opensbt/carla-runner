@@ -209,7 +209,7 @@ class Infrastructure:
             cmd = '/bin/bash -c "{}"'.format(
                 " && ".join([
                     "python3.8 -m build",
-                    "pip install /opt/OpenSBT/Runner/dist/*.whl",
+                    "pip install --force-reinstall /opt/OpenSBT/Runner/dist/*.whl",
                 ])
             ),
             workdir = '/opt/OpenSBT/Runner'

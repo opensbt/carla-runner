@@ -38,13 +38,25 @@ class Balancer:
         clients = self._infrastructure.get_clients()
 
         for server in servers:
-            client = carla.Client(
-                self._infrastructure.get_address(server),
-                2000
-            )
+            print(f"Connecting to {server.name}...", end = '')
+            client = None
+            while True:
+                try:
+                    client = carla.Client(
+                        self._infrastructure.get_address(server),
+                        2000
+                    )
+                    version = client.get_server_version()
+                    print(f" Server Version: {version}.", end="")
+                    break
+                except Exception:
+                    print(f".", end='')
+            client.set_timeout(20.0)
+            print(f" Loading Map ... ", end = '')
             server_map = client.get_world().get_map().name.split('/')[-1]
             if server_map != map_name:
                 client.load_world(map_name)
+            print("Done")
 
         scenarios = mp.JoinableQueue()
         with os.scandir(self._infrastructure.scenarios) as entries:

@@ -32,6 +32,21 @@ Make sure that the following environment variables are set correctly:
     * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git
 * In case the [FMI](https://fmi-standard.org/)-based agent shall be used, the `SHARE_PATH` must point to the directory containing the Functional Mock-up Units (FMUs).
 
+Afterwards modify the file `venv/bin/activate` to include the following lines:
+(Assuming this project is in the folder ~/projects/ff1_carla, otherwise modify accordingly)
+```bash
+# Carla path
+FF1_CARLA=~/projects/ff1_carla
+
+export ROSCO_PATH=$FF1_CARLA/rosco
+export OPENSBT_CORE_PATH=$FF1_CARLA/opensbt-core
+export OPENSBT_RUNNER_PATH=$FF1_CARLA/carla-runner
+export CARLA_PATH=$FF1_CARLA/carla
+export SCENARIORUNNER_PATH=$FF1_CARLA/scenario_runner
+
+export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:${CARLA_ROOT}/PythonAPI/carla:${SCENARIO_RUNNER_ROOT}
+```
+
 ### Docker
 
 Instructions to install Docker are available [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository). The NVIDIA Container Toolkit can be installed as described [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installation-guide).

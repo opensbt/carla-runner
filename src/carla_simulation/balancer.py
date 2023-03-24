@@ -70,6 +70,7 @@ class Balancer:
                 ).start()
 
             scenarios.join()
+            scenarios.close()
 
             stop_time = time.time()
 

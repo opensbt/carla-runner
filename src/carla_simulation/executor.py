@@ -72,12 +72,12 @@ class Executor:
         recordings = recorder.get_recordings()
 
         for recording in recordings:
+            evaluation = evaluator.evaluate(
+                simulator,
+                recording
+            )
             path = '{}.json'.format(os.path.splitext(recording)[0])
             with open(path, 'w') as file:
-                evaluation = evaluator.evaluate(
-                    simulator,
-                    recording
-                )
                 file.write(json.dumps(evaluation))
             os.remove(recording)
 

@@ -48,7 +48,7 @@ class Scenario:
                 )
             )
 
-        controller = agent(simulator)
+        controller = agent(simulator, vehicles[0])
 
         scenario = OpenScenario(
             world,

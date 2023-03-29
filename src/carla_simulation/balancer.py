@@ -52,7 +52,7 @@ class Balancer:
                 except Exception:
                     print(f".", end='')
             client.set_timeout(20.0)
-            print(f" Loading Map ... ", end = '')
+            print(f" Loading Map... ", end = '')
             server_map = client.get_world().get_map().name.split('/')[-1]
             if server_map != map_name:
                 client.load_world(map_name)

@@ -23,8 +23,9 @@ class FMIAgent(AutonomousAgent):
     _previous_speed = [0.5, 0.5, 0.5]
     _ego = None
 
-    def __init__(self, simulator):
+    def __init__(self, simulator, ego_vehicle: carla.Vehicle):
         super().__init__("")
+        self.ego_vehicle = ego_vehicle
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
 
@@ -79,6 +80,31 @@ class FMIAgent(AutonomousAgent):
 
         # VelocityIn
         signals.floatSignals.append(FloatSignal("VelocityIn", 0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0]))
+
+        # LaneDetection
+        # signals.floatSignals.append(FloatSignal("LD_server_connected", 1.0))
+        # signals.floatSignals.append(FloatSignal("LD_present_right", 1.0))
+        # signals.floatSignals.append(FloatSignal("LD_present_left", 1.0))
+
+        waypoint: carla.Waypoint = CarlaDataProvider.get_world().get_map().get_waypoint(
+            self.ego_vehicle.get_location(), project_to_road=True)
+
+        normal_vector_right: carla.Vector3D = waypoint.transform.get_right_vector()
+        base_point_plane = waypoint.transform.location
+
+        vector_from_car_to_plane: carla.Vector3D = self.ego_vehicle.get_location() - base_point_plane
+        signed_distance = vector_from_car_to_plane.dot(normal_vector_right)
+        # Negative -> left
+        # Positive -> right
+        distance_lane_from_middle = 2
+        distance_left = distance_lane_from_middle + signed_distance
+        distance_right = distance_lane_from_middle - signed_distance
+
+        print(f"Lane distances: left: {distance_left} right: {distance_right}")
+
+        signals.floatSignals.append(FloatSignal("LD_Distance_Right", distance_right))
+        signals.floatSignals.append(FloatSignal("LD_Distance_Left", distance_left))
+
 
         resp = self._do_step_service(signals, rospy.get_rostime())
 

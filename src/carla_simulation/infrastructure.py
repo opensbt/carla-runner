@@ -162,7 +162,7 @@ class Infrastructure:
                         DISPLAY = os.environ['DISPLAY']
                     ),
                     'PYTHONPATH={}'.format(':'.join([
-                        '/opt/OpenSBT/Runner',
+                        '/opt/OpenSBT/Runner/src',
                         '/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg',
                         '/opt/CARLA/Simulator/PythonAPI/carla/agents',
                         '/opt/CARLA/Simulator/PythonAPI/carla',
@@ -224,6 +224,7 @@ class Infrastructure:
                     "SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL": True
                 }
             )
+            """
             print("Installing OpenSBT wheel... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
@@ -234,6 +235,7 @@ class Infrastructure:
                 ),
                 workdir = '/opt/OpenSBT/Runner'
             )
+            """
             print("Building ROS Workspace... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(

@@ -61,7 +61,9 @@ class Scenario:
             Path(self._xosc.path).stem
         )
 
-        manager = ScenarioManager()
+        manager = ScenarioManager(
+            timeout = 60.0
+        )
         manager.load_scenario(scenario, controller)
         client.start_recorder(
             recording,

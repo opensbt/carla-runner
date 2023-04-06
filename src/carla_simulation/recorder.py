@@ -13,6 +13,7 @@ class Recorder:
         self.recordings = list()
         if not os.path.isdir(directory):
             os.mkdir(directory)
+        os.chmod(directory, 0o777)
 
     def add_recording(self, name):
         recording =  "{}/{}.log".format(

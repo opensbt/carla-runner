@@ -4,88 +4,58 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import os
-
-from carla_simulation.simulator import Simulator
-from carla_simulation.scenario import Scenario
-from carla_simulation.recorder import Recorder
+import json
 
 
 class Runner:
 
-    _host_carla = None
-    _port_carla = 2000
-    _timeout_carla = 10
-    _rendering_carla = False
-    _resolution_carla = 0.1
+    _infrastructure = None
 
-    _recording_dir = '/tmp/recordings'
-    _metrics_dir = 'metrics'
+    _server = None
+    _client = None
 
-    _agent_class = None
-    _metric_class = None
+    _agent_name = None
+    _metric_name = None
 
-    def __init__(self, host, agent, metric, rendering=False):
-        self._host_carla = host
-        self._agent_class = agent
-        self._metric_class = metric
-        self._rendering_carla = rendering
+    def __init__(self, infrastructure, server, client, agent, metric):
+        self._infrastructure = infrastructure
+        self._server = server
+        self._client = client
+        self._agent_name = agent
+        self._metric_name = metric
 
-    def run(self, directory, queue, evaluations):
+    def run(self, queue, evaluations):
         while not queue.empty():
             pattern = queue.get()
 
-            simulator = self.get_simulator(
-                self._host_carla,
-                self._port_carla,
-                self._timeout_carla,
-                self._rendering_carla,
-                self._resolution_carla
+            configuration = " ".join([
+                "--host {}".format(self._infrastructure.get_address(self._server)),
+                "--recordings {}".format(self._infrastructure.RECORDING_DIR),
+                "--scenarios {}".format(self._infrastructure.SCENARIO_DIR),
+                "--pattern {}".format(pattern),
+                "--agent {}".format(self._agent_name),
+                "--metric {}".format(self._metric_name)
+            ])
+            if (self._infrastructure.visualization):
+                configuration = "{} --visualize".format(configuration)
+
+            self._client.exec_run(
+                cmd = '/bin/bash -c "{}"'.format(
+                    " && ".join([
+                        "source /opt/workspace/devel/setup.bash",
+                        "python3.8 executor.py {}".format(configuration),
+                    ])
+                ),
+                workdir = '/opt/OpenSBT/Runner/src/carla_simulation/'
             )
-            scenarios = self.get_scenarios(directory, pattern)
-            recorder = self.get_recorder(self._recording_dir)
-            evaluator = self.get_evaluator()
-            agent = self.get_agent()
 
-            for scenario in scenarios:
-                scenario.simulate(simulator, agent, recorder)
-
-            recordings = recorder.get_recordings()
-
-            for recording in recordings:
-                evaluations.append(
-                    evaluator.evaluate(
-                        simulator,
-                        recording
-                    )
-                )
-                os.remove(recording)
+            pattern = pattern.replace('xosc', 'json')
+            with os.scandir(self._infrastructure.recordings) as entries:
+                for entry in entries:
+                    if entry.name.endswith(pattern) and entry.is_file():
+                        with open(entry, 'r') as file:
+                            obj = json.loads(file.read())
+                            evaluations.append(obj)
+                        os.remove(entry)
 
             queue.task_done()
-
-    def get_simulator(self, host, port, timeout, rendering = True, resolution = 0.1):
-        return Simulator(
-            host = host,
-            port = port,
-            timeout = timeout,
-            rendering = rendering,
-            resolution = resolution
-        )
-
-    def get_scenarios(self, directory, pattern):
-        scenarios = None
-        with os.scandir(directory) as entries:
-            scenarios = [
-                Scenario(entry)
-                    for entry in entries
-                        if entry.name.endswith(pattern) and entry.is_file()
-            ]
-        return scenarios
-
-    def get_evaluator(self):
-        return self._metric_class()
-
-    def get_agent(self):
-        return self._agent_class
-
-    def get_recorder(self, directory):
-        return Recorder(directory)

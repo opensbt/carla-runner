@@ -52,6 +52,13 @@ class Balancer:
                 if entry.name.endswith('.xosc') and entry.is_file():
                     scenarios.put(entry.name)
 
+        debug_runner = Runner(self._infrastructure,
+                    server,
+                    client,
+                    agent_name,
+                    metric_name
+                )
+        #debug_runner.run(scenarios,evaluations)
         with mp.Manager() as manager:
             start_time = time.time()
 

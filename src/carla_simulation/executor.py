@@ -65,6 +65,9 @@ class Executor:
         recorder = self.get_recorder(self._recording_dir)
         evaluator = self.get_evaluator()
         agent = self.get_agent()
+        
+        for i in range(0, 20):
+         print("Hallo from the other side") 
 
         for scenario in scenarios:
             scenario.simulate(simulator, agent, recorder)

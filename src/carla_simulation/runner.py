@@ -25,8 +25,10 @@ class Runner:
         self._metric_name = metric
 
     def run(self, queue, evaluations):
+        print("hallo")
         while not queue.empty():
             pattern = queue.get()
+            print("hallo2")
 
             configuration = " ".join([
                 "--host {}".format(self._infrastructure.get_address(self._server)),
@@ -36,8 +38,11 @@ class Runner:
                 "--agent {}".format(self._agent_name),
                 "--metric {}".format(self._metric_name)
             ])
+            print("hallo3")
+            
             if (self._infrastructure.visualization):
                 configuration = "{} --visualize".format(configuration)
+            print("hallo4")
 
             self._client.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
@@ -48,7 +53,10 @@ class Runner:
                 ),
                 workdir = '/opt/OpenSBT/Runner/src/carla_simulation/'
             )
-
+            print("hallo4.5")
+            #for data in stream:
+            #    print(data.decode(), end=' ')
+            print("hallo5")
             pattern = pattern.replace('xosc', 'json')
             with os.scandir(self._infrastructure.recordings) as entries:
                 for entry in entries:

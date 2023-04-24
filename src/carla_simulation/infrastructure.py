@@ -4,15 +4,18 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import os
+from typing import Callable
+
 import docker
+from docker.models.containers import Container
 import subprocess
+
 
 import carla_simulation
 
 from time import sleep
 
 import importlib.resources as pkg_resources
-
 
 class Infrastructure:
 
@@ -46,17 +49,59 @@ class Infrastructure:
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
         os.makedirs(self.recordings, exist_ok=True)
+        print("Getting images... ", end="")
+        # Ensure server image is pulled
+        print(" Pulling...", end="")
+        self.client.images.pull(self.SERVER_IMAGE)
 
+        # Ensure client image is build
+        print(" Building... ", end="")
+        with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
+            path = str(file.resolve().parents[0])
+            self.client.images.build(
+                tag = self.CLIENT_IMAGE,
+                path = path,
+            )
+
+        print(" Creating containers... ")
         for job in range(self.jobs):
             server = self.create_server(
-                id = job
+                id=job
             )
             self.servers.append(server)
 
             client = self.create_client(
-                id = job
+                id=job
             )
             self.clients.append(client)
+
+        print("Starting Containers ... ", end="")
+        for client in self.clients:
+            client.start()
+
+        for server in self.servers:
+            server.start()
+
+        for client in self.clients:
+            while not self.get_address(client):
+                client.reload()
+                sleep(1)
+            client.exec_run(
+                cmd='/bin/bash -c "{}"'.format(
+                    " && ".join([
+                        "source devel/setup.bash",
+                        "roslaunch rosco rosco.launch"
+                    ])
+                ),
+                workdir='/opt/workspace',
+                detach=True
+            )
+        for server in self.servers:
+            while not self.get_address(server):
+                server.reload()
+                sleep(1)
+
+        print("All up")
 
     def get_servers(self):
         return self.servers
@@ -77,22 +122,25 @@ class Infrastructure:
                     print(f"Container {container.name} does no longer exist")
             containers.clear()
 
-    def create_server(self, id = None):
+    def create_container_if_not_exist(self, container_name: str, container_factory: Callable[[], Container]) -> Container:
+        container = None
+        try:
+            container = self.client.containers.get(container_name)
+            print(f"Found container {container_name}. Reusing.")
+
+        except docker.errors.NotFound:
+            container = container_factory()
+
+        return container
+
+    def create_server(self, id=None) -> Container:
         server_name = self.SERVER_PREFIX
         if id is not None:
             server_name += '-{}'.format(id)
 
-        self.client.images.pull(self.SERVER_IMAGE)
-
-        container = None
-        try:
-            container = self.client.containers.get(server_name)
-            print(f"Found server container {server_name}. Reusing.")
-            container.start()
-
-        except docker.errors.NotFound:
+        def create_server_container() -> Container:
             print(f"Creating server container {server_name}")
-            container = self.client.containers.run(
+            return self.client.containers.run(
                 self.SERVER_IMAGE,
                 name = server_name,
                 detach = True,
@@ -127,31 +175,13 @@ class Infrastructure:
                     '-quality-level=Low',
                 ]
             )
-
-        while not self.get_address(container):
-            container.reload()
-            sleep(1)
-
-        return container
-
+        return self.create_container_if_not_exist(server_name, create_server_container)
     def create_client(self, id = None):
         client_name = self.CLIENT_PREFIX
         if id is not None:
             client_name += '-{}'.format(id)
 
-        with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
-            path = str(file.resolve().parents[0])
-            self.client.images.build(
-                tag = self.CLIENT_IMAGE,
-                path = path,
-            )
-        container = None
-        try:
-            container = self.client.containers.get(client_name)
-            print(f"Found client container {client_name}. Reusing... ", end="")
-            container.start()
-
-        except docker.errors.NotFound:
+        def create_client_container() -> Container:
             print(f"Creating client container {client_name}. ", end='')
             container = self.client.containers.run(
                 self.CLIENT_IMAGE,
@@ -249,19 +279,8 @@ class Infrastructure:
                 workdir = '/opt/workspace'
             )
 
-        print("Launch rosco!")
-        container.exec_run(
-            cmd = '/bin/bash -c "{}"'.format(
-                " && ".join([
-                    "source devel/setup.bash",
-                    "roslaunch rosco rosco.launch"
-                ])
-            ),
-            workdir = '/opt/workspace',
-            detach = True
-        )
-
-        return container
+            return container
+        return self.create_container_if_not_exist(client_name, create_client_container)
 
     def get_address(self, container):
         address = container.attrs[

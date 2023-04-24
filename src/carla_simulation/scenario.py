@@ -26,6 +26,12 @@ class Scenario:
         CarlaDataProvider.set_client(client)
         CarlaDataProvider.set_world(world)
 
+        actor_list = CarlaDataProvider.get_world().get_actors()
+        if actor_list:
+            print(f"Destroying {len(actor_list)} actors")
+            for actor in actor_list:
+                actor.destroy()
+
         config = OpenScenarioConfiguration(
             self._xosc,
             client,
@@ -48,6 +54,7 @@ class Scenario:
                 )
             )
 
+        # Assumes there is only one ego actor, as only one agent is created
         controller = agent(simulator, vehicles[0])
 
         scenario = OpenScenario(

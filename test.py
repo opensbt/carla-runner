@@ -4,9 +4,10 @@ import traceback
 from carla_simulation.balancer import Balancer
 
 b = Balancer(
-    directory = '/home/groh/projects/ff1_carla/scenarios2',
-    jobs = 1,
-    visualization = True
+    directory='/tmp/scenarios',
+    jobs=1,
+    visualization=True,
+    keep_carla_servers=True
 )
 try:
     b.start()

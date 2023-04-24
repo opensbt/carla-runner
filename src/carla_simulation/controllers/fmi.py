@@ -19,7 +19,6 @@ class FMIAgent(AutonomousAgent):
     _route_assigned = False
     _visual = None
     _do_step_service = None
-    _speed = None
     _previous_speed = [0.5, 0.5, 0.5]
     _ego = None
 
@@ -82,25 +81,22 @@ class FMIAgent(AutonomousAgent):
         signals.floatSignals.append(FloatSignal("VelocityIn", 0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0]))
 
         # LaneDetection
-        # signals.floatSignals.append(FloatSignal("LD_server_connected", 1.0))
-        # signals.floatSignals.append(FloatSignal("LD_present_right", 1.0))
-        # signals.floatSignals.append(FloatSignal("LD_present_left", 1.0))
-
         waypoint: carla.Waypoint = CarlaDataProvider.get_world().get_map().get_waypoint(
             self.ego_vehicle.get_location(), project_to_road=True)
 
+        # Create a normal vector going to the right from the view of the waypoint, creating a plane which splits
+        # the space into left and right from the view of the waypoint
         normal_vector_right: carla.Vector3D = waypoint.transform.get_right_vector()
         base_point_plane = waypoint.transform.location
 
+        # We then calculate the signed distance of the car to the plane, to know if we are left or right of the plane
         vector_from_car_to_plane: carla.Vector3D = self.ego_vehicle.get_location() - base_point_plane
         signed_distance = vector_from_car_to_plane.dot(normal_vector_right)
         # Negative -> left
         # Positive -> right
-        distance_lane_from_middle = 2
+        distance_lane_from_middle = waypoint.lane_width / 2.0
         distance_left = distance_lane_from_middle + signed_distance
         distance_right = distance_lane_from_middle - signed_distance
-
-        # print(f"Lane distances: left: {distance_left} right: {distance_right}")
 
         # Add signals for correct lane detection function
         signals.floatSignals.append(FloatSignal("LD_Distance_Right", distance_right))
@@ -113,53 +109,50 @@ class FMIAgent(AutonomousAgent):
         resp = self._do_step_service(signals, rospy.get_rostime())
 
         # Search for steering and motor value in the signals
-        steering = None
+        steering_value = None
+        motor_value = None
         for float_signal in resp.result.floatSignals:
             if float_signal.name == 'MotorValue':
-                self._speed = float_signal.value
+                motor_value = float_signal.value
             elif float_signal.name == "SteeringValue":
-                steering = float_signal.value
+                steering_value = float_signal.value
 
-        if not steering:
+        if not steering_value:
             print("SteeringValue not found. Assuming no steering")
             steering = 6000.0
 
+        if not motor_value:
+            print("MotorValue not found. Assuming no zero")
+            steering = 0.0
+
         # Converting steering to -1.0 to 1.0
         # 6000 is middle, and maxiumum deviation is 1800 to either side
-        steering -= 6000.0
-        steering /= 1800.0
+        steering = (steering_value - 6000.0)/1800.0
 
-        if self._speed <= 0.2 and (self._previous_speed[0] > self._speed or
-                                   self._previous_speed[1] > self._speed or self._previous_speed[2] > self._speed):
-            self._previous_speed.pop()
-            self._previous_speed.insert(0, self._speed)
-            return carla.VehicleControl(throttle=0.0,
-                                        steer=steering,
-                                        brake=1.0,
-                                        hand_brake=False,
-                                        reverse=False,
-                                        manual_gear_shift=False,
-                                        gear=1)
-        elif self._previous_speed[0] > self._speed or self._previous_speed[1] > self._speed or self._previous_speed[2] > self._speed:
-            self._previous_speed.pop()
-            self._previous_speed.insert(0, self._speed)
-            return carla.VehicleControl(throttle=0.0,
-                                        steer=steering,
-                                        brake=0.5,
-                                        hand_brake=False,
-                                        reverse=False,
-                                        manual_gear_shift=False,
-                                        gear=1)
+        # print(f"Lane distances: left: {distance_left} right: {distance_right}, steering: {steering}")
+
+        throttle = 0.0
+        brake = 0.0
+        if motor_value <= 0.2 and (self._previous_speed[0] > motor_value or
+                                   self._previous_speed[1] > motor_value or self._previous_speed[2] > motor_value):
+            throttle = 0.0
+            brake = 1.0
+        elif self._previous_speed[0] > motor_value or self._previous_speed[1] > motor_value or self._previous_speed[2] > motor_value:
+            throttle = 0.0
+            brake = 0.5
+        else:
+            throttle = motor_value
+            brake = 0.0
 
         self._previous_speed.pop()
-        self._previous_speed.insert(0, self._speed)
+        self._previous_speed.insert(0, motor_value)
 
-        if self._speed > 0.4:
-            self._speed = 0.4
+        if throttle > 0.4:
+            throttle = 0.4
 
-        return carla.VehicleControl(throttle=self._speed,
+        return carla.VehicleControl(throttle=throttle,
                                            steer=steering,
-                                           brake=0.0,
+                                           brake=brake,
                                            hand_brake=False,
                                            reverse=False,
                                            manual_gear_shift=False,

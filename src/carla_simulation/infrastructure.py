@@ -30,8 +30,9 @@ class Infrastructure:
         jobs = 1,
         scenarios = SCENARIO_DIR,
         recordings = RECORDING_DIR,
-        visualization = False
-    ):
+        visualization = False,
+        keep_carla_servers = False
+        ):
         self.jobs = jobs
         self.network = self.NETWORK
         self.scenarios = scenarios
@@ -40,6 +41,7 @@ class Infrastructure:
         self.clients = []
         self.servers = []
         self.visualization = visualization
+        self.keep_carla_servers = keep_carla_servers
 
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
@@ -66,6 +68,8 @@ class Infrastructure:
         containers = self.servers + self.clients
         if containers:
             for container in containers:
+                if "carla-server" in container.name and self.keep_carla_servers:
+                    continue
                 try:
                     print(f"Stopping container {container.name}")
                     container.stop()
@@ -162,7 +166,7 @@ class Infrastructure:
                         DISPLAY = os.environ['DISPLAY']
                     ),
                     'PYTHONPATH={}'.format(':'.join([
-                        '/opt/OpenSBT/Runner/src',
+                        # '/opt/OpenSBT/Runner/src',
                         '/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg',
                         '/opt/CARLA/Simulator/PythonAPI/carla/agents',
                         '/opt/CARLA/Simulator/PythonAPI/carla',
@@ -224,7 +228,6 @@ class Infrastructure:
                     "SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL": True
                 }
             )
-            """
             print("Installing OpenSBT wheel... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
@@ -235,7 +238,6 @@ class Infrastructure:
                 ),
                 workdir = '/opt/OpenSBT/Runner'
             )
-            """
             print("Building ROS Workspace... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(

@@ -16,11 +16,12 @@ class Balancer:
 
     _infrastructure = None
 
-    def __init__(self, directory, jobs = 1, visualization = False):
+    def __init__(self, directory, jobs = 1, visualization = False, keep_carla_servers=False):
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
-            visualization = visualization
+            visualization = visualization,
+            keep_carla_servers= keep_carla_servers
         )
 
     def start(self):
@@ -40,22 +41,41 @@ class Balancer:
         for server in servers:
             print(f"Connecting to {server.name}...", end = '')
             client = None
+            tries = 0
+            # Connect to carla server
             while True:
                 try:
+                    tries += 1
+                    # Create client in each try
                     client = carla.Client(
                         self._infrastructure.get_address(server),
                         2000
                     )
+                    # Check server version
                     version = client.get_server_version()
                     print(f" Server Version: {version}.", end="")
+                    # Successfully connected to server, leaving loop
                     break
-                except Exception:
+
+                except RuntimeError:
+                    # Catch exception and retry to a maximum of 5 times
                     print(f".", end='')
+                    if tries > 5:
+                        print("Giving up")
+                        raise RuntimeError("Cannot contact carla server, is it running?")
+
             client.set_timeout(20.0)
-            print(f" Loading Map... ", end = '')
             server_map = client.get_world().get_map().name.split('/')[-1]
+
+            # Check if map is already loaded
             if server_map != map_name:
+                print(f" Loading Map... ", end = '')
                 client.load_world(map_name)
+            else:
+                # Don't load the map, warning actors will persist.
+                # scenario.py will remove them, before loading new actors
+                print(f" Map present. ", end='')
+
             print("Done")
 
         scenarios = mp.JoinableQueue()

@@ -43,10 +43,10 @@ class Runner:
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
                         "source /opt/workspace/devel/setup.bash",
-                        "python3.8 carla_simulation/executor.py {}".format(configuration),
+                        "python3.8 executor.py {}".format(configuration),
                     ])
                 ),
-                workdir = '/opt/OpenSBT/Runner/src/',
+                workdir = '/opt/OpenSBT/Runner/src/carla_simulation',
                 stream=True
             )
 

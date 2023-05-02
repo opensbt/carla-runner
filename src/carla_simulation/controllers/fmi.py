@@ -16,8 +16,6 @@ from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.timer import GameTime
 
-from carla_simulation.fault_store import *
-
 
 class FMIAgent(AutonomousAgent):
 

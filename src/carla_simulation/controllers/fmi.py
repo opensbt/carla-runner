@@ -15,6 +15,7 @@ from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.timer import GameTime
+from yaml.loader import SafeLoader 
 
 
 class FMIAgent(AutonomousAgent):
@@ -69,10 +70,16 @@ class FMIAgent(AutonomousAgent):
         timestamp = GameTime.get_time()
         
         if timestamp > 3.0 and timestamp < 3.1:
+            with open('/opt/workspace/share/faults/omission_1.yaml') as f:
+                data = yaml.safe_load(f)
+                print(data['faultInjection'])
+                dict = data['faultInjection']
+            
             faultInjectionStructure = FaultInjectionStructure()
-            faultInjectionStructure.faultModel = 'omission'
-            faultInjectionStructure.signalNames = ["Task_Driver_Assistance.TargetVelocityDA"]
-            faultInjectionStructure.parameters = '{\"enum_id\": 0}'
+            #faultInjectionStructure = data['faultInjection']       
+            faultInjectionStructure.faultModel = dict.get("faultModel")
+            faultInjectionStructure.signalNames = dict.get('signalNames')
+            faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
             injected = self._activate_faultinjector_service(faultInjectionStructure)
             print("activated faultinjection")
             

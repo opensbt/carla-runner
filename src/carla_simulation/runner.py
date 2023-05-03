@@ -44,7 +44,7 @@ class Runner:
                 configuration = "{} --visualize".format(configuration)
             print("hallo4")
 
-            self._client.exec_run(
+            _, stream =self._client.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
                         "source /opt/workspace/devel/setup.bash",
@@ -54,8 +54,8 @@ class Runner:
                 workdir = '/opt/OpenSBT/Runner/src/carla_simulation/'
             )
             print("hallo4.5")
-            #for data in stream:
-            #    print(data.decode(), end=' ')
+            for data in stream:
+                print(data.decode(), end=' ')
             print("hallo5")
             pattern = pattern.replace('xosc', 'json')
             with os.scandir(self._infrastructure.recordings) as entries:

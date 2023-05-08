@@ -7,6 +7,7 @@ import os
 import sys
 import json
 import argparse
+import traceback
 
 from carla_simulation.simulator import Simulator
 from carla_simulation.scenario import Scenario
@@ -54,32 +55,40 @@ class Executor:
         self._rendering_carla = visualize
 
     def execute(self, pattern):
-        simulator = self.get_simulator(
-            self._host_carla,
-            self._port_carla,
-            self._timeout_carla,
-            self._rendering_carla,
-            self._resolution_carla
-        )
-        scenarios = self.get_scenarios(self._scenario_dir, pattern)
-        recorder = self.get_recorder(self._recording_dir)
-        evaluator = self.get_evaluator()
-        agent = self.get_agent()
-
-        for scenario in scenarios:
-            scenario.simulate(simulator, agent, recorder)
-
-        recordings = recorder.get_recordings()
-
-        for recording in recordings:
-            evaluation = evaluator.evaluate(
-                simulator,
-                recording
+        try:
+            simulator = self.get_simulator(
+                self._host_carla,
+                self._port_carla,
+                self._timeout_carla,
+                self._rendering_carla,
+                self._resolution_carla
             )
-            path = '{}.json'.format(os.path.splitext(recording)[0])
-            with open(path, 'w') as file:
-                file.write(json.dumps(evaluation))
-            os.remove(recording)
+            scenarios = self.get_scenarios(self._scenario_dir, pattern)
+            recorder = self.get_recorder(self._recording_dir)
+            evaluator = self.get_evaluator()
+            agent = self.get_agent()
+
+            for scenario in scenarios:
+                scenario.simulate(simulator, agent, recorder)
+
+            recordings = recorder.get_recordings()
+
+            for recording in recordings:
+                evaluation = evaluator.evaluate(
+                    simulator,
+                    recording
+                )
+                path = '{}.json'.format(os.path.splitext(recording)[0])
+                with open(path, 'w') as file:
+                    file.write(json.dumps(evaluation))
+                os.remove(recording)
+        except Exception as e:
+            print(traceback.format_exc())
+            print("[Executor] ERROR: Exception encountered, see above")
+            sys.stdout.flush()
+            os._exit(1)
+        else:
+            print("[Executor] SUCCESS: Completed all tasks")
 
     def get_simulator(self, host, port, timeout, rendering = True, resolution = 0.1):
         return Simulator(

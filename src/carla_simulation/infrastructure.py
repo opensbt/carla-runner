@@ -4,7 +4,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import os
-from typing import Callable
+from typing import Callable, List
 
 import docker
 from docker.models.containers import Container
@@ -41,8 +41,8 @@ class Infrastructure:
         self.scenarios = scenarios
         self.recordings = recordings
         self.client = docker.from_env()
-        self.clients = []
-        self.servers = []
+        self.clients: List[Container] = []
+        self.servers: List[Container] = []
         self.visualization = visualization
         self.keep_carla_servers = keep_carla_servers
 
@@ -83,19 +83,8 @@ class Infrastructure:
             server.start()
 
         for client in self.clients:
-            while not self.get_address(client):
-                client.reload()
-                sleep(1)
-            client.exec_run(
-                cmd='/bin/bash -c "{}"'.format(
-                    " && ".join([
-                        "source devel/setup.bash",
-                        "roslaunch rosco rosco.launch"
-                    ])
-                ),
-                workdir='/opt/workspace',
-                detach=True
-            )
+            self.start_client(client)
+
         for server in self.servers:
             while not self.get_address(server):
                 server.reload()
@@ -103,10 +92,25 @@ class Infrastructure:
 
         print("All up")
 
-    def get_servers(self):
+    def start_client(self, client: Container) -> None:
+        while not self.get_address(client):
+            client.reload()
+            sleep(1)
+        client.exec_run(
+            cmd='/bin/bash -c "{}"'.format(
+                " && ".join([
+                    "source devel/setup.bash",
+                    "roslaunch rosco rosco.launch"
+                ])
+            ),
+            workdir='/opt/workspace',
+            detach=True
+        )
+
+    def get_servers(self) -> List[Container]:
         return self.servers
 
-    def get_clients(self):
+    def get_clients(self) -> List[Container]:
         return self.clients
 
     def stop(self):

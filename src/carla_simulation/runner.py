@@ -28,8 +28,10 @@ class Runner:
 
     def run(self, queue, evaluations):
         print("hallo")
+        print("hallo")
         while not queue.empty():
             pattern = queue.get()
+            print("hallo2")
             print("hallo2")
 
             configuration = " ".join([
@@ -43,11 +45,14 @@ class Runner:
             ])
             print("hallo3")
             
+            print("hallo3")
+            
             if (self._infrastructure.visualization):
                 configuration = "{} --visualize".format(configuration)
             print("hallo4")
             print(configuration)
 
+            _, stream =self._client.exec_run(
             _, stream =self._client.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
@@ -58,6 +63,10 @@ class Runner:
                 workdir = '/opt/OpenSBT/Runner/src/carla_simulation/',
                 stream = True
             )
+            print("hallo4.5")
+            for data in stream:
+                print(data.decode(), end=' ')
+            print("hallo5")
             print("hallo4.5")
             for data in stream:
                 print(data.decode(), end=' ')

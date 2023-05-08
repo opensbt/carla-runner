@@ -7,6 +7,8 @@ import carla
 import rospy
 import os
 import yaml
+import os
+import yaml
 from numpy.linalg import norm
 
 from rosco.srv import *
@@ -51,7 +53,17 @@ class FMIAgent(AutonomousAgent):
         rospy.wait_for_service('master/doStepsUntil')
         self._do_step_service = rospy.ServiceProxy('master/doStepsUntil', DoStepsUntilService, persistent=True)
         print('initialized do step service')
+                
+        # Initialize ActivateFaultinjector Service
+        rospy.wait_for_service('master/activateFaultInjector')
+        self._activate_faultinjector_service = rospy.ServiceProxy('master/activateFaultInjector', ActivateFaultInjector, persistent=True)
+        print('initialized activate faultinjector service')
         
+        # Initialize DeactivateFaultinjector Service
+        rospy.wait_for_service('master/deactivateFaultInjector')
+        self._deactivate_faultinjector_service = rospy.ServiceProxy('master/deactivateFaultInjector', DeactivateFaultInjector, persistent=True)
+        print('initialized deactivate faultinjector service')
+   
         # Initialize ActivateFaultinjector Service
         rospy.wait_for_service('master/activateFaultInjector')
         self._activate_faultinjector_service = rospy.ServiceProxy('master/activateFaultInjector', ActivateFaultInjector, persistent=True)

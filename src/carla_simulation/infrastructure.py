@@ -66,7 +66,11 @@ class Infrastructure:
         containers = self.servers + self.clients
         if containers:
             for container in containers:
-                container.stop()
+                try:
+                    print(f"Stopping container {container.name}")
+                    container.stop()
+                except docker.errors.NotFound:
+                    print(f"Container {container.name} does no longer exist")
             containers.clear()
 
     def create_server(self, id = None):
@@ -76,41 +80,49 @@ class Infrastructure:
 
         self.client.images.pull(self.SERVER_IMAGE)
 
-        container = self.client.containers.run(
-            self.SERVER_IMAGE,
-            name = server_name,
-            detach = True,
-            privileged = True,
-            remove = True,
-            user = '1001:1001',
-            network_mode = self.network,
-            environment = [
-                'DISPLAY={}'.format(
-                    os.environ['DISPLAY']
-                )
-            ],
-            volumes = [
-                '{}:{}:ro'.format(
-                    self.scenarios,
-                    self.SCENARIO_DIR),
-                '{}:{}:rw'.format(
-                    self.recordings,
-                    self.RECORDING_DIR
-                ),
-            ],
-            device_requests = [
-                docker.types.DeviceRequest(
-                    count=-1,
-                    capabilities=[['gpu']]
-                )
-            ],
-            command = [
-                '/bin/bash',
-                './CarlaUE4.sh',
-                '-RenderOffScreen',
-                '-quality-level=Low',
-            ]
-        )
+        container = None
+        try:
+            container = self.client.containers.get(server_name)
+            print(f"Found server container {server_name}. Reusing.")
+            container.start()
+
+        except docker.errors.NotFound:
+            print(f"Creating server container {server_name}")
+            container = self.client.containers.run(
+                self.SERVER_IMAGE,
+                name = server_name,
+                detach = True,
+                privileged = True,
+                remove = False,
+                user = f"{os.getuid()}:{os.getgid()}",
+                network_mode = self.network,
+                environment = [
+                    'DISPLAY={}'.format(
+                        os.environ['DISPLAY']
+                    )
+                ],
+                volumes = [
+                    '{}:{}:ro'.format(
+                        self.scenarios,
+                        self.SCENARIO_DIR),
+                    '{}:{}:rw'.format(
+                        self.recordings,
+                        self.RECORDING_DIR
+                    ),
+                ],
+                device_requests = [
+                    docker.types.DeviceRequest(
+                        count=-1,
+                        capabilities=[['gpu']]
+                    )
+                ],
+                command = [
+                    '/bin/bash',
+                    './CarlaUE4.sh',
+                    '-RenderOffScreen',
+                    '-quality-level=Low',
+                ]
+            )
 
         while not self.get_address(container):
             container.reload()
@@ -129,66 +141,73 @@ class Infrastructure:
                 tag = self.CLIENT_IMAGE,
                 path = path,
             )
+        container = None
+        try:
+            container = self.client.containers.get(client_name)
+            print(f"Found client container {client_name}. Reusing... ", end="")
+            container.start()
 
-        container = self.client.containers.run(
-            self.CLIENT_IMAGE,
-            name = client_name,
-            detach = True,
-            privileged = True,
-            remove = True,
-            network_mode = self.network,
-            ipc_mode = 'host',
-            environment = [
-                'DISPLAY={DISPLAY}'.format(
-                    DISPLAY = os.environ['DISPLAY']
-                ),
-                'PYTHONPATH={}'.format(':'.join([
-                    '/opt/OpenSBT/Runner',
-                    '/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg',
-                    '/opt/CARLA/Simulator/PythonAPI/carla/agents',
-                    '/opt/CARLA/Simulator/PythonAPI/carla',
-                    '/opt/CARLA/Runner'
-                ])),
-                'CARLA_ROOT=/opt/CARLA/Simulator',
-                'SCENARIO_RUNNER_ROOT=/opt/CARLA/Runner',
-            ],
-            volumes = [
-                '/tmp/.X11-unix:/tmp/.X11-unix',
-                '/var/run/docker.sock:/var/run/docker.sock',
-                '{}:{}:ro'.format(
-                    self.scenarios,
-                    self.SCENARIO_DIR),
-                '{}:{}:rw'.format(
-                    self.recordings,
-                    self.RECORDING_DIR
-                ),
-                '{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
-                    ROSCO_PATH = os.environ['ROSCO_PATH']
-                ),
-                '{SHARE_PATH}:/opt/workspace/share:rw'.format(
-                    SHARE_PATH = os.environ['SHARE_PATH']
-                ),
-                '{CARLA_PATH}:/opt/CARLA/Simulator:ro'.format(
-                    CARLA_PATH = os.environ['CARLA_PATH']
-                ),
-                '{SCENARIORUNNER_PATH}:/opt/CARLA/Runner:ro'.format(
-                    SCENARIORUNNER_PATH = os.environ['SCENARIORUNNER_PATH']
-                ),
-                '{OPENSBT_CORE_PATH}:/opt/OpenSBT/Core:rw'.format(
-                    OPENSBT_CORE_PATH = os.environ['OPENSBT_CORE_PATH']
-                ),
-                '{OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw'.format(
-                    OPENSBT_RUNNER_PATH = os.environ['OPENSBT_RUNNER_PATH']
-                ),
-            ],
-            device_requests = [
-                docker.types.DeviceRequest(
-                    count=-1,
-                    capabilities=[['gpu']]
-                )
-            ],
-            command = 'sleep infinity'
-        )
+        except docker.errors.NotFound:
+            print(f"Creating client container {client_name}. ", end='')
+            container = self.client.containers.run(
+                self.CLIENT_IMAGE,
+                name = client_name,
+                detach = True,
+                privileged = True,
+                remove = False,
+                network_mode = self.network,
+                ipc_mode = 'host',
+                environment = [
+                    'DISPLAY={DISPLAY}'.format(
+                        DISPLAY = os.environ['DISPLAY']
+                    ),
+                    'PYTHONPATH={}'.format(':'.join([
+                        '/opt/OpenSBT/Runner/src',
+                        '/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg',
+                        '/opt/CARLA/Simulator/PythonAPI/carla/agents',
+                        '/opt/CARLA/Simulator/PythonAPI/carla',
+                        '/opt/CARLA/Runner'
+                    ])),
+                    'CARLA_ROOT=/opt/CARLA/Simulator',
+                    'SCENARIO_RUNNER_ROOT=/opt/CARLA/Runner',
+                ],
+                volumes = [
+                    '/tmp/.X11-unix:/tmp/.X11-unix',
+                    '/var/run/docker.sock:/var/run/docker.sock',
+                    '{}:{}:ro'.format(
+                        self.scenarios,
+                        self.SCENARIO_DIR),
+                    '{}:{}:rw'.format(
+                        self.recordings,
+                        self.RECORDING_DIR
+                    ),
+                    '{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
+                        ROSCO_PATH = os.environ['ROSCO_PATH']
+                    ),
+                    '{SHARE_PATH}:/opt/workspace/share:rw'.format(
+                        SHARE_PATH = os.environ['SHARE_PATH']
+                    ),
+                    '{CARLA_PATH}:/opt/CARLA/Simulator:ro'.format(
+                        CARLA_PATH = os.environ['CARLA_PATH']
+                    ),
+                    '{SCENARIORUNNER_PATH}:/opt/CARLA/Runner:ro'.format(
+                        SCENARIORUNNER_PATH = os.environ['SCENARIORUNNER_PATH']
+                    ),
+                    '{OPENSBT_CORE_PATH}:/opt/OpenSBT/Core:rw'.format(
+                        OPENSBT_CORE_PATH = os.environ['OPENSBT_CORE_PATH']
+                    ),
+                    '{OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw'.format(
+                        OPENSBT_RUNNER_PATH = os.environ['OPENSBT_RUNNER_PATH']
+                    ),
+                ],
+                device_requests = [
+                    docker.types.DeviceRequest(
+                        count=-1,
+                        capabilities=[['gpu']]
+                    )
+                ],
+                command = 'sleep infinity'
+            )
 
         while not self.get_address(container):
             container.reload()

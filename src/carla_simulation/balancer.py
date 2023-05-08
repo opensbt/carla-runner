@@ -15,13 +15,15 @@ from carla_simulation.runner import Runner
 class Balancer:
 
     _infrastructure = None
+    _fault = None
 
-    def __init__(self, directory, jobs = 1, visualization = False):
+    def __init__(self, directory, jobs = 1, visualization = False, fault = None):
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
             visualization = visualization
         )
+        self._fault = fault
 
     def start(self):
         self._infrastructure.start()
@@ -61,7 +63,8 @@ class Balancer:
                     server,
                     client,
                     agent_name,
-                    metric_name
+                    metric_name,
+                    self._fault
                 )
                 mp.Process(
                     target=runner.run,
@@ -70,6 +73,7 @@ class Balancer:
                 ).start()
 
             scenarios.join()
+            scenarios.close()
 
             stop_time = time.time()
 

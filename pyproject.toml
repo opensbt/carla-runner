@@ -22,4 +22,6 @@ dependencies = [
   "matplotlib==3.5.2",
   "docker==5.0.3",
   "carla==0.9.13",
+  "urllib3==1.26.11",
+  "requests==2.28.1"
 ]

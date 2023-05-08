@@ -6,7 +6,6 @@
 import os
 import json
 
-
 class Runner:
 
     _infrastructure = None
@@ -16,17 +15,22 @@ class Runner:
 
     _agent_name = None
     _metric_name = None
+    
+    _fault = None
 
-    def __init__(self, infrastructure, server, client, agent, metric):
+    def __init__(self, infrastructure, server, client, agent, metric, fault):
         self._infrastructure = infrastructure
         self._server = server
         self._client = client
         self._agent_name = agent
         self._metric_name = metric
+        self._fault = fault
 
     def run(self, queue, evaluations):
+        print("hallo")
         while not queue.empty():
             pattern = queue.get()
+            print("hallo2")
 
             configuration = " ".join([
                 "--host {}".format(self._infrastructure.get_address(self._server)),
@@ -34,21 +38,30 @@ class Runner:
                 "--scenarios {}".format(self._infrastructure.SCENARIO_DIR),
                 "--pattern {}".format(pattern),
                 "--agent {}".format(self._agent_name),
-                "--metric {}".format(self._metric_name)
+                "--metric {}".format(self._metric_name),
+                "--fault {}".format(self._fault)
             ])
+            print("hallo3")
+            
             if (self._infrastructure.visualization):
                 configuration = "{} --visualize".format(configuration)
+            print("hallo4")
+            print(configuration)
 
-            self._client.exec_run(
+            _, stream =self._client.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
                         "source /opt/workspace/devel/setup.bash",
                         "python3.8 executor.py {}".format(configuration),
                     ])
                 ),
-                workdir = '/opt/OpenSBT/Runner/src/carla_simulation/'
+                workdir = '/opt/OpenSBT/Runner/src/carla_simulation/',
+                stream = True
             )
-
+            print("hallo4.5")
+            for data in stream:
+                print(data.decode(), end=' ')
+            print("hallo5")
             pattern = pattern.replace('xosc', 'json')
             with os.scandir(self._infrastructure.recordings) as entries:
                 for entry in entries:

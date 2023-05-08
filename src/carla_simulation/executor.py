@@ -17,7 +17,6 @@ from carla_simulation.metrics.raw import RawData
 from carla_simulation.controllers.fmi import FMIAgent
 from carla_simulation.controllers.npc import NPCAgent
 
-
 class Executor:
 
     agents = {
@@ -41,8 +40,10 @@ class Executor:
 
     _recording_dir = None
     _scenario_dir = None
+    
+    _fault = None
 
-    def __init__(self, host, scenario_dir, recording_dir, agent, metric, visualize):
+    def __init__(self, host, scenario_dir, recording_dir, agent, metric, visualize, fault):
         self._host_carla = host
 
         self._recording_dir = recording_dir
@@ -52,6 +53,11 @@ class Executor:
         self._metric_class = self.metrics.get(metric)
 
         self._rendering_carla = visualize
+        self._fault = fault
+        print("Hello from the executor")
+        print(self._fault)
+        self.agents.get('FMIAdapter').setFault(fault)
+        
 
     def execute(self, pattern):
         simulator = self.get_simulator(
@@ -61,10 +67,16 @@ class Executor:
             self._rendering_carla,
             self._resolution_carla
         )
+        
         scenarios = self.get_scenarios(self._scenario_dir, pattern)
         recorder = self.get_recorder(self._recording_dir)
         evaluator = self.get_evaluator()
         agent = self.get_agent()
+        
+        for i in range(0, 20):
+         print("Hallo from the other side") 
+         print(self._fault)
+
 
         for scenario in scenarios:
             scenario.simulate(simulator, agent, recorder)
@@ -72,12 +84,12 @@ class Executor:
         recordings = recorder.get_recordings()
 
         for recording in recordings:
+            evaluation = evaluator.evaluate(
+                simulator,
+                recording
+            )
             path = '{}.json'.format(os.path.splitext(recording)[0])
             with open(path, 'w') as file:
-                evaluation = evaluator.evaluate(
-                    simulator,
-                    recording
-                )
                 file.write(json.dumps(evaluation))
             os.remove(recording)
 
@@ -132,9 +144,15 @@ def main():
     parser.add_argument(
         '--visualize', help='Pattern for selecting the scenarios.', required=False, action='store_true'
     )
+    parser.add_argument(
+        '--fault', help='Name of faultinjection.', required=False
+    )
     args = parser.parse_args()
 
-    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.visualize)
+
+    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.visualize,args.fault)
+    print("hello from executor main")
+    print(args.fault)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

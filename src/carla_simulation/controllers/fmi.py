@@ -5,6 +5,8 @@
 
 import carla
 import rospy
+import os
+import yaml
 from numpy.linalg import norm
 
 from rosco.srv import *
@@ -12,6 +14,9 @@ from rosco.msg import *
 from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
+from srunner.scenariomanager.timer import GameTime
+from yaml.loader import SafeLoader 
+
 
 class FMIAgent(AutonomousAgent):
 
@@ -19,9 +24,12 @@ class FMIAgent(AutonomousAgent):
     _route_assigned = False
     _visual = None
     _do_step_service = None
+    _activate_faultinjector_service = None
+    _deactivate_faultinjector_service = None
     _speed = None
     _previous_speed = [0.5, 0.5, 0.5]
     _ego = None
+    _fault = None
 
     def __init__(self, simulator):
         super().__init__("")
@@ -43,13 +51,47 @@ class FMIAgent(AutonomousAgent):
         rospy.wait_for_service('master/doStepsUntil')
         self._do_step_service = rospy.ServiceProxy('master/doStepsUntil', DoStepsUntilService, persistent=True)
         print('initialized do step service')
-
+        
+        # Initialize ActivateFaultinjector Service
+        rospy.wait_for_service('master/activateFaultInjector')
+        self._activate_faultinjector_service = rospy.ServiceProxy('master/activateFaultInjector', ActivateFaultInjector, persistent=True)
+        print('initialized activate faultinjector service')
+        
+        # Initialize DeactivateFaultinjector Service
+        rospy.wait_for_service('master/deactivateFaultInjector')
+        self._deactivate_faultinjector_service = rospy.ServiceProxy('master/deactivateFaultInjector', DeactivateFaultInjector, persistent=True)
+        print('initialized deactivate faultinjector service')
+   
+    def setFault(fault):
+        FMIAgent._fault = fault
+        
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
-
+        
         signals = SignalsMessage()
-
+        print(self._fault)
+        timestamp = GameTime.get_time()
+        
+        if timestamp > 3.0 and timestamp < 3.1:
+            with open('/opt/workspace/share/faults/omission_1.yaml') as f:
+                data = yaml.safe_load(f)
+                print(data['faultInjection'])
+                dict = data['faultInjection']
+            
+            faultInjectionStructure = FaultInjectionStructure()
+            #faultInjectionStructure = data['faultInjection']       
+            faultInjectionStructure.faultModel = dict.get("faultModel")
+            faultInjectionStructure.signalNames = dict.get('signalNames')
+            faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
+            injected = self._activate_faultinjector_service(faultInjectionStructure)
+            print("activated faultinjection")
+            
+        if timestamp > 9.0 and timestamp < 9.1:  
+            injected = self._deactivate_faultinjector_service()
+            print(injected.error)
+            print("deactivated faultinjection")  
+        
         # distance_to_front
         minDistance = 2.0
         for point in input_data['lidar'][1]:

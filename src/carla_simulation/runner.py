@@ -66,7 +66,7 @@ class Runner:
                     print(f"[Runner] Executor ran into an problem while in scenario {pattern}, agent {self._agent_name}")
                     print("[Runner] Trying to start the carla server")
                     self._server.start()
-                    time.sleep(5)
+                    self._infrastructure.configure_running_server(self._server)
 
                     # Continue, to run the scenario again
                     continue

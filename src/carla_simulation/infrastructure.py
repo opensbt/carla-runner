@@ -6,6 +6,7 @@
 import os
 from typing import Callable, List
 
+import carla
 import docker
 from docker.models.containers import Container
 import subprocess
@@ -28,6 +29,9 @@ class Infrastructure:
 
     RECORDING_DIR = '/tmp/recordings'
     SCENARIO_DIR = '/tmp/scenarios'
+
+    MAP_NAME = 'Town01'
+    MAXIMUM_CONNECT_TRIES = 3
 
     def __init__(self,
         jobs = 1,
@@ -83,16 +87,55 @@ class Infrastructure:
             server.start()
 
         for client in self.clients:
-            self.start_client(client)
+            self.configure_running_client(client)
 
         for server in self.servers:
-            while not self.get_address(server):
-                server.reload()
-                sleep(1)
+            self.configure_running_server(server)
 
-        print("All up")
+        print("[Infrastructure] All up")
 
-    def start_client(self, client: Container) -> None:
+    def configure_running_server(self, server: Container):
+        print(f"Connecting to {server.name}...", end='')
+        carla_client = None
+        tries = 0
+        # Connect to carla server
+        while carla_client is None:
+            try:
+                # Create client in each try
+                new_client = carla.Client(
+                    self.get_address(server),
+                    2000
+                )
+                # Check server version
+                version = carla_client.get_server_version()
+                # Successfully connected to server
+                print(f" Server Version: {version}.", end="")
+                carla_client = new_client
+
+            except RuntimeError:
+                # Catch exception and retry to a maximum of 5 times
+                print(f".", end='')
+
+                if tries >= self.MAXIMUM_CONNECT_TRIES:
+                    print("Giving up")
+                    raise RuntimeError("Cannot contact carla server, is it running?")
+            tries += 1
+
+        server_map = carla_client.get_world().get_map().name.split('/')[-1]
+
+        # Check if map is already loaded
+        if server_map != self.MAP_NAME:
+            print(f" Loading Map... ", end='')
+            carla_client.load_world(self.MAP_NAME)
+        else:
+            # Map is already present, so we are not reloading to save time.
+            # This means that actors from previous scenarios will stay on the map.
+            # However, scenario.py will remove them, before loading new actors
+            print(f" Map present. ", end='')
+
+        print("Done")
+
+    def configure_running_client(self, client: Container) -> None:
         while not self.get_address(client):
             client.reload()
             sleep(1)

@@ -53,7 +53,6 @@ class Runner:
             print(configuration)
 
             _, stream =self._client.exec_run(
-            _, stream =self._client.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
                         "source /opt/workspace/devel/setup.bash",

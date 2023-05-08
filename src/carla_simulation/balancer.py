@@ -58,7 +58,8 @@ class Balancer:
                     server,
                     client,
                     agent_name,
-                    metric_name
+                    metric_name,
+                    self._fault
                 )
         #debug_runner.run(scenarios,evaluations)
         with mp.Manager() as manager:

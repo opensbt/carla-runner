@@ -54,7 +54,7 @@ class Infrastructure:
         print(" Pulling...", end="")
         self.client.images.pull(self.SERVER_IMAGE)
 
-        # Ensure client image is build
+        # Ensure client image is built
         print(" Building... ", end="")
         with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
             path = str(file.resolve().parents[0])
@@ -75,7 +75,7 @@ class Infrastructure:
             )
             self.clients.append(client)
 
-        print("Starting Containers ... ", end="")
+        print("Starting containers ... ", end="")
         for client in self.clients:
             client.start()
 
@@ -113,7 +113,7 @@ class Infrastructure:
         containers = self.servers + self.clients
         if containers:
             for container in containers:
-                if "carla-server" in container.name and self.keep_carla_servers:
+                if container in self.servers and self.keep_carla_servers:
                     continue
                 try:
                     print(f"Stopping container {container.name}")

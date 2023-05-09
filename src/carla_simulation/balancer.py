@@ -15,6 +15,7 @@ from carla_simulation.runner import Runner
 class Balancer:
 
     _infrastructure = None
+    MAXIMUM_CONNECT_TRIES = 5
 
     def __init__(self, directory, jobs = 1, visualization = False, keep_carla_servers=False):
         self._infrastructure = Infrastructure(
@@ -40,40 +41,41 @@ class Balancer:
 
         for server in servers:
             print(f"Connecting to {server.name}...", end = '')
-            client = None
+            carla_client = None
             tries = 0
             # Connect to carla server
-            while True:
+            while carla_client is None:
                 try:
-                    tries += 1
                     # Create client in each try
-                    client = carla.Client(
+                    new_client = carla.Client(
                         self._infrastructure.get_address(server),
                         2000
                     )
                     # Check server version
-                    version = client.get_server_version()
+                    version = carla_client.get_server_version()
+                    # Successfully connected to server
                     print(f" Server Version: {version}.", end="")
-                    # Successfully connected to server, leaving loop
-                    break
+                    carla_client = new_client
 
                 except RuntimeError:
                     # Catch exception and retry to a maximum of 5 times
                     print(f".", end='')
-                    if tries > 5:
+
+                    if tries >= self.MAXIMUM_CONNECT_TRIES:
                         print("Giving up")
                         raise RuntimeError("Cannot contact carla server, is it running?")
+                tries += 1
 
-            client.set_timeout(20.0)
-            server_map = client.get_world().get_map().name.split('/')[-1]
+            server_map = carla_client.get_world().get_map().name.split('/')[-1]
 
             # Check if map is already loaded
             if server_map != map_name:
                 print(f" Loading Map... ", end = '')
-                client.load_world(map_name)
+                carla_client.load_world(map_name)
             else:
-                # Don't load the map, warning actors will persist.
-                # scenario.py will remove them, before loading new actors
+                # Map is already present, so we are not reloading to save time.
+                # This means that actors from previous scenarios will stay on the map.
+                # However, scenario.py will remove them, before loading new actors
                 print(f" Map present. ", end='')
 
             print("Done")

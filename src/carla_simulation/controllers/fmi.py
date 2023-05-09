@@ -122,25 +122,28 @@ class FMIAgent(AutonomousAgent):
             steering = 6000.0
 
         if not motor_value:
-            print("MotorValue not found. Assuming no zero")
-            steering = 0.0
+            print("MotorValue not found. Assuming no speed")
+            motor_value = 0.0
 
         # Converting steering to -1.0 to 1.0
         # 6000 is middle, and maxiumum deviation is 1800 to either side
         steering = (steering_value - 6000.0)/1800.0
 
-        # print(f"Lane distances: left: {distance_left} right: {distance_right}, steering: {steering}")
-
         throttle = 0.0
         brake = 0.0
-        if motor_value <= 0.2 and (self._previous_speed[0] > motor_value or
-                                   self._previous_speed[1] > motor_value or self._previous_speed[2] > motor_value):
-            throttle = 0.0
-            brake = 1.0
-        elif self._previous_speed[0] > motor_value or self._previous_speed[1] > motor_value or self._previous_speed[2] > motor_value:
-            throttle = 0.0
-            brake = 0.5
+
+        # Check if our speed reduced from any of the previous speeds
+        if any(speed > motor_value for speed in self._previous_speed):
+            if motor_value <= 0.2:
+                # Brake very hard because we want to be very slow
+                throttle = 0.0
+                brake = 1.0
+            else:
+                # Brake a little
+                throttle = 0.0
+                brake = 0.5
         else:
+            # Otherwise just set the throttle to the commanded speed
             throttle = motor_value
             brake = 0.0
 

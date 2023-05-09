@@ -5,7 +5,6 @@
 
 import os
 import json
-import time
 from docker.models.containers import Container
 
 from carla_simulation.infrastructure import Infrastructure
@@ -20,6 +19,8 @@ class Runner:
     _agent_name: str = None
     _metric_name = None
 
+    _maximum_scenario_restarts = 3
+
     def __init__(self, infrastructure, server: Container, client: Container, agent: str, metric):
         self._infrastructure = infrastructure
         self._server = server
@@ -31,7 +32,8 @@ class Runner:
         while not queue.empty():
             pattern = queue.get()
             success = False
-            for i in range(0, 2):
+            tries = 0
+            while not success:
                 print(f"[Runner] Running Scenario {pattern}, Attempt {i}")
                 configuration = " ".join([
                     "--host {}".format(self._infrastructure.get_address(self._server)),
@@ -67,6 +69,11 @@ class Runner:
                     print("[Runner] Trying to start the carla server")
                     self._server.start()
                     self._infrastructure.configure_running_server(self._server)
+
+                    tries += 1
+                    if tries > self._maximum_scenario_restarts:
+                        # Maximum tries exceeded, aborting
+                        break
 
                     # Continue, to run the scenario again
                     continue

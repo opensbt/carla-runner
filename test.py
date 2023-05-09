@@ -8,7 +8,7 @@ balancer = Balancer(
     directory='/tmp/scenarios',
     jobs=1,
     visualization=True,
-    keep_carla_servers=True
+    keep_carla_servers=False
 )
 try:
     balancer.start()

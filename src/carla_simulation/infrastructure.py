@@ -31,6 +31,7 @@ class Infrastructure:
     SCENARIO_DIR = '/tmp/scenarios'
 
     MAP_NAME = 'Town01'
+    CARLA_TIMOUT = 20
     MAXIMUM_CONNECT_TRIES = 3
 
     def __init__(self,
@@ -96,6 +97,9 @@ class Infrastructure:
 
     def configure_running_server(self, server: Container):
         print(f"Connecting to {server.name}...", end='')
+        while not self.get_address(server):
+            server.reload()
+            sleep(1)
         carla_client = None
         tries = 0
         # Connect to carla server
@@ -107,7 +111,7 @@ class Infrastructure:
                     2000
                 )
                 # Check server version
-                version = carla_client.get_server_version()
+                version = new_client.get_server_version()
                 # Successfully connected to server
                 print(f" Server Version: {version}.", end="")
                 carla_client = new_client
@@ -121,6 +125,8 @@ class Infrastructure:
                     raise RuntimeError("Cannot contact carla server, is it running?")
             tries += 1
 
+        # Set timout larger to avoid timout errors when the carla server is just slow to respond
+        carla_client.set_timeout(self.CARLA_TIMOUT)
         server_map = carla_client.get_world().get_map().name.split('/')[-1]
 
         # Check if map is already loaded

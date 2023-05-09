@@ -32,9 +32,9 @@ class Runner:
         while not queue.empty():
             pattern = queue.get()
             success = False
-            tries = 0
+            attempts = 0
             while not success:
-                print(f"[Runner] Running Scenario {pattern}, Attempt {i}")
+                print(f"[Runner] Running Scenario {pattern}, Attempt {attempts}")
                 configuration = " ".join([
                     "--host {}".format(self._infrastructure.get_address(self._server)),
                     "--recordings {}".format(self._infrastructure.RECORDING_DIR),
@@ -70,8 +70,8 @@ class Runner:
                     self._server.start()
                     self._infrastructure.configure_running_server(self._server)
 
-                    tries += 1
-                    if tries > self._maximum_scenario_restarts:
+                    attempts += 1
+                    if attempts > self._maximum_scenario_restarts:
                         # Maximum tries exceeded, aborting
                         break
 

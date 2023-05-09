@@ -3,18 +3,19 @@ import traceback
 
 from carla_simulation.balancer import Balancer
 
-b = Balancer(
+balancer = Balancer(
+    # If the path changes, the container needs to be rebuilt. Delete all client containers for this to happen
     directory='/tmp/scenarios',
     jobs=1,
     visualization=True,
     keep_carla_servers=True
 )
 try:
-    b.start()
+    balancer.start()
 
-    e = b.run()
-    print(e)
-except Exception as e:
+    evaluations = balancer.run()
+    print(evaluations)
+except Exception as exception:
     logging.error(traceback.format_exc())
 finally:
-    b.stop()
+    balancer.stop()

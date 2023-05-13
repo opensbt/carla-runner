@@ -32,6 +32,23 @@ Make sure that the following environment variables are set correctly:
     * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git
 * In case the [FMI](https://fmi-standard.org/)-based agent shall be used, the `SHARE_PATH` must point to the directory containing the Functional Mock-up Units (FMUs).
 
+If you are using an IDE, this can usually be done through some run configuration options.
+
+As example when cloning the  OpenBST Runner into `~/projects/carla-runner`, and then cloning all other repos inside the runner,
+the following bash commands can be used to set up the environment for launching the software via the bash terminal.
+```bash
+OPENBST_RUNNER=~/projects/carla-runner
+
+export ROSCO_PATH=$OPENBST_RUNNER/rosco
+export OPENSBT_CORE_PATH=$OPENBST_RUNNER/opensbt-core
+export OPENSBT_RUNNER_PATH=$OPENBST_RUNNER/carla-runner
+export CARLA_PATH=$OPENBST_RUNNER/carla
+export SCENARIORUNNER_PATH=$OPENBST_RUNNER/scenario_runner
+
+export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:${CARLA_ROOT}/PythonAPI/carla:${SCENARIO_RUNNER_ROOT}
+```
+Now it is possible to start the runner via the commands `~/projects/carla-runner/ && python test.py`
+
 ### Docker
 
 Instructions to install Docker are available [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository). The NVIDIA Container Toolkit can be installed as described [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installation-guide).

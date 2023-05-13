@@ -33,16 +33,16 @@ Make sure that the following environment variables are set correctly:
 
 If you are using an IDE, this can usually be done through some run configuration options.
 
-As example when cloning the  OpenBST Runner into `~/projects/carla-runner`, and then cloning all other repos inside the runner,
+As example when cloning the  OpenSBT Runner into `~/projects/carla-runner`, and then cloning all other repos inside the runner,
 the following bash commands can be used to set up the environment for launching the software via the bash terminal.
 ```bash
-OPENBST_RUNNER=~/projects/carla-runner
+OPENSBT_RUNNER=~/projects/carla-runner
 
-export ROSCO_PATH=$OPENBST_RUNNER/rosco
-export OPENSBT_CORE_PATH=$OPENBST_RUNNER/opensbt-core
-export OPENSBT_RUNNER_PATH=$OPENBST_RUNNER/carla-runner
-export CARLA_PATH=$OPENBST_RUNNER/carla
-export SCENARIORUNNER_PATH=$OPENBST_RUNNER/scenario_runner
+export ROSCO_PATH=$OPENSBT_RUNNER/rosco
+export OPENSBT_CORE_PATH=$OPENSBT_RUNNER/opensbt-core
+export OPENSBT_RUNNER_PATH=$OPENSBT_RUNNER/carla-runner
+export CARLA_PATH=$OPENSBT_RUNNER/carla
+export SCENARIORUNNER_PATH=$OPENSBT_RUNNER/scenario_runner
 
 export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:${CARLA_ROOT}/PythonAPI/carla:${SCENARIO_RUNNER_ROOT}
 ```

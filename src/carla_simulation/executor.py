@@ -84,11 +84,11 @@ class Executor:
                 os.remove(recording)
         except Exception as e:
             print(traceback.format_exc())
-            print("[Executor] ERROR: Exception encountered, see above")
+            print("[Executor] ERROR: Exception encountered.")
             sys.stdout.flush()
             os._exit(1)
         else:
-            print("[Executor] SUCCESS: Completed all tasks")
+            print("[Executor] SUCCESS: Completed all tasks.")
 
     def get_simulator(self, host, port, timeout, rendering = True, resolution = 0.1):
         return Simulator(

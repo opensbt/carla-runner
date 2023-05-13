@@ -60,7 +60,7 @@ class Scenario:
                 )
             )
 
-        # Assumes there is only one ego actor, as only one agent is created
+        # We assumes there is only one ego actor, as only one agent is created.
         controller = agent(simulator, vehicles[0])
 
         scenario = OpenScenario(

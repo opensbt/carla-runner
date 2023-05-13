@@ -4,19 +4,17 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import os
-from typing import Callable, List
-
 import carla
+import carla_simulation
 import docker
-from docker.models.containers import Container
 import subprocess
 
-
-import carla_simulation
+import importlib.resources as pkg_resources
 
 from time import sleep
+from typing import Callable, List
+from docker.models.containers import Container
 
-import importlib.resources as pkg_resources
 
 class Infrastructure:
 
@@ -54,13 +52,14 @@ class Infrastructure:
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
         os.makedirs(self.recordings, exist_ok=True)
-        print("Getting images... ", end="")
+        print("Getting images ... ", end="")
+
         # Ensure server image is pulled
         print(" Pulling...", end="")
         self.client.images.pull(self.SERVER_IMAGE)
 
         # Ensure client image is built
-        print(" Building... ", end="")
+        print(" Building ... ", end="")
         with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
             path = str(file.resolve().parents[0])
             self.client.images.build(
@@ -68,7 +67,7 @@ class Infrastructure:
                 path = path,
             )
 
-        print(" Creating containers... ")
+        print(" Creating containers ... ")
         for job in range(self.jobs):
             server = self.create_server(
                 id=job
@@ -122,7 +121,7 @@ class Infrastructure:
 
                 if tries >= self.MAXIMUM_CONNECT_TRIES:
                     print("Giving up")
-                    raise RuntimeError("Cannot contact carla server, is it running?")
+                    raise RuntimeError("Cannot contact carla server. Is it running?")
             tries += 1
 
         # Set timout larger to avoid timout errors when the carla server is just slow to respond
@@ -136,7 +135,7 @@ class Infrastructure:
         else:
             # Map is already present, so we are not reloading to save time.
             # This means that actors from previous scenarios will stay on the map.
-            # However, scenario.py will remove them, before loading new actors
+            # However, scenario.py will remove them, before loading new actors.
             print(f" Map present. ", end='')
 
         print("Done")
@@ -169,13 +168,15 @@ class Infrastructure:
                 if container in self.servers and self.keep_carla_servers:
                     continue
                 try:
-                    print(f"Stopping container {container.name}")
+                    print(f"Stopping container {container.name}.")
                     container.stop()
                 except docker.errors.NotFound:
-                    print(f"Container {container.name} does no longer exist")
+                    print(f"Container {container.name} does no longer exist.")
             containers.clear()
 
-    def create_container_if_not_exist(self, container_name: str, container_factory: Callable[[], Container]) -> Container:
+    def create_container_if_not_exist(self,
+                                      container_name: str,
+                                      container_factory: Callable[[],Container]) -> Container:
         container = None
         try:
             container = self.client.containers.get(container_name)
@@ -300,7 +301,7 @@ class Infrastructure:
             while not self.get_address(container):
                 container.reload()
                 sleep(1)
-            print("Installing OpenSBT requirements... ", end="")
+            print("Installing OpenSBT requirements ... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
@@ -312,7 +313,7 @@ class Infrastructure:
                     "SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL": True
                 }
             )
-            print("Installing OpenSBT wheel... ", end="")
+            print("Installing OpenSBT wheel ... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
@@ -322,7 +323,7 @@ class Infrastructure:
                 ),
                 workdir = '/opt/OpenSBT/Runner'
             )
-            print("Building ROS Workspace... ", end="")
+            print("Building ROS Workspace ... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([

@@ -20,6 +20,6 @@ dependencies = [
   "pygame==2.1.2",
   "numpy==1.23.5",
   "matplotlib==3.5.2",
-  "docker==5.0.3",
+  "docker==6.1.2",
   "carla==0.9.13",
 ]

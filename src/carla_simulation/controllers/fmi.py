@@ -5,26 +5,29 @@
 
 import carla
 import rospy
-from numpy.linalg import norm
 
 from rosco.srv import *
 from rosco.msg import *
 from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
-from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
+
+from carla_simulation.utils.sensing import process_lidar_data
+from carla_simulation.utils.sensing import process_location_data
+
 
 class FMIAgent(AutonomousAgent):
 
+    SENSOR_MIN_DISTANCE = 2.0
+
     _agent = None
-    _route_assigned = False
     _visual = None
     _do_step_service = None
     _previous_speed = [0.5, 0.5, 0.5]
-    _ego = None
+    _ego_vehicle = None
 
     def __init__(self, simulator, ego_vehicle: carla.Vehicle):
         super().__init__("")
-        self.ego_vehicle = ego_vehicle
+        self._ego_vehicle = ego_vehicle
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
 
@@ -48,66 +51,53 @@ class FMIAgent(AutonomousAgent):
         if self._visual is not None:
             self._visual.run(input_data)
 
+        signals_in = self.sense(input_data)
+
+        signals_out = self._do_step_service(
+            signals_in,
+            rospy.get_rostime()
+        )
+
+        control = self.act(signals_out)
+
+        return control
+
+    def sense(self, input_data):
         signals = SignalsMessage()
 
-        # distance_to_front
-        minDistance = 2.0
-        for point in input_data['lidar'][1]:
-            tmp = norm(point[:-1])/10.0
-            if (tmp < minDistance):
-                minDistance = tmp
+        # Laser distance
+        signals.floatSignals.append(FloatSignal(
+            "DistanceToFrontLaser",
+            process_lidar_data(input_data, 'lidar', self.SENSOR_MIN_DISTANCE)
+        ))
 
-        signals.floatSignals.append(FloatSignal("DistanceToFrontLaser", minDistance))
+        # Ultrasound distances
+        signals.floatSignals.append(FloatSignal(
+            "DistanceToFrontUS_left",
+            process_lidar_data(input_data, 'lidar_left', self.SENSOR_MIN_DISTANCE)
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "DistanceToFrontUS_right",
+            process_lidar_data(input_data, 'lidar_right', self.SENSOR_MIN_DISTANCE)
+        ))
 
-        # distance_to_front_left
-        minDistance = 2.0
-        for point in input_data['lidar_left'][1]:
-            tmp = norm(point[:-1])/10.0
-            if (tmp < minDistance):
-                minDistance = tmp
+        # Velocity feedback
+        signals.floatSignals.append(FloatSignal(
+            "VelocityIn",
+            0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0]
+        ))
 
-        signals.floatSignals.append(FloatSignal("DistanceToFrontUS_left", minDistance))
-
-        # distance_to_front_right
-        minDistance = 2.0
-        for point in input_data['lidar_right'][1]:
-            tmp = norm(point[:-1])/10.0
-            if (tmp < minDistance):
-                minDistance = tmp
-
-        signals.floatSignals.append(FloatSignal("DistanceToFrontUS_right", minDistance))
-
-        # VelocityIn
-        signals.floatSignals.append(FloatSignal("VelocityIn", 0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0]))
-
-        # LaneDetection
-        waypoint: carla.Waypoint = CarlaDataProvider.get_world().get_map().get_waypoint(
-            self.ego_vehicle.get_location(), project_to_road=True)
-
-        # Create a normal vector going to the right from the view of the waypoint, creating a plane which splits
-        # the space into left and right from the view of the waypoint
-        normal_vector_right: carla.Vector3D = waypoint.transform.get_right_vector()
-        base_point_plane = waypoint.transform.location
-
-        # We then calculate the signed distance of the car to the plane, to know if we are left or right of the plane
-        vector_from_car_to_plane: carla.Vector3D = self.ego_vehicle.get_location() - base_point_plane
-        signed_distance = vector_from_car_to_plane.dot(normal_vector_right)
-        # Negative -> left
-        # Positive -> right
-        distance_lane_from_middle = waypoint.lane_width / 2.0
-        distance_left = distance_lane_from_middle + signed_distance
-        distance_right = distance_lane_from_middle - signed_distance
-
-        # Add signals for correct lane detection function
+        # Lane detection
+        distance_right, distance_left = process_location_data(self._ego_vehicle)
         signals.floatSignals.append(FloatSignal("LD_Distance_Right", distance_right))
         signals.floatSignals.append(FloatSignal("LD_Distance_Left", distance_left))
-
         signals.boolSignals.append(BoolSignal("LD_server_connected", True))
         signals.boolSignals.append(BoolSignal("LD_present_right", True))
         signals.boolSignals.append(BoolSignal("LD_present_left", True))
 
-        resp = self._do_step_service(signals, rospy.get_rostime())
+        return signals
 
+    def act(self, resp):
         # Search for steering and motor value in the signals
         steering_value = None
         motor_value = None
@@ -118,11 +108,11 @@ class FMIAgent(AutonomousAgent):
                 steering_value = float_signal.value
 
         if not steering_value:
-            print("SteeringValue not found. Assuming no steering")
+            print("SteeringValue not found. Assuming no steering.")
             steering = 6000.0
 
         if not motor_value:
-            print("MotorValue not found. Assuming no speed")
+            print("MotorValue not found. Assuming no speed.")
             motor_value = 0.0
 
         # Converting steering to -1.0 to 1.0
@@ -154,12 +144,13 @@ class FMIAgent(AutonomousAgent):
             throttle = 0.4
 
         return carla.VehicleControl(throttle=throttle,
-                                           steer=steering,
-                                           brake=brake,
-                                           hand_brake=False,
-                                           reverse=False,
-                                           manual_gear_shift=False,
-                                           gear=1)
+            steer=steering,
+            brake=brake,
+            hand_brake=False,
+            reverse=False,
+            manual_gear_shift=False,
+            gear=1
+        )
 
     def sensors(self):
         sensors = []

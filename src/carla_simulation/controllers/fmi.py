@@ -91,6 +91,9 @@ class FMIAgent(AutonomousAgent):
         timestamp = GameTime.get_time()
         starttime = float(self._fault['starttime'])
         endtime = float(self._fault['endtime'])
+        if endtime < starttime:
+            endtime = starttime + 7
+            
         if timestamp > starttime and timestamp < (starttime+0.1):
             
             #    print(data['faultInjection'])
@@ -110,8 +113,10 @@ class FMIAgent(AutonomousAgent):
             faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
             injected = self._activate_faultinjector_service(faultInjectionStructure)
             #print("activated faultinjection")
-            
-        if timestamp > endtime and timestamp < (endtime+0.1) and endtime > starttime:  
+        
+    
+        if timestamp > endtime and timestamp < (endtime+0.1):
+            print(endtime)  
             injected = self._deactivate_faultinjector_service()
             print(injected.error)
             print("deactivated faultinjection")  

@@ -25,17 +25,20 @@ class Infrastructure:
 
     RECORDING_DIR = '/tmp/recordings'
     SCENARIO_DIR = '/tmp/scenarios'
+    FAULTS_DIR = '/tmp/faults'
 
     def __init__(self,
         jobs = 1,
         scenarios = SCENARIO_DIR,
         recordings = RECORDING_DIR,
+        faults = FAULTS_DIR,
         visualization = False
     ):
         self.jobs = jobs
         self.network = self.NETWORK
         self.scenarios = scenarios
         self.recordings = recordings
+        self.faults = faults
         self.client = docker.from_env()
         self.clients = []
         self.servers = []
@@ -105,10 +108,13 @@ class Infrastructure:
                     '{}:{}:ro'.format(
                         self.scenarios,
                         self.SCENARIO_DIR),
+                    '{}:{}:ro'.format(
+                        self.faults,
+                        self.FAULTS_DIR),
                     '{}:{}:rw'.format(
                         self.recordings,
                         self.RECORDING_DIR
-                    ),
+                    )
                 ],
                 device_requests = [
                     docker.types.DeviceRequest(
@@ -177,6 +183,9 @@ class Infrastructure:
                     '{}:{}:ro'.format(
                         self.scenarios,
                         self.SCENARIO_DIR),
+                    '{}:{}:ro'.format(
+                        self.faults,
+                        self.FAULTS_DIR),
                     '{}:{}:rw'.format(
                         self.recordings,
                         self.RECORDING_DIR

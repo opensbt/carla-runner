@@ -21,6 +21,7 @@ class Balancer:
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
+            faults = fault,
             visualization = visualization
         )
         self._fault = fault

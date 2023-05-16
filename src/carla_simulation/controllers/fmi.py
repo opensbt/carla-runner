@@ -3,6 +3,7 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
+import json
 import carla
 import rospy
 import os
@@ -19,7 +20,7 @@ from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.timer import GameTime
 from yaml.loader import SafeLoader 
 
-
+FAULT_DIR = "/tmp/faults"
 class FMIAgent(AutonomousAgent):
 
     _agent = None
@@ -75,31 +76,40 @@ class FMIAgent(AutonomousAgent):
         print('initialized deactivate faultinjector service')
    
     def setFault(fault):
-        FMIAgent._fault = fault
+        with open(FAULT_DIR+"/"+fault) as f:
+                data = yaml.safe_load(f) 
+                FMIAgent._fault = data['faultInjection']       
+        print("from fmi, fault set: " + fault)
         
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
         
         signals = SignalsMessage()
-        print(self._fault)
+        #print(self._fault)
         timestamp = GameTime.get_time()
-        
-        if timestamp > 3.0 and timestamp < 3.1:
-            with open('/opt/workspace/share/faults/omission_1.yaml') as f:
-                data = yaml.safe_load(f)
-                print(data['faultInjection'])
-                dict = data['faultInjection']
+        starttime = float(self._fault['starttime'])
+        endtime = float(self._fault['endtime'])
+        if timestamp > starttime and timestamp < (starttime+0.1):
             
+            #    print(data['faultInjection'])
+            #dict = yaml.safe_load(self._fault)
+            #f = open("demofile2.txt", "r")
+            #faultmodel = f.read()
+            #print(faultmodel)
+            dict = self._fault
             faultInjectionStructure = FaultInjectionStructure()
-            #faultInjectionStructure = data['faultInjection']       
+            #faultInjectionStructure = data['faultInjection']  
+            #print(dict.get('faultModel'))  
+            #print(dict.get('signalNames'))  
+            #print(dict.get('parameters')) 
             faultInjectionStructure.faultModel = dict.get("faultModel")
             faultInjectionStructure.signalNames = dict.get('signalNames')
             faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
             injected = self._activate_faultinjector_service(faultInjectionStructure)
-            print("activated faultinjection")
+            #print("activated faultinjection")
             
-        if timestamp > 9.0 and timestamp < 9.1:  
+        if timestamp > endtime and timestamp < (endtime+0.1):  
             injected = self._deactivate_faultinjector_service()
             print(injected.error)
             print("deactivated faultinjection")  

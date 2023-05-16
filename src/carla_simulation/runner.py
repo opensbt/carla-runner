@@ -28,10 +28,8 @@ class Runner:
 
     def run(self, queue, evaluations):
         print("hallo")
-        print("hallo")
         while not queue.empty():
             pattern = queue.get()
-            print("hallo2")
             print("hallo2")
 
             configuration = " ".join([
@@ -41,18 +39,15 @@ class Runner:
                 "--pattern {}".format(pattern),
                 "--agent {}".format(self._agent_name),
                 "--metric {}".format(self._metric_name),
-                "--fault {}".format(self._fault)
-            ])
+                "--faultInjection {}".format(self._infrastructure.FAULTS_DIR)
+            ])            
             print("hallo3")
-            
-            print("hallo3")
-            
+             
             if (self._infrastructure.visualization):
                 configuration = "{} --visualize".format(configuration)
-            print("hallo4")
             print(configuration)
 
-            _, stream =self._client.exec_run(
+            _, stream = self._client.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
                         "source /opt/workspace/devel/setup.bash",
@@ -62,10 +57,6 @@ class Runner:
                 workdir = '/opt/OpenSBT/Runner/src/carla_simulation/',
                 stream = True
             )
-            print("hallo4.5")
-            for data in stream:
-                print(data.decode(), end=' ')
-            print("hallo5")
             print("hallo4.5")
             for data in stream:
                 print(data.decode(), end=' ')

@@ -17,6 +17,8 @@ from carla_simulation.metrics.raw import RawData
 from carla_simulation.controllers.fmi import FMIAgent
 from carla_simulation.controllers.npc import NPCAgent
 
+FAULT_DIR = "/tmp/faults"
+
 class Executor:
 
     agents = {
@@ -41,9 +43,9 @@ class Executor:
     _recording_dir = None
     _scenario_dir = None
     
-    _fault = None
+    _faults = []
 
-    def __init__(self, host, scenario_dir, recording_dir, agent, metric, visualize, fault):
+    def __init__(self, host, scenario_dir, recording_dir, agent, metric, visualize, faultInjection):
         self._host_carla = host
 
         self._recording_dir = recording_dir
@@ -53,10 +55,10 @@ class Executor:
         self._metric_class = self.metrics.get(metric)
 
         self._rendering_carla = visualize
-        self._fault = fault
-        print("Hello from the executor")
-        print(self._fault)
-        self.agents.get('FMIAdapter').setFault(fault)
+        self._faults = self.get_faults()
+        print("Hello from the executor_")
+            
+        #self.agents.get('FMIAdapter').setFault(faultInjection)
         
 
     def execute(self, pattern):
@@ -73,12 +75,17 @@ class Executor:
         evaluator = self.get_evaluator()
         agent = self.get_agent()
                 
-        for i in range(0, 20):
+        for i in range(0, 4):
          print("Hallo from the other side") 
-         print(self._fault)
+         print(self._faults[i])
 
-
-        for scenario in scenarios:
+        i = 0
+        print(scenarios.__len__())
+        for scenario in scenarios:  
+            print("hi from executor: " + self._faults[i] + str(i)) 
+            self.agents.get('FMIAdapter').setFault(self._faults[i])
+            i = i+1 
+            #todo passenden agent.setfault zum scenario setzen
             scenario.simulate(simulator, agent, recorder)
 
         recordings = recorder.get_recordings()
@@ -104,14 +111,22 @@ class Executor:
 
     def get_scenarios(self, directory, pattern):
         scenarios = None
+        print(directory)
         with os.scandir(directory) as entries:
             scenarios = [
                 Scenario(entry)
                     for entry in entries
                         if entry.name.endswith(pattern) and entry.is_file()
             ]
+            print(type(scenarios))
+            print(len(scenarios))
+            print(scenarios[0])
         return scenarios
 
+    def get_faults(self):
+        faults = os.listdir(FAULT_DIR)
+        return faults
+    
     def get_evaluator(self):
         return self._metric_class()
 
@@ -145,14 +160,14 @@ def main():
         '--visualize', help='Pattern for selecting the scenarios.', required=False, action='store_true'
     )
     parser.add_argument(
-        '--fault', help='Name of faultinjection.', required=False
+        '--faultInjection', help='Name of faultinjection.', required=False
     )
     args = parser.parse_args()
 
 
-    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.visualize,args.fault)
+    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.visualize, args.faultInjection)
     print("hello from executor main")
-    print(args.fault)
+    print(args.faultInjection)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

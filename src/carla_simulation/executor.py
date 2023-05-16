@@ -42,6 +42,7 @@ class Executor:
 
     _recording_dir = None
     _scenario_dir = None
+    _fault_dir = None
     
     _faults = []
 
@@ -55,11 +56,7 @@ class Executor:
         self._metric_class = self.metrics.get(metric)
 
         self._rendering_carla = visualize
-        self._faults = self.get_faults()
-        print("Hello from the executor_")
-            
-        #self.agents.get('FMIAdapter').setFault(faultInjection)
-        
+        self._fault_dir = faultInjection
 
     def execute(self, pattern):
         simulator = self.get_simulator(
@@ -73,19 +70,13 @@ class Executor:
         scenarios = self.get_scenarios(self._scenario_dir, pattern)
         recorder = self.get_recorder(self._recording_dir)
         evaluator = self.get_evaluator()
+        self.agents.get('FMIAdapter').setFault(self._fault_dir+"/"+pattern)
         agent = self.get_agent()
                 
         for i in range(0, 4):
-         print("Hallo from the other side") 
-         print(self._faults[i])
+            print("Hallo from the other side") 
 
-        i = 0
-        print(scenarios.__len__())
-        for scenario in scenarios:  
-            print("hi from executor: " + self._faults[i] + str(i)) 
-            self.agents.get('FMIAdapter').setFault(self._faults[i])
-            i = i+1 
-            #todo passenden agent.setfault zum scenario setzen
+        for scenario in scenarios:             
             scenario.simulate(simulator, agent, recorder)
 
         recordings = recorder.get_recordings()
@@ -118,13 +109,18 @@ class Executor:
                     for entry in entries
                         if entry.name.endswith(pattern) and entry.is_file()
             ]
-            print(type(scenarios))
-            print(len(scenarios))
-            print(scenarios[0])
         return scenarios
 
-    def get_faults(self):
-        faults = os.listdir(FAULT_DIR)
+    def get_faults(self, directory, pattern):
+        faults = None
+        print(pattern)
+        with os.scandir(directory) as entries:
+            faults = [
+                entry
+                    for entry in entries
+                        if entry.name.endswith(pattern) and entry.is_file()
+            ]
+            print(len(faults))
         return faults
     
     def get_evaluator(self):

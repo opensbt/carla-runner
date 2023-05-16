@@ -76,10 +76,11 @@ class FMIAgent(AutonomousAgent):
         print('initialized deactivate faultinjector service')
    
     def setFault(fault):
-        with open(FAULT_DIR+"/"+fault) as f:
+        print("from fmi, fault set: " + fault)
+        with open(fault) as f:
                 data = yaml.safe_load(f) 
                 FMIAgent._fault = data['faultInjection']       
-        print("from fmi, fault set: " + fault)
+    
         
     def run_step(self, input_data, _):
         if self._visual is not None:
@@ -103,13 +104,14 @@ class FMIAgent(AutonomousAgent):
             #print(dict.get('faultModel'))  
             #print(dict.get('signalNames'))  
             #print(dict.get('parameters')) 
+            print(starttime)
             faultInjectionStructure.faultModel = dict.get("faultModel")
             faultInjectionStructure.signalNames = dict.get('signalNames')
             faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
             injected = self._activate_faultinjector_service(faultInjectionStructure)
             #print("activated faultinjection")
             
-        if timestamp > endtime and timestamp < (endtime+0.1):  
+        if timestamp > endtime and timestamp < (endtime+0.1) and endtime > starttime:  
             injected = self._deactivate_faultinjector_service()
             print(injected.error)
             print("deactivated faultinjection")  

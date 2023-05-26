@@ -4,6 +4,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import time
+import carla
 
 from pathlib import Path
 
@@ -27,6 +28,20 @@ class Scenario:
 
         CarlaDataProvider.set_client(client)
         CarlaDataProvider.set_world(world)
+
+        # toggle off all city objects
+        env_objs = world.get_environment_objects(carla.CityObjectLabel.Any)
+        env_objs_ids = [obj.id for obj in env_objs]
+        world.enable_environment_objects(set(env_objs_ids), False)
+
+        # toggle the roads and road lines back on
+        roads = world.get_environment_objects(carla.CityObjectLabel.Roads)
+        roads_ids = [road.id for road in roads]
+
+        road_lines = world.get_environment_objects(carla.CityObjectLabel.RoadLines)
+        road_lines_ids = [road_line.id for road_line in road_lines]
+
+        world.enable_environment_objects(set(roads_ids + road_lines_ids), True)
 
         actor_list = CarlaDataProvider.get_world().get_actors()
         if actor_list:

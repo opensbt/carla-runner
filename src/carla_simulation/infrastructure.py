@@ -257,7 +257,7 @@ class Infrastructure:
                         DISPLAY = os.environ['DISPLAY']
                     ),
                     'PYTHONPATH={}'.format(':'.join([
-                        # '/opt/OpenSBT/Runner/src',
+                        '/opt/OpenSBT/Runner/src',
                         '/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg',
                         '/opt/CARLA/Simulator/PythonAPI/carla/agents',
                         '/opt/CARLA/Simulator/PythonAPI/carla',

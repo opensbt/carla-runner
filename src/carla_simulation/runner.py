@@ -21,7 +21,7 @@ class Runner:
 
     _fault = None
 
-    MAX_RESTARTS = 3
+    MAX_RESTARTS = 1
     SUCCESS_INDICATOR = "[Executor] SUCCESS:"
     FAILURE_INDICATOR = "[Executor] ERROR:"
 

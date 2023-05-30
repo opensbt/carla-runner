@@ -3,6 +3,8 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
+import time
+
 from pathlib import Path
 
 from srunner.scenarios.open_scenario import OpenScenario
@@ -26,6 +28,16 @@ class Scenario:
         CarlaDataProvider.set_client(client)
         CarlaDataProvider.set_world(world)
 
+        actor_list = CarlaDataProvider.get_world().get_actors()
+        if actor_list:
+            print(f"Destroying {len(actor_list)} actors")
+            timout = time.time() + 30
+            for actor in actor_list:
+                if time.time() > timout:
+                    print(f"[Scenario] Aborted clearing actors as it took longer than 30s")
+                    break
+                actor.destroy()
+
         config = OpenScenarioConfiguration(
             self._xosc,
             client,
@@ -48,7 +60,8 @@ class Scenario:
                 )
             )
 
-        controller = agent(simulator)
+        # We assumes there is only one ego actor, as only one agent is created.
+        controller = agent(simulator, vehicles[0])
 
         scenario = OpenScenario(
             world,

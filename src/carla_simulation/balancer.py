@@ -17,12 +17,13 @@ class Balancer:
     _infrastructure = None
     _fault = None
 
-    def __init__(self, directory, jobs = 1, visualization = False, fault = None):
+    def __init__(self, directory, jobs = 1, visualization = False, fault = None, keep_carla_servers=False):
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
             faults = fault,
-            visualization = visualization
+            visualization = visualization,
+            keep_carla_servers= keep_carla_servers
         )
         self._fault = fault
 
@@ -33,21 +34,11 @@ class Balancer:
         self._infrastructure.stop()
 
     def run(self):
-        map_name = 'Town01'
         agent_name = 'FMIAdapter'
         metric_name = 'RawData'
 
         servers = self._infrastructure.get_servers()
         clients = self._infrastructure.get_clients()
-
-        for server in servers:
-            client = carla.Client(
-                self._infrastructure.get_address(server),
-                2000
-            )
-            server_map = client.get_world().get_map().name.split('/')[-1]
-            if server_map != map_name:
-                client.load_world(map_name)
 
         scenarios = mp.JoinableQueue()
         with os.scandir(self._infrastructure.scenarios) as entries:

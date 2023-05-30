@@ -39,9 +39,9 @@ class Runner:
         while not queue.empty():
             pattern = queue.get()
             success = False
-            attempts = 0
+            restarts = 0
             while not success:
-                print(f"[Runner] Running Scenario {pattern}, Attempt {attempts}.")
+                print(f"[Runner] Running Scenario {pattern}, Attempt {restarts}.")
                 configuration = " ".join([
                     "--host {}".format(self._infrastructure.get_address(self._server)),
                     "--recordings {}".format(self._infrastructure.RECORDING_DIR),
@@ -73,12 +73,12 @@ class Runner:
 
                 if self.FAILURE_INDICATOR in last_chars:
                     print(f"[Runner] Executor ran into an problem while in scenario {pattern}, agent {self._agent_name}.")
-                    print("[Runner] Trying to start the carla server ...")
+                    print("[Runner] Trying to start the carla server...")
                     self._server.start()
                     self._infrastructure.configure_running_server(self._server)
 
-                    attempts += 1
-                    if attempts > self.MAX_RESTARTS:
+                    restarts += 1
+                    if restarts > self.MAX_RESTARTS:
                         # Maximum tries exceeded, aborting
                         break
 

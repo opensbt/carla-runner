@@ -107,11 +107,11 @@ class FMIAgent(AutonomousAgent):
             elif float_signal.name == "SteeringValue":
                 steering_value = float_signal.value
 
-        if not steering_value:
+        if steering_value is None:
             print("SteeringValue not found. Assuming no steering.")
-            steering = 6000.0
+            steering_value = 6000.0
 
-        if not motor_value:
+        if motor_value is None:
             print("MotorValue not found. Assuming no speed.")
             motor_value = 0.0
 

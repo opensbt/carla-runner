@@ -2,7 +2,7 @@
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
-
+import multiprocessing
 import os
 import carla
 import carla_simulation
@@ -182,18 +182,21 @@ class Infrastructure:
     def stop(self):
         containers = self.servers + self.clients
         if containers:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            # Use more threads to stop the containers concurrently. These threads are only waiting and no processing
+            # anything so ideally there are as many threads as containers
+            with concurrent.futures.ThreadPoolExecutor(multiprocessing.cpu_count()) as executor:
                 executor.map(self.stop_container, containers)
                 containers.clear()
 
     def stop_container(self, container: Container) -> None:
-        if container in self.servers and self.keep_carla_servers:
-            pass
-        try:
-            print(f"Stopping container {container.name}.")
-            container.stop()
-        except docker.errors.NotFound:
-            print(f"Container {container.name} does no longer exist.")
+        # if carla containers are kept, remove everything
+        # if carla servers are kept, remove only containers which are not servers
+        if not self.keep_carla_servers or container not in self.servers:
+            try:
+                print(f"Stopping container {container.name}.")
+                container.stop()
+            except docker.errors.NotFound:
+                print(f"Container {container.name} does no longer exist.")
 
     def create_container_if_not_exist(self,
                                       container_name: str,

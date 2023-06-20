@@ -22,7 +22,7 @@ from carla_simulation.controllers.npc import NPCAgent
 class Executor:
 
     agents = {
-        'FMIAdapter': FMIAgent,
+        'FMIAgent': FMIAgent,
         'NPCAgent': NPCAgent
     }
 

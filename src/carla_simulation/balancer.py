@@ -5,7 +5,6 @@
 
 import os
 import time
-import carla
 import multiprocessing as mp
 
 from carla_simulation.infrastructure import Infrastructure
@@ -15,14 +14,18 @@ from carla_simulation.runner import Runner
 class Balancer:
 
     _infrastructure = None
+    _agent_name = None
+    _metric_name = None
 
-    def __init__(self, directory, jobs = 1, visualization = False, keep_carla_servers=False):
+    def __init__(self, directory, agent, metric = 'RawData', jobs = 1, visualization = False, keep_carla_servers=False):
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
             visualization = visualization,
             keep_carla_servers= keep_carla_servers
         )
+        self._agent_name = agent
+        self._metric_name = metric
 
     def start(self):
         self._infrastructure.start()
@@ -31,9 +34,6 @@ class Balancer:
         self._infrastructure.stop()
 
     def run(self):
-        agent_name = 'FMIAdapter'
-        metric_name = 'RawData'
-
         servers = self._infrastructure.get_servers()
         clients = self._infrastructure.get_clients()
 
@@ -51,8 +51,8 @@ class Balancer:
                 runner = Runner(self._infrastructure,
                     server,
                     client,
-                    agent_name,
-                    metric_name
+                    self._agent_name,
+                    self._metric_name
                 )
                 mp.Process(
                     target=runner.run,

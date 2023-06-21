@@ -13,6 +13,7 @@ from srunner.scenarioconfigs.openscenario_configuration import OpenScenarioConfi
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
 
+from carla_simulation.utils.utility import untoggle_environment_objects
 
 class Scenario:
 
@@ -29,19 +30,7 @@ class Scenario:
         CarlaDataProvider.set_client(client)
         CarlaDataProvider.set_world(world)
 
-        # toggle off all city objects
-        env_objs = world.get_environment_objects(carla.CityObjectLabel.Any)
-        env_objs_ids = [obj.id for obj in env_objs]
-        world.enable_environment_objects(set(env_objs_ids), False)
-
-        # toggle the roads and road lines back on
-        roads = world.get_environment_objects(carla.CityObjectLabel.Roads)
-        roads_ids = [road.id for road in roads]
-
-        road_lines = world.get_environment_objects(carla.CityObjectLabel.RoadLines)
-        road_lines_ids = [road_line.id for road_line in road_lines]
-
-        world.enable_environment_objects(set(roads_ids + road_lines_ids), True)
+        untoggle_environment_objects(world, [carla.CityObjectLabel.Roads, carla.CityObjectLabel.RoadLines])
 
         actor_list = CarlaDataProvider.get_world().get_actors()
         if actor_list:
@@ -75,7 +64,7 @@ class Scenario:
                 )
             )
 
-        # We assumes there is only one ego actor, as only one agent is created.
+        # We assume there is only one ego actor, as only one agent is created.
         controller = agent(simulator, vehicles[0])
 
         scenario = OpenScenario(

@@ -129,3 +129,13 @@ If you use [Visual Studio Code](https://code.visualstudio.com/), the following l
     ]
 }
 ```
+
+### run without Docker
+
+The following code changes have to be done:
+- In `infrastructure.py`, change the NETWORK mode to `host`, connect the carla Client to `127.17.0.1` and remove any calls of the `get_address()` function
+- Optionally to avoid overhead in `infrastructure.py`, change the server image to `ubuntu` and set the command for the server container in `create_server_container()` to `sleep infinity`
+- In `runner.py`, change the host's IP address to `127.17.0.1`
+
+Then download the CARLA simulator and execute it with `export VK_ICD_FILENAMES="/usr/share/vulkan/icd.d/nvidia_icd.json"  && ./CarlaUE4.sh` in order to use the NVIDIA GPU locally
+

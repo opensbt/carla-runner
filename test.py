@@ -7,6 +7,7 @@ balancer = Balancer(
     # If the path changes, the container needs to be rebuilt.
     # Delete all client containers for this to happen.
     directory='/tmp/scenarios',
+    agent='NPCAgent',
     jobs=1,
     visualization=True,
     keep_carla_servers=False

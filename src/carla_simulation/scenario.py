@@ -16,6 +16,7 @@ from srunner.scenariomanager.scenario_manager import ScenarioManager
 from carla_simulation.utils.utility import untoggle_environment_objects
 from carla_simulation.utils.utility import spawn_props
 from carla_simulation.utils.utility import change_color_texture_of_objects
+from carla_simulation.utils.utility import change_weather
 
 class Scenario:
 
@@ -34,9 +35,11 @@ class Scenario:
 
         untoggle_environment_objects(world, [carla.CityObjectLabel.Roads, carla.CityObjectLabel.RoadLines])
 
-        change_color_texture_of_objects(world, filter_criteria='', color=carla.Color(r=255, g=0, b=0, a=255), width=100, height=100, material=carla.MaterialParameter.Diffuse)
-
         spawn_props(world, 'static.prop.creasedbox03')
+
+        change_color_texture_of_objects(world, filter_criteria='', color=carla.Color(r=255, g=255, b=255, a=255), width=100, height=100, material=carla.MaterialParameter.Diffuse)
+
+        change_weather(world)
 
         actor_list = CarlaDataProvider.get_world().get_actors()
         if actor_list:

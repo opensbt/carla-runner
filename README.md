@@ -101,6 +101,31 @@ Finally, the balancer's Docker infrastructure can be stopped and removed via its
 ```
 b.stop()
 ```
+### Utility functions
+
+The following utility functions are being offered:
+- `untoggle_environment_objects(world, semantic_tags)`: removes specified environment objects from the world
+  - `world`: carla.World
+  - `semantic_tags`: list(carla.CityObjectLabel). Specifies which objects are NOT being removed
+- `change_color_texture_of_objects(world, filter_criteria, color, width, height, material)`: changes the color and texture of filtered objects
+  - `world`: carla.World
+  - `filter_criteria`: String. Only objects, whose name contains the filter_criteria, are being painted. E.g. `BP_StreetLight_6` to only paint a certain street light.
+  - `color`: carla.Color
+  - `width`: int
+  - `height`: int
+  - `material`: carla.MaterialParameter
+- `spawn_props(world, prop)`: spawns 10 props on road lines in front of the ego vehicle. Only works for `LK_highway_exit.xosc` scenario
+  - `world`: carla.World
+  - `prop`: String, specifying which prop is being spawned e.g. `static.prop.creasedbox03`. The props catalogue can be found [here](https://carla.readthedocs.io/en/latest/catalogue_props/).
+
+### Run without Docker
+
+The following code changes have to be done:
+- In `infrastructure.py`, change the NETWORK mode to `host`, connect the carla Client to `127.17.0.1` and remove any calls of the `get_address()` function
+- Optionally to avoid overhead in `infrastructure.py`, change the server image to `ubuntu` and set the command for the server container in `create_server_container()` to `sleep infinity`
+- In `runner.py`, change the host's IP address to `127.17.0.1`
+
+Then download the CARLA simulator and execute it with `export VK_ICD_FILENAMES="/usr/share/vulkan/icd.d/nvidia_icd.json"  && ./CarlaUE4.sh` in order to use the NVIDIA GPU locally
 
 ### Visual Studio Code
 
@@ -129,13 +154,3 @@ If you use [Visual Studio Code](https://code.visualstudio.com/), the following l
     ]
 }
 ```
-
-### run without Docker
-
-The following code changes have to be done:
-- In `infrastructure.py`, change the NETWORK mode to `host`, connect the carla Client to `127.17.0.1` and remove any calls of the `get_address()` function
-- Optionally to avoid overhead in `infrastructure.py`, change the server image to `ubuntu` and set the command for the server container in `create_server_container()` to `sleep infinity`
-- In `runner.py`, change the host's IP address to `127.17.0.1`
-
-Then download the CARLA simulator and execute it with `export VK_ICD_FILENAMES="/usr/share/vulkan/icd.d/nvidia_icd.json"  && ./CarlaUE4.sh` in order to use the NVIDIA GPU locally
-

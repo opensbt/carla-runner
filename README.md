@@ -117,6 +117,8 @@ The following utility functions are being offered:
 - `spawn_props(world, prop)`: spawns 10 props on road lines in front of the ego vehicle. Only works for `LK_highway_exit.xosc` scenario
   - `world`: carla.World
   - `prop`: String, specifying which prop is being spawned e.g. `static.prop.creasedbox03`. The props catalogue can be found [here](https://carla.readthedocs.io/en/latest/catalogue_props/).
+- `change_vehicle_physics(vehicle)`: applies physics controls to the specified vehicle. As of now, what is being changed for the vehicles physics has to be set inside the function. Options can be found [here](https://carla.readthedocs.io/en/latest/python_api/#carla.VehiclePhysicsControl) and [here](https://carla.readthedocs.io/en/latest/python_api/#carlawheelphysicscontrol).
+  - `vehicle`: carla.Vehicle
 
 ### Run without Docker
 

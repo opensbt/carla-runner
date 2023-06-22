@@ -21,7 +21,7 @@ def change_color_texture_of_objects(world, filter_criteria, color, width, height
     objs = world.get_names_of_all_objects()
     filtered_objs = list(filter(lambda k: filter_criteria in k, objs))
 
-    world.apply_color_texture_to_object(filtered_objs, material, 
+    world.apply_color_texture_to_objects(filtered_objs, material, 
                                     get_texture(color, width, height))
 
 def get_texture(color, width, height):

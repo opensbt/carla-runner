@@ -120,6 +120,9 @@ The following utility functions are being offered:
 - `change_vehicle_physics(vehicle)`: applies physics controls to the specified vehicle. As of now, what is being changed for the vehicles physics has to be set inside the function. Options can be found [here](https://carla.readthedocs.io/en/latest/python_api/#carla.VehiclePhysicsControl) and [here](https://carla.readthedocs.io/en/latest/python_api/#carlawheelphysicscontrol).
   - `vehicle`: carla.Vehicle
 - `change_weather(world, cloudiness, precipitation, precipitation_deposits, wind_intensity, sun_azimuth_angle, sun_altitude_angle, fog_density, fog_distance, wetness, fog_falloff, scattering_intensity, mie_scattering_scale,rayleigh_scattering_scale, dust_storm)`: used to change the weather in the simulation. the parameters correspond to the parameter needed to create a carla.WeatherParameters object (see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters)).
+- `add_fog(world, fog_density, fog_distance, fog_falloff)`: adds fog to the carla simulation. For documentation of the parameters see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters).
+- `add_rain(world, precipitation, precipitation_deposits, wetness)`: adds rain to the carla simulation see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters).
+- `add_blinding_sun(world, sun_azimuth_angle, sun_altitude_angle)`: adds blinding sunlight to the carla simulation see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters).
 
 ### Run without Docker
 

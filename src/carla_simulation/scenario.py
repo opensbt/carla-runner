@@ -17,6 +17,9 @@ from carla_simulation.utils.utility import untoggle_environment_objects
 from carla_simulation.utils.utility import spawn_props
 from carla_simulation.utils.utility import change_color_texture_of_objects
 from carla_simulation.utils.utility import change_weather
+from carla_simulation.utils.utility import add_fog
+from carla_simulation.utils.utility import add_rain
+from carla_simulation.utils.utility import add_blinding_sun
 
 class Scenario:
 
@@ -38,8 +41,6 @@ class Scenario:
         spawn_props(world, 'static.prop.creasedbox03')
 
         change_color_texture_of_objects(world, filter_criteria='', color=carla.Color(r=255, g=255, b=255, a=255), width=100, height=100, material=carla.MaterialParameter.Diffuse)
-
-        change_weather(world)
 
         actor_list = CarlaDataProvider.get_world().get_actors()
         if actor_list:
@@ -95,5 +96,11 @@ class Scenario:
             recording,
             True
         )
+
+        #change_weather(world)
+        #add_fog(world, 50.0, 5.0, 0.0)
+        add_rain(world, 50.0, 50.0, 50.0)
+        #add_blinding_sun(world, 0.0, 0.0)
+
         manager.run_scenario()
         client.stop_recorder()

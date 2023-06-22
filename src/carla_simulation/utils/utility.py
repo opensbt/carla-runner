@@ -82,3 +82,17 @@ def change_weather(world, cloudiness=0.0, precipitation=0.0, precipitation_depos
                    mie_scattering_scale,rayleigh_scattering_scale)
     weather.dust_storm = dust_storm
     world.set_weather(weather)
+
+def add_fog(world, fog_density, fog_distance, fog_falloff):
+    weather = carla.WeatherParameters(fog_density=fog_density, fog_distance=fog_distance, fog_falloff=fog_falloff)
+    world.set_weather(weather)
+
+
+def add_rain(world, precipitation, precipitation_deposits, wetness):
+    weather = carla.WeatherParameters(precipitation=precipitation, precipitation_deposits=precipitation_deposits, wetness=wetness)
+    world.set_weather(weather)
+
+
+def add_blinding_sun(world, sun_azimuth_angle, sun_altitude_angle):
+    weather = carla.WeatherParameters(sun_azimuth_angle=sun_azimuth_angle, sun_altitude_angle=sun_altitude_angle)
+    world.set_weather(weather)

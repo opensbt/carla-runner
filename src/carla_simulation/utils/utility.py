@@ -44,3 +44,31 @@ def spawn_props(world, prop):
     world.spawn_actor(bp, carla.Transform(carla.Location(-26.5, 128.0, 0.0 ), carla.Rotation(0, 0, 0)))
     world.spawn_actor(bp, carla.Transform(carla.Location(-30.0, 132.0, 0.0 ), carla.Rotation(0, 0, 0)))
     world.spawn_actor(bp, carla.Transform(carla.Location(-34.5, 136.0, 0.0 ), carla.Rotation(0, 0, 0)))
+
+def change_vehicle_physics(vehicle):
+    physics_control = vehicle.get_physics_control()
+
+    # change the front left wheel's physical control
+    front_left_wheel  = physics_control.wheels[0]
+    front_left_wheel.radius = 37.0
+    front_left_wheel.tire_friction = 3.5
+
+    # change the front right wheel's physical control
+    front_right_wheel = physics_control.wheels[1]
+    front_right_wheel.radius = 37.0
+    front_right_wheel.tire_friction = 3.5
+
+    # change the rear left wheel's physical control
+    rear_left_wheel   = physics_control.wheels[2]
+    rear_left_wheel.radius = 37.0
+    rear_left_wheel.tire_friction = 3.5
+
+    # change the rear right wheel's physical control
+    rear_right_wheel  = physics_control.wheels[3]
+    rear_right_wheel.radius = 37.0
+    rear_right_wheel.tire_friction = 3.5
+
+    wheels = [front_left_wheel, front_right_wheel, rear_left_wheel, rear_right_wheel]
+    physics_control.wheels = wheels
+
+    vehicle.apply_physics_control(physics_control)

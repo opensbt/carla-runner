@@ -119,6 +119,7 @@ The following utility functions are being offered:
   - `prop`: String, specifying which prop is being spawned e.g. `static.prop.creasedbox03`. The props catalogue can be found [here](https://carla.readthedocs.io/en/latest/catalogue_props/).
 - `change_vehicle_physics(vehicle)`: applies physics controls to the specified vehicle. As of now, what is being changed for the vehicles physics has to be set inside the function. Options can be found [here](https://carla.readthedocs.io/en/latest/python_api/#carla.VehiclePhysicsControl) and [here](https://carla.readthedocs.io/en/latest/python_api/#carlawheelphysicscontrol).
   - `vehicle`: carla.Vehicle
+- `change_weather(world, cloudiness, precipitation, precipitation_deposits, wind_intensity, sun_azimuth_angle, sun_altitude_angle, fog_density, fog_distance, wetness, fog_falloff, scattering_intensity, mie_scattering_scale,rayleigh_scattering_scale, dust_storm)`: used to change the weather in the simulation. the parameters correspond to the parameter needed to create a carla.WeatherParameters object (see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters)).
 
 ### Run without Docker
 

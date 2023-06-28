@@ -98,7 +98,7 @@ class Infrastructure:
         print("[Infrastructure] All up")
 
     def configure_running_server(self, server: Container):
-        print(f"Connecting to {server.name}...", end='')
+        #print(f"Connecting to {server.name}...", end='')
         while not self.get_address(server):
             server.reload()
             sleep(1)
@@ -115,15 +115,15 @@ class Infrastructure:
                 # Check server version
                 version = new_client.get_server_version()
                 # Successfully connected to server
-                print(f" Server Version: {version}.", end="")
+                #print(f" Server Version: {version}.", end="")
                 carla_client = new_client
 
             except RuntimeError:
                 # Catch exception and retry to a maximum of 5 times
-                print(f".", end='')
+                #print(f".", end='')
 
                 if tries >= self.MAXIMUM_CONNECT_TRIES:
-                    print("Giving up")
+                    #("Giving up")
                     raise RuntimeError("Cannot contact carla server. Is it running?")
             tries += 1
 
@@ -133,7 +133,7 @@ class Infrastructure:
 
         # Check if map is already loaded
         if server_map != self.MAP_NAME:
-            print(f" Loading Map... ", end='')
+            #print(f" Loading Map... ", end='')
             carla_client.load_world(self.MAP_NAME)
         else:
             # Map is already present, so we are not reloading to save time.
@@ -141,7 +141,7 @@ class Infrastructure:
             # However, scenario.py will remove them, before loading new actors.
             print(f" Map present. ", end='')
 
-        print("Done")
+        #print("Done")
 
     def configure_running_client(self, client: Container) -> None:
         while not self.get_address(client):

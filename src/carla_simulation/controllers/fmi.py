@@ -88,9 +88,17 @@ class FMIAgent(AutonomousAgent):
 
         signals_out = self._do_step_service(
             signals_in,
-            rospy.get_rostime()
+            rospy.get_rostime()           
         )
-
+        
+        for int_signal in signals_out.result.intSignals:
+            if int_signal.name == 'AliveReturnDebug':   
+                print(int_signal)     
+                #with open(signals_out) as f:
+        #        data = yaml.safe_load(f)
+                #print(data.get("result").get("intSignals"))
+                #print(data["result"])    
+                            
         control = self.act(signals_out)
 
         return control
@@ -100,9 +108,8 @@ class FMIAgent(AutonomousAgent):
         #print(self._fault)
         timestamp = GameTime.get_time()
         starttime = float(self._fault['starttime'])
-        endtime = float(self._fault['endtime'])
-        if endtime < starttime:
-            endtime = starttime + 7
+        endtime = float(self._fault['endtime'])+starttime
+   
 
         if timestamp > starttime and timestamp < (starttime+0.1):
 
@@ -124,11 +131,10 @@ class FMIAgent(AutonomousAgent):
             injected = self._activate_faultinjector_service(faultInjectionStructure)
             #print("activated faultinjection")
 
-
-        if timestamp > endtime and timestamp < (endtime+0.1):
-            print(endtime)
+        if timestamp > 13 and timestamp < (13.1):
+        #    print(endtime)
             injected = self._deactivate_faultinjector_service()
-            print(injected.error)
+        #    print(injected.error)
             print("deactivated faultinjection")
 
         # Laser distance

@@ -36,12 +36,6 @@ class Scenario:
         CarlaDataProvider.set_client(client)
         CarlaDataProvider.set_world(world)
 
-        untoggle_environment_objects(world, [carla.CityObjectLabel.Roads, carla.CityObjectLabel.RoadLines])
-
-        spawn_props(world, 'static.prop.creasedbox03')
-
-        change_color_texture_of_objects(world, filter_criteria='', color=carla.Color(r=255, g=255, b=255, a=255), width=100, height=100, material=carla.MaterialParameter.Diffuse)
-
         actor_list = CarlaDataProvider.get_world().get_actors()
         if actor_list:
             print(f"Destroying {len(actor_list)} actors")
@@ -74,6 +68,12 @@ class Scenario:
                 )
             )
 
+        untoggle_environment_objects(world, [carla.CityObjectLabel.Roads, carla.CityObjectLabel.RoadLines])
+
+        spawn_props(world, 'static.prop.creasedbox03')
+
+        change_color_texture_of_objects(world, filter_criteria='', color=carla.Color(r=255, g=255, b=255, a=255), width=100, height=100, material=carla.MaterialParameter.Diffuse)
+
         # We assume there is only one ego actor, as only one agent is created.
         controller = agent(simulator, vehicles[0])
 
@@ -96,11 +96,6 @@ class Scenario:
             recording,
             True
         )
-
-        #change_weather(world)
-        #add_fog(world, 50.0, 5.0, 0.0)
-        add_rain(world, 50.0, 50.0, 50.0)
-        #add_blinding_sun(world, 0.0, 0.0)
 
         manager.run_scenario()
         client.stop_recorder()

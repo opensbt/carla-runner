@@ -72,27 +72,3 @@ def change_vehicle_physics(vehicle):
     physics_control.wheels = wheels
 
     vehicle.apply_physics_control(physics_control)
-
-def change_weather(world, cloudiness=0.0, precipitation=0.0, precipitation_deposits=0.0, wind_intensity=0.0, sun_azimuth_angle=0.0, 
-                   sun_altitude_angle=0.0, fog_density=0.0, fog_distance=0.0, wetness=0.0, fog_falloff=0.0, scattering_intensity=0.0, 
-                   mie_scattering_scale=0.0,rayleigh_scattering_scale=0.0331, dust_storm=0.0):
-    
-    weather = carla.WeatherParameters(cloudiness, precipitation, precipitation_deposits, wind_intensity, sun_azimuth_angle, 
-                   sun_altitude_angle, fog_density, fog_distance, wetness, fog_falloff, scattering_intensity, 
-                   mie_scattering_scale,rayleigh_scattering_scale)
-    weather.dust_storm = dust_storm
-    world.set_weather(weather)
-
-def add_fog(world, fog_density, fog_distance, fog_falloff):
-    weather = carla.WeatherParameters(fog_density=fog_density, fog_distance=fog_distance, fog_falloff=fog_falloff)
-    world.set_weather(weather)
-
-
-def add_rain(world, precipitation, precipitation_deposits, wetness):
-    weather = carla.WeatherParameters(precipitation=precipitation, precipitation_deposits=precipitation_deposits, wetness=wetness)
-    world.set_weather(weather)
-
-
-def add_blinding_sun(world, sun_azimuth_angle, sun_altitude_angle):
-    weather = carla.WeatherParameters(sun_azimuth_angle=sun_azimuth_angle, sun_altitude_angle=sun_altitude_angle)
-    world.set_weather(weather)

@@ -103,10 +103,10 @@ b.stop()
 ```
 ### Utility functions
 
-The following utility functions are being offered:
+The following utility functions are being offered in the `utility.py` file:
 - `untoggle_environment_objects(world, semantic_tags)`: removes specified environment objects from the world
   - `world`: carla.World
-  - `semantic_tags`: list(carla.CityObjectLabel). Specifies which objects are NOT being removed
+  - `semantic_tags`: list([carla.CityObjectLabel](https://carla.readthedocs.io/en/latest/python_api/#carlacityobjectlabel)). Specifies which objects are NOT being removed
 - `change_color_texture_of_objects(world, filter_criteria, color, width, height, material)`: changes the color and texture of filtered objects
   - `world`: carla.World
   - `filter_criteria`: String. Only objects, whose name contains the filter_criteria, are being painted. E.g. `BP_StreetLight_6` to only paint a certain street light.
@@ -114,15 +114,22 @@ The following utility functions are being offered:
   - `width`: int
   - `height`: int
   - `material`: carla.MaterialParameter
-- `spawn_props(world, prop)`: spawns 10 props on road lines in front of the ego vehicle. Only works for `LK_highway_exit.xosc` scenario
+- `spawn_props(world, prop)`: spawns 10 props on road lines in front of the ego vehicle. Hardcoded for `LK_highway_exit.xosc` scenario
   - `world`: carla.World
   - `prop`: String, specifying which prop is being spawned e.g. `static.prop.creasedbox03`. The props catalogue can be found [here](https://carla.readthedocs.io/en/latest/catalogue_props/).
 - `change_vehicle_physics(vehicle)`: applies physics controls to the specified vehicle. As of now, what is being changed for the vehicles physics has to be set inside the function. Options can be found [here](https://carla.readthedocs.io/en/latest/python_api/#carla.VehiclePhysicsControl) and [here](https://carla.readthedocs.io/en/latest/python_api/#carlawheelphysicscontrol).
   - `vehicle`: carla.Vehicle
-- `change_weather(world, cloudiness, precipitation, precipitation_deposits, wind_intensity, sun_azimuth_angle, sun_altitude_angle, fog_density, fog_distance, wetness, fog_falloff, scattering_intensity, mie_scattering_scale,rayleigh_scattering_scale, dust_storm)`: used to change the weather in the simulation. the parameters correspond to the parameter needed to create a carla.WeatherParameters object (see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters)).
-- `add_fog(world, fog_density, fog_distance, fog_falloff)`: adds fog to the carla simulation. For documentation of the parameters see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters).
-- `add_rain(world, precipitation, precipitation_deposits, wetness)`: adds rain to the carla simulation see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters).
-- `add_blinding_sun(world, sun_azimuth_angle, sun_altitude_angle)`: adds blinding sunlight to the carla simulation see [here](https://carla.readthedocs.io/en/latest/python_api/#carla.WeatherParameters).
+
+The following utilities can be achieved by adjusting the scenario file:
+- `changing the weather`: see the documentation for weather [here](https://releases.asam.net/OpenSCENARIO/1.0.0/Model-Documentation/content/Weather.html).
+  - `sunny weather`: `<Sun intensity="1.0" azimuth="5.2" elevation="0.35"/>`. Hardcoded for `LK_highway_exit.xosc` scenario
+  - `foggy weather`: `<Fog visualRange="1.0"/>`
+  - `rainy weather`: `<Precipitation precipitationType="rain" intensity="1.0"/>`
+- `set the maximum speed, acceleration and deceleration of the ego vehicle`: e.g. `<Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>`. see the documentation for performance [here](https://releases.asam.net/OpenSCENARIO/1.0.0/Model-Documentation/content/Performance.html)
+
+### Maps, which can be simulated in the docker container
+- Town01
+- TownXX_Opt, while XX can be any number from 01 up to 07, 10 and if the additional maps are installed 11 and 12. 
 
 ### Run without Docker
 

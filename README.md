@@ -101,6 +101,7 @@ Finally, the balancer's Docker infrastructure can be stopped and removed via its
 ```
 b.stop()
 ```
+
 ### Utility functions
 
 The following utility functions are being offered in the `utility.py` file:
@@ -126,6 +127,24 @@ The following utilities can be achieved by adjusting the scenario file:
   - `foggy weather`: `<Fog visualRange="1.0"/>`
   - `rainy weather`: `<Precipitation precipitationType="rain" intensity="1.0"/>`
 - `set the maximum speed, acceleration and deceleration of the ego vehicle`: e.g. `<Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>`. see the documentation for performance [here](https://releases.asam.net/OpenSCENARIO/1.0.0/Model-Documentation/content/Performance.html)
+
+### SOTIF triggering events
+
+| SOTIF Triggering Events | Implementation |
+| ------------------------| ---------------|
+| The camera sensor may not detect the lane boundaries because the lane markings are partially or fully covered | use RoadPainter to add snow or water layer on the street |
+| Obstructions may block the camera's view of lane markings, vehicles, or other objects. | use the `spawn_props()` method |
+| The camera may have deteriorated performance in environmental conditions that reduce visibility, such as weather or low lighting. | change the weather in the scenario file, e.g. blinding sun, fog, rain etc.|
+| Environmental noise factors, such as light reflection or shadows, may affect the sensor's ability to detect lane markings, vehicles, or other objects. | <ul><li>`camera`: offers multiple parameters to change the motion blur, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#rgb-camera)</li><li>`LIDAR`: offers `noise_stddev` to add environmental noise, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#lidar-sensor)</li></ul> |
+| Atmospheric attenuation leads to LIDAR inensity loss which may affect the LIDAR's ability to detect lane markings, vehicles, or other objects. | `LIDAR` offers `atmosphere_attenuation_rate`, which measures the LIDAR's intensity loss, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#lidar-sensor) |
+| The camera may not detect roadside landmarks, such as concrete barriers or guardrails, if there is low contrast between the landmarks and the roadway or other environmental features. | spawn the props with the `spawn_props()` function and afterwards change the texture with the `change_color_texture_of_objects()` |
+| The camera may not detect lane markings if the lane markings have low contrast with the pavement or are below a minimum size or quality. | use RoadPainter to change the lane markings |
+| Due to wear and tear, the vehicle may not function safely. | <ul><li>use the `change_vehicle_physics()` function to depict functional misbehaviour</li><li>limit the vehicles maximum speed, acceleration and/or deceleration in the scenario file</li><li>manipulate the `carla.VehicleControl` object in the `run_step()` function of the `fmi.py` file to change the vehicles driving behaviour</li></ul> |
+| The vehicle or object in an adjacent lane may be outside the camera's field-of-view. | Adjust the scenario file in such a corresponding way. |
+| The roadway geometry, such as curvature or grade, may prevent the camera from correctly determining the distance to other vehicles, including the lead vehicle | Add a lead vehicle to the `LK_roundabout.xosc` file or use a similar scenario |
+| The LIDAR may not detect vehicles with thin profiles, such as motorcycles or bicycles, or objects below a certain size | Adjust the scenario file to spawn motorcycles or bicycles in front of the vehicle |
+| The lane model algorithm perceives other environmental features as the lane lines | Add props (e.g creased box 03) with the `spawn_props()` function in a way that the props look like lane markings. |
+| The environmental or roadway conditions may change suddenly, causing the system to reach the limits of its ODD sooner than expected. |    |
 
 ### Maps, which can be simulated in the docker container
 - Town01

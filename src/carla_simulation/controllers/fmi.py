@@ -3,6 +3,7 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
+import string
 import carla
 import rospy
 import yaml
@@ -91,9 +92,18 @@ class FMIAgent(AutonomousAgent):
             rospy.get_rostime()           
         )
         
+        for float_signal in signals_out.result.floatSignals:
+            #if int_signal.name == 'AliveReturnDebug':   
+            #    print(int_signal)    
+            if float_signal.name == 'AliveCheckDebug':   
+                print(float_signal)  
+            if float_signal.name == 'AlivereturnDebug':   
+                print(float_signal) 
+            #if int_signal.name == 'DelayOut':   
+            #    print(int_signal)
         for int_signal in signals_out.result.intSignals:
-            if int_signal.name == 'AliveReturnDebug':   
-                print(int_signal)     
+            if int_signal.name == 'DelayOut':   
+                print(int_signal)   
                 #with open(signals_out) as f:
         #        data = yaml.safe_load(f)
                 #print(data.get("result").get("intSignals"))
@@ -125,13 +135,14 @@ class FMIAgent(AutonomousAgent):
             #print(dict.get('signalNames'))
             #print(dict.get('parameters'))
             print(starttime)
+            print("fault injected")
             faultInjectionStructure.faultModel = dict.get("faultModel")
             faultInjectionStructure.signalNames = dict.get('signalNames')
             faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
             injected = self._activate_faultinjector_service(faultInjectionStructure)
             #print("activated faultinjection")
 
-        if timestamp > 13 and timestamp < (13.1):
+        if timestamp > 0.3 and timestamp < 0.4:
         #    print(endtime)
             injected = self._deactivate_faultinjector_service()
         #    print(injected.error)

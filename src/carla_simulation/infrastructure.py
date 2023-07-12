@@ -200,6 +200,7 @@ class Infrastructure:
             return self.client.containers.run(
                 self.SERVER_IMAGE,
                 name = server_name,
+                restart_policy = {"Name": "on-failure", "MaximumRetryCount": 10},
                 detach = True,
                 privileged = True,
                 remove = False,

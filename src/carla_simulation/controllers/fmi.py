@@ -13,7 +13,6 @@ from srunner.autoagents.autonomous_agent import AutonomousAgent
 
 from carla_simulation.utils.sensing import process_lidar_data
 from carla_simulation.utils.sensing import process_location_data
-from carla_simulation.utils.utility import change_vehicle_physics
 
 class FMIAgent(AutonomousAgent):
 
@@ -31,7 +30,6 @@ class FMIAgent(AutonomousAgent):
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
 
-        change_vehicle_physics(self._ego_vehicle)
 
     def setup(self, _):
         self._agent = None

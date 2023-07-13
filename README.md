@@ -149,10 +149,8 @@ The following effects can be achieved by adjusting the parameters for the sensor
 | The object trail/tracker algorithm may incorrectly determine that a vehicle in the adjacent lane is changing to another lane. | create scenario, where a vehicle is steering left and right in the lane to throw off the object trail/tracker algorithm. |
 | The object trail/tracker algorithm may not detect an object moving in front of the host vehicle during a lane change. | create scenario, where the ego vehicle changes lane |
 | The object trail/tracker may not correctly detect or classify the entire vehicle or object. | create scenario and spawn an [European HGV](https://carla.readthedocs.io/en/latest/catalogue_vehicles/) |
-| In the absence of clear lane markings or landmarks, the road model algorithm
-incorrectly establishes the travel lane and/or the target lane. | test the ego vehicle in a scenario without any lane markings |
-| The road model algorithm incorrectly estimates the road curvature and reports
-the incorrect curvature to the steerable path algorithms | see how the ego vehicle in a roundabout, e.g. in `LK_roundabout.xosc` |
+| In the absence of clear lane markings or landmarks, the road model algorithm incorrectly establishes the travel lane and/or the target lane. | test the ego vehicle in a scenario without any lane markings |
+| The road model algorithm incorrectly estimates the road curvature and reports the incorrect curvature to the steerable path algorithms | see how the ego vehicle in a roundabout, e.g. in `LK_roundabout.xosc` |
 | The environmental or roadway conditions may change suddenly, causing the system to reach the limits of its ODD sooner than expected. | The lane suddenly stops in front of a desert |
 | The highway chauffeur system may be incapable of safely bringing the vehicle to a stop in the middle of a maneuver. | During a lane keep maneuver another vehicle cuts right in front of the ego vehicle and fully brakes. |
 

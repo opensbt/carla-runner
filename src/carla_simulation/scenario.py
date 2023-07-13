@@ -13,13 +13,7 @@ from srunner.scenarioconfigs.openscenario_configuration import OpenScenarioConfi
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
 
-from carla_simulation.utils.utility import untoggle_environment_objects
-from carla_simulation.utils.utility import spawn_props
-from carla_simulation.utils.utility import change_color_texture_of_objects
-from carla_simulation.utils.utility import change_weather
-from carla_simulation.utils.utility import add_fog
-from carla_simulation.utils.utility import add_rain
-from carla_simulation.utils.utility import add_blinding_sun
+from carla_simulation.utils.environment import untoggle_environment_objects
 
 class Scenario:
 
@@ -68,11 +62,7 @@ class Scenario:
                 )
             )
 
-        untoggle_environment_objects(world, [carla.CityObjectLabel.Roads, carla.CityObjectLabel.RoadLines])
-
-        spawn_props(world, 'static.prop.creasedbox03')
-
-        change_color_texture_of_objects(world, filter_criteria='', color=carla.Color(r=255, g=255, b=255, a=255), width=100, height=100, material=carla.MaterialParameter.Diffuse)
+        untoggle_environment_objects(world, [carla.CityObjectLabel.Roads, carla.CityObjectLabel.RoadLines, carla.CityObjectLabel.GuardRail])
 
         # We assume there is only one ego actor, as only one agent is created.
         controller = agent(simulator, vehicles[0])

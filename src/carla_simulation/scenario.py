@@ -25,12 +25,12 @@ class Scenario:
     def simulate(self, simulator, agent, recorder):
         client = simulator.get_client()
 
+        map.prepare(client, self._xosc)
+
         world = client.get_world()
 
         CarlaDataProvider.set_client(client)
         CarlaDataProvider.set_world(world)
-
-        map.prepare(client, self._xosc)
 
         actor_list = CarlaDataProvider.get_world().get_actors()
         if actor_list:

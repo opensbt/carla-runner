@@ -13,7 +13,7 @@ from srunner.scenarioconfigs.openscenario_configuration import OpenScenarioConfi
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
 
-from carla_simulation.utils.environment import untoggle_environment_objects
+from carla_simulation.utils import environment, map
 
 class Scenario:
 
@@ -29,6 +29,8 @@ class Scenario:
 
         CarlaDataProvider.set_client(client)
         CarlaDataProvider.set_world(world)
+
+        map.prepare(client, self._xosc)
 
         actor_list = CarlaDataProvider.get_world().get_actors()
         if actor_list:
@@ -62,7 +64,12 @@ class Scenario:
                 )
             )
 
-        untoggle_environment_objects(world, [carla.CityObjectLabel.Roads, carla.CityObjectLabel.RoadLines, carla.CityObjectLabel.GuardRail])
+        # Untoggle everything except the road network.
+        environment.show(world, [
+            carla.CityObjectLabel.Roads,
+            carla.CityObjectLabel.RoadLines,
+            carla.CityObjectLabel.GuardRail,
+        ])
 
         # We assume there is only one ego actor, as only one agent is created.
         controller = agent(simulator, vehicles[0])
@@ -73,7 +80,6 @@ class Scenario:
             config,
             self._xosc
         )
-
         recording = recorder.add_recording(
             Path(self._xosc.path).stem
         )
@@ -82,10 +88,10 @@ class Scenario:
             timeout = 60.0
         )
         manager.load_scenario(scenario, controller)
+
         client.start_recorder(
             recording,
             True
         )
-
         manager.run_scenario()
         client.stop_recorder()

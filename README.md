@@ -28,8 +28,8 @@ Make sure that the following environment variables are set correctly:
     * `ROSCO_PATH`: https://git.fortiss.org/ff1/rosco.git
     * `OPENSBT_CORE_PATH`: https://git.fortiss.org/opensbt/opensbt-core.git
     * `OPENSBT_RUNNER_PATH`: https://git.fortiss.org/opensbt/carla-runner.git
-    * `CARLA_PATH`: https://github.com/carla-simulator/carla.git
-    * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git
+    * `CARLA_PATH`: https://github.com/carla-simulator/carla.git (Tag: `0.9.13`)
+    * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git (Tag: `v0.9.13`)
 
 If you are using an IDE, this can usually be done through some run configuration options.
 
@@ -102,39 +102,48 @@ Finally, the balancer's Docker infrastructure can be stopped and removed via its
 b.stop()
 ```
 
-### Functions to change the simulation environment
+## Advanced Features
+
+### Changing the Environment
+
+#### Python API
 
 The following functions are being offered in `environment.py`:
-- `untoggle_environment_objects(world, semantic_tags)`: removes specified environment objects from the world, see [here](https://carla.readthedocs.io/en/latest/python_api/#carlacityobjectlabel), which can be untoggled
-- `change_color_texture_of_objects(world, filter_criteria, color, width, height, material)`: changes the color and the texture of filtered objects. E.g. `filter_criteria=BP_StreetLight_6` to only paint a certain street light.
-- `spawn_prop(world, prop, transform)`: spawns a specified prop from the [props catalogue](https://carla.readthedocs.io/en/latest/catalogue_props/) at the location specified in the transform object
-- `change_vehicle_physics(vehicle, torque_curve, max_rpm, moi, damping_rate_full_throttle, damping_rate_zero_throttle_clutch_engaged, damping_rate_zero_throttle_clutch_disengaged, clutch_strength, final_ratio, mass, drag_coefficient, center_of_mass, adjust_wheels, tire_frictions, damping_rates, radii, max_brake_torques)`: applies physics controls to the specified vehicle. Check the documentation [here](https://carla.readthedocs.io/en/latest/python_api/#carla.VehiclePhysicsControl) and [here](https://carla.readthedocs.io/en/latest/python_api/#carlawheelphysicscontrol) to find out more about the parameter.
+- `show(world, labels)`: removes all environment objects from the world, except the ones specified in the labels. [This](https://carla.readthedocs.io/en/latest/python_api/#carlacityobjectlabel) is a list of objects which can be untoggled.
+- `color(world, filter_criteria, color, width, height, material)`: Changes the color and the texture of filtered objects. E.g. `filter_criteria=BP_StreetLight_6` to only paint a certain street light.
+- `spawn(world, prop, transform)`: Spawns a specified prop from the [props catalogue](https://carla.readthedocs.io/en/latest/catalogue_props/) at the location specified in the transform object.
+- `set_vehicle_physics(vehicle, torque_curve, max_rpm, moi, damping_rate_full_throttle, damping_rate_zero_throttle_clutch_engaged, damping_rate_zero_throttle_clutch_disengaged, clutch_strength, final_ratio, mass, drag_coefficient, center_of_mass, adjust_wheels, tire_frictions, damping_rates, radii, max_brake_torques)`: Applies the given dynamics to the specified vehicle. Check the documentation [here](https://carla.readthedocs.io/en/latest/python_api/#carla.VehiclePhysicsControl) and [here](https://carla.readthedocs.io/en/latest/python_api/#carlawheelphysicscontrol) to find out more about the parameters.
+
+#### XOSC File
 
 The following effects can be achieved by adjusting the scenario file:
-- `changing the weather`: see the documentation for weather [here](https://releases.asam.net/OpenSCENARIO/1.0.0/Model-Documentation/content/Weather.html).
-  - `sunny weather`: `<Sun intensity="1.0" azimuth="5.2" elevation="0.35"/>`. Hardcoded for `LK_highway_exit.xosc` scenario
-  - `foggy weather`: `<Fog visualRange="1.0"/>`
-  - `rainy weather`: `<Precipitation precipitationType="rain" intensity="1.0"/>`
-- `set the maximum speed, acceleration and deceleration of the ego vehicle`: e.g. `<Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>`. see the documentation for performance [here](https://releases.asam.net/OpenSCENARIO/1.0.0/Model-Documentation/content/Performance.html)
+- **Weather**: Please find the standard's description [here](https://releases.asam.net/OpenSCENARIO/1.0.0/Model-Documentation/content/Weather.html). Examples:
+  - _Sun_: `<Sun intensity="1.0" azimuth="5.2" elevation="0.35"/>`. Hardcoded for `LK_highway_exit.xosc` scenario
+  - _Fog_: `<Fog visualRange="1.0"/>`
+  - _Rain_: `<Precipitation precipitationType="rain" intensity="1.0"/>`
+- **Performance**: The maximum speed, acceleration and deceleration of the ego vehicle can be set as follows: `<Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>`. Please refer to the [standard's documentation](https://releases.asam.net/OpenSCENARIO/1.0.0/Model-Documentation/content/Performance.html) for more information.
+
+#### CARLA Sensors
 
 The following effects can be achieved by adjusting the parameters for the sensors in the `fmi.py` file:
-- `LIDAR`:
+- **LIDAR**:
   - `atmosphere_attenuation_rate`: coefficient that measures the LIDAR intensity loss, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#lidar-sensor)
   - `noise_stddev`: standard deviation of the noise model of the LIDAR sensor, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#lidar-sensor)
-- `camera`: the camera offers multiple parameters to change the `motion blur` and the `calibration`, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#rgb-camera) 
+- **Camera**:
+  - The camera offers multiple parameters to change the `motion blur` and the `calibration`, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#rgb-camera).
 
-### SOTIF triggering events
+### Simulating Triggering Events
 
-| SOTIF Triggering Events | Implementation |
-| ------------------------| ---------------|
+| Triggering Event | Implementation |
+| -----------------| ---------------|
 | The camera sensor may not detect the lane boundaries because the lane markings are partially or fully covered | use RoadPainter to add snow or water layer on the street |
-| Obstructions may block the camera's view of lane markings, vehicles, or other objects. | use the `spawn_props()` method |
+| Obstructions may block the camera's view of lane markings, vehicles, or other objects. | use the `spawn()` method |
 | The camera may have deteriorated performance in environmental conditions that reduce visibility, such as weather or low lighting. | change the weather in the scenario file, e.g. blinding sun, fog, rain etc.|
 | Environmental noise factors, such as light reflection or shadows, may affect the sensor's ability to detect lane markings, vehicles, or other objects. | <ul><li>`camera`: offers multiple parameters to change the motion blur, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#rgb-camera)</li><li>`LIDAR`: offers `noise_stddev` to add environmental noise, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#lidar-sensor)</li></ul> |
 | Atmospheric attenuation leads to LIDAR inensity loss which may affect the LIDAR's ability to detect lane markings, vehicles, or other objects. | `LIDAR` offers `atmosphere_attenuation_rate`, which measures the LIDAR's intensity loss, see [here](https://carla.readthedocs.io/en/latest/ref_sensors/#lidar-sensor) |
-| The camera may not detect roadside landmarks, such as concrete barriers or guardrails, if there is low contrast between the landmarks and the roadway or other environmental features. | spawn the props with the `spawn_props()` function and afterwards change the texture with the `change_color_texture_of_objects()` |
+| The camera may not detect roadside landmarks, such as concrete barriers or guardrails, if there is low contrast between the landmarks and the roadway or other environmental features. | spawn the props with the `spawn()` function and afterwards change the texture with the `color()` |
 | The camera may not detect lane markings if the lane markings have low contrast with the pavement or are below a minimum size or quality. | use RoadPainter to change the lane markings |
-| Due to wear and tear, the vehicle may not function safely. | <ul><li>use the `change_vehicle_physics()` function to depict functional misbehaviour</li><li>limit the vehicles maximum speed, acceleration and/or deceleration in the scenario file</li><li>manipulate the `carla.VehicleControl` object in the `run_step()` function of the `fmi.py` file to change the vehicles driving behaviour</li></ul> |
+| Due to wear and tear, the vehicle may not function safely. | <ul><li>use the `set_vehicle_physics()` function to depict functional misbehaviour</li><li>limit the vehicles maximum speed, acceleration and/or deceleration in the scenario file</li><li>manipulate the `carla.VehicleControl` object in the `run_step()` function of the `fmi.py` file to change the vehicles driving behaviour</li></ul> |
 | The vehicle or object in an adjacent lane may be outside the camera's field-of-view. | Adjust the scenario file in such a corresponding way. |
 | If lead vehicle tracking is used in the absence of clear lane markings, the lead vehicle may exceed the visual range of the camera | Remove lane markings in RoadPainter and adjust the front vehicles behaviour in the scenario to perform multiple fast lane changes in a row. |
 | The camera, radar, lidar as well as the object trail/tracker algorithm may have limitations individually tracking multiple objects that are close together and moving at similar speeds | Create scenario with at least two motorbikes or bicycles close next to each other, which look the same |
@@ -142,9 +151,9 @@ The following effects can be achieved by adjusting the parameters for the sensor
 | The camera, radar and lidar may not detect certain environmental features with sufficient confidence, such as guardrails. | Add the carla.CityObjectLabel.GuardRail to the `untoggle_environment_objects()` function in order to keep guardrails visible. |
 | The LIDAR and radar may not detect vehicles with thin profiles, such as motorcycles or bicycles, or objects below a certain size | Adjust the scenario file to spawn motorcycles or bicycles in front of the vehicle |
 | The lane model algorithm may incorrectly categorize other roadway features, such as off-ramps or branching lanes, as a continuation of the current travel lane. | Simulate a complex traffic situation with multiple lane markings to confuse the lane model algorithm |
-| The lane model algorithm perceives other environmental features as the lane lines | Add props (e.g creased box 03) with the `spawn_props()` function in a way that the props look like lane markings. |
+| The lane model algorithm perceives other environmental features as the lane lines | Add props (e.g creased box 03) with the `spawn()` function in a way that the props look like lane markings. |
 | In the absence of clear lane markings, the object trail/tracker algorithm may track the incorrect lead vehicle. | create scenario without lane markins and with multiple vehicles in front of the ego vehicle |
-| In the absence of clear lane markings, the object trail/tracker algorithm tracks a lead vehicle that is not staying centered in the travel lane (e.g., swerving, exiting roadway, changing lanes). | create scenario without lane markings and a vehicle, perform a lane change in front of the ego vehicle | 
+| In the absence of clear lane markings, the object trail/tracker algorithm tracks a lead vehicle that is not staying centered in the travel lane (e.g., swerving, exiting roadway, changing lanes). | create scenario without lane markings and a vehicle, perform a lane change in front of the ego vehicle |
 | The object trail/tracker algorithm may incorrectly assign the track of an object to the incorrect lane. | create scenario with multiple lanes and place a vehicle 2 lines next to the ego vehicle |
 | The object trail/tracker algorithm may incorrectly determine that a vehicle in the adjacent lane is changing to another lane. | create scenario, where a vehicle is steering left and right in the lane to throw off the object trail/tracker algorithm. |
 | The object trail/tracker algorithm may not detect an object moving in front of the host vehicle during a lane change. | create scenario, where the ego vehicle changes lane |
@@ -156,7 +165,7 @@ The following effects can be achieved by adjusting the parameters for the sensor
 
 ### Maps, which can be simulated in the docker container
 - Town01
-- TownXX_Opt, while XX can be any number from 01 up to 07, 10 and if the additional maps are installed 11 and 12. 
+- TownXX_Opt, while XX can be any number from 01 up to 07, 10 and if the additional maps are installed 11 and 12.
 
 ### Run without Docker
 

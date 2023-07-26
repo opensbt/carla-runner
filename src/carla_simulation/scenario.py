@@ -4,6 +4,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import time
+import carla
 
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from srunner.scenarioconfigs.openscenario_configuration import OpenScenarioConfi
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
 
+from carla_simulation.utils import environment, map
 
 class Scenario:
 
@@ -22,6 +24,8 @@ class Scenario:
 
     def simulate(self, simulator, agent, recorder):
         client = simulator.get_client()
+
+        map.prepare(client, self._xosc)
 
         world = client.get_world()
 
@@ -60,7 +64,14 @@ class Scenario:
                 )
             )
 
-        # We assumes there is only one ego actor, as only one agent is created.
+        # Untoggle everything except the road network.
+        environment.show(world, [
+            carla.CityObjectLabel.Roads,
+            carla.CityObjectLabel.RoadLines,
+            carla.CityObjectLabel.GuardRail,
+        ])
+
+        # We assume there is only one ego actor, as only one agent is created.
         controller = agent(simulator, vehicles[0])
 
         scenario = OpenScenario(
@@ -69,7 +80,6 @@ class Scenario:
             config,
             self._xosc
         )
-
         recording = recorder.add_recording(
             Path(self._xosc.path).stem
         )
@@ -78,6 +88,7 @@ class Scenario:
             timeout = 60.0
         )
         manager.load_scenario(scenario, controller)
+
         client.start_recorder(
             recording,
             True

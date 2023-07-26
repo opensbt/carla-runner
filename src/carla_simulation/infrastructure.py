@@ -52,8 +52,7 @@ class Infrastructure:
     RECORDING_DIR = '/tmp/recordings'
     SCENARIO_DIR = '/tmp/scenarios'
 
-    MAP_NAME = 'Town01'
-    CARLA_TIMOUT = 20
+    CARLA_TIMEOUT = 20
     MAXIMUM_CONNECT_TRIES = 3
 
     def __init__(self,
@@ -144,25 +143,14 @@ class Infrastructure:
                 print(f".", end='')
 
                 if tries >= self.MAXIMUM_CONNECT_TRIES:
-                    print("Giving up")
+                    print(" Giving up.")
                     raise RuntimeError("Cannot contact carla server. Is it running?")
             tries += 1
 
-        # Set timout larger to avoid timout errors when the carla server is just slow to respond
-        carla_client.set_timeout(self.CARLA_TIMOUT)
-        server_map = carla_client.get_world().get_map().name.split('/')[-1]
+        # Set timeout larger to avoid timeout errors when the carla server is just slow to respond
+        carla_client.set_timeout(self.CARLA_TIMEOUT)
 
-        # Check if map is already loaded
-        if server_map != self.MAP_NAME:
-            print(f" Loading Map... ", end='')
-            carla_client.load_world(self.MAP_NAME)
-        else:
-            # Map is already present, so we are not reloading to save time.
-            # This means that actors from previous scenarios will stay on the map.
-            # However, scenario.py will remove them, before loading new actors.
-            print(f" Map present. ", end='')
-
-        print("Done")
+        print(" Done.")
 
     def configure_running_client(self, client: Container) -> None:
         while not self.get_address(client):
@@ -250,7 +238,7 @@ class Infrastructure:
                     '/bin/bash',
                     './CarlaUE4.sh',
                     '-RenderOffScreen',
-                    '-quality-level=Low',
+                    '-quality-level=Medium',
                 ]
             )
 

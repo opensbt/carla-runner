@@ -14,7 +14,6 @@ from srunner.autoagents.autonomous_agent import AutonomousAgent
 from carla_simulation.utils.sensing import process_lidar_data
 from carla_simulation.utils.sensing import process_location_data
 
-
 class FMIAgent(AutonomousAgent):
 
     SENSOR_MIN_DISTANCE = 2.0
@@ -30,6 +29,7 @@ class FMIAgent(AutonomousAgent):
         self._ego_vehicle = ego_vehicle
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
+
 
     def setup(self, _):
         self._agent = None
@@ -172,7 +172,8 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 1, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 10.0, 'lower_fov': 0.0,
-                    'horizontal_fov': 90.0, 'id': 'lidar'
+                    'horizontal_fov': 90.0, 'atmosphere_attenuation_rate': 0.004, 
+                    'noise_stddev': 0.0, 'id': 'lidar'
                 }
             )
         sensors.append(
@@ -182,7 +183,8 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 8, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
-                    'horizontal_fov': 10, 'id': 'lidar_left'
+                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004, 
+                    'noise_stddev': 0.0, 'id': 'lidar_left'
                 }
             )
         sensors.append(
@@ -192,7 +194,8 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 8, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
-                    'horizontal_fov': 10, 'id': 'lidar_right'
+                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004, 
+                    'noise_stddev': 0.0, 'id': 'lidar_right'
                 }
             )
 

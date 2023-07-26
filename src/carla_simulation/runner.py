@@ -71,7 +71,7 @@ class Runner:
                     last_chars = last_chars[-1000:]
                     print(data.decode(), end='')
 
-                if self.FAILURE_INDICATOR in last_chars:
+                if self.SUCCESS_INDICATOR not in last_chars:
                     print(f"[Runner] Executor ran into an problem while in scenario {pattern}, agent {self._agent_name}.")
                     print("[Runner] Trying to start the carla server...")
                     self._server.start()
@@ -84,8 +84,6 @@ class Runner:
 
                     # Continue, to run the scenario again
                     continue
-                elif self.SUCCESS_INDICATOR not in last_chars:
-                    print("WARNING: Executor feedback not found, assuming success.")
 
                 pattern = pattern.replace('xosc', 'json')
                 with os.scandir(self._infrastructure.recordings) as entries:

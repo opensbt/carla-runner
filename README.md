@@ -237,7 +237,7 @@ Follow the [tutorial](https://carla.readthedocs.io/en/latest/tuto_M_custom_road_
 ##### Section: Paint the road
 - Step 1: If the roads in `world outliner` are greyed out, go to the `window` drop down menu on the top left, then to `levels` and open the lock for `TXX_Layout`.
 
-[<img src="doc/painted_road.png" width="500"/>]()
+[<img src="doc/painted_road.png" width="1000"/>]()
 The following changes have been done in the picture:
 - **Roads**: selected all roads, went to the detail panel and applied `Black` to Element 0 in _Materials_.
 - **Lane markings**: followed the _update the appearance of lane markings_ section in the tutorial and chose a color close to white. and then instead of step 3, searched for `Road_Marking` in the _world outlier_, selected all and then applied `Tutorial_LaneMarkings` to Elemnt 0 in _Materials_.

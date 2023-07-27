@@ -168,7 +168,9 @@ The following effects can be achieved by adjusting the parameters for the sensor
 ### RoadPainter
 In order to use the `RoadPainter`, a carla build from source is necessary. The official instructions on how to build carla from source can be found [here](https://carla.readthedocs.io/en/latest/build_linux/). 
 
-#### Unreal Engine section:
+#### Installation:
+
+##### Unreal Engine section:
 If step 1. in the `Unreal Engine` section throws the following error, store your github credential for https with `gh auth login`:
 ```
 Failed to download 'http://cdn.unrealengine.com/dependencies/UnrealEngine-3528311-b7bac00897a54aa8bf466ab3906cb532/56304ecbe66a10d054956a5d7d80624fec86a588': The remote server returned an error: (403) Forbidden. (WebException)
@@ -176,7 +178,7 @@ Failed to download 'http://cdn.unrealengine.com/dependencies/UnrealEngine-352831
 **Important**: Don't forget to switch to the `0.9.13` tag before executing step 3. If `git checkout 0.9.13` throws `error: pathspec '0.9.13' did not match any file(s) known to git`, fetch the tag with `git fetch origin refs/tags/0.9.13` and checkout `FETCH_HEAD` or use `git fetch --all --tags`
 If the 403 Forbidden error occurs in step 3 or while changing to the 0.9.13 tag, go to branch [4.26](https://github.com/EpicGames/UnrealEngine/commits/4.26) in the Unreal Engine repo and download the latest version of `Engine/Build/Commit.gitdeps.xml` (currently [here](https://github.com/EpicGames/UnrealEngine/blob/1598cf219e46e521f6049ebb6822a534071b2782/Engine/Build/Commit.gitdeps.xml)) and replace it locally in your repo, which you downloaded in step 1. Epics post on this issue can be found [here](https://forums.unrealengine.com/t/upcoming-disruption-of-service-impacting-unreal-engine-users-on-github/1155880).
 
-#### Build CARLA section:
+##### Build CARLA section:
 Follow the documentation until `Build CARLA` section. If on Ubuntu 22.04 and you currently use carla 0.9.13, which needs clang 8 to build, a solution is to compile the PythonAPI and the server in a docker container. 
 - install [rootless docker](https://docs.docker.com/engine/security/rootless/) for the user in the docker container to access specific files (i think rootless docker is not needed, however i didn't test it):
   - run `sudo apt-get install -y uidmap`
@@ -223,6 +225,27 @@ RUN useradd -u 1001 user
 - open a new terminal and run `docker exec -it --user user road_painter bash`
 - set Unreal Engine environment variable: `export UE4_ROOT=/opt/UnrealEngine_4.26`
 - start the unreal engine editor with `cd /opt/carla && make launch`
+
+#### Usage
+Follow the [tutorial](https://carla.readthedocs.io/en/latest/tuto_M_custom_road_painter/) on how to use the road painter. Before doing the tutorial you may want to change the map. To do so go under `file -> Open level -> Content/Carla/Maps/` and then choose the map.
+
+##### Section: Establish the road painter, master material and render target
+- Step 1: If the road painter actor can not be dragged into the scene, then go to the `window` drop down menu on the top left, then to `levels` and open the lock for `Persistent Level`.
+- Step 2: No file called `RenderTarget`, therefore used `RenderTexture`
+- Step 3: The file is located in `Content/Carla/Static/GenericMaterials/RoadPainterMaterials`
+
+##### Section: Paint the road
+- Step 1: If the roads in `world outliner` are greyed out, go to the `window` drop down menu on the top left, then to `levels` and open the lock for `TXX_Layout`.
+
+[<img src="doc/painted_road.png" width="500"/>]()
+The following changes have been done in the picture:
+- **Roads**: selected all roads, went to the detail panel and applied `Black` to Element 0 in _Materials_.
+- **Lane markings**: followed the _update the appearance of lane markings_ section in the tutorial and chose a color close to white. and then instead of step 3, searched for `Road_Marking` in the _world outlier_, selected all and then applied `Tutorial_LaneMarkings` to Elemnt 0 in _Materials_.
+
+##### Export the map and ingest it into carla:
+The Unreal Editor offers the following options as far as i have seen (not tested):
+- `File -> Carla exporter`: However, I'm not quite sure what to do with the .obj file.
+- `File -> Export All` and export as .fbx. This [tutorial](https://carla.readthedocs.io/en/latest/tuto_M_add_map_package/#map-ingestion-in-a-carla-package) covers how to ingest a map in a binary CARLA version a .fbx and .xodr file. The corresponding .xodr file can be found at `.../carla/Unreal/CarlaUE4/Content/Carla/Maps/OpenDrive/`.
 
 ### Maps, which can be simulated in the docker container
 - Town01

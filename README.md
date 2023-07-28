@@ -165,27 +165,45 @@ The following effects can be achieved by adjusting the parameters for the sensor
 
 ## Advanced Settings
 
-### RoadPainter
-In order to use the `RoadPainter`, a carla build from source is necessary. The official instructions on how to build carla from source can be found [here](https://carla.readthedocs.io/en/latest/build_linux/). 
+### Run without Docker
 
-#### Unreal Engine section:
-If step 1. in the `Unreal Engine` section throws the following error, store your github credential for https with `gh auth login`:
+The following code changes have to be done:
+
+- In `infrastructure.py`, change the NETWORK mode to `host`, connect the CARLA client to `127.17.0.1` and remove any calls of the `get_address()` function.
+- Optionally to avoid overhead in `infrastructure.py`, change the server image to `ubuntu` and set the command for the server container in `create_server_container()` to `sleep infinity`.
+- In `runner.py`, change the host's IP address to `127.17.0.1`.
+
+Then download the CARLA simulator and execute it with `export VK_ICD_FILENAMES="/usr/share/vulkan/icd.d/nvidia_icd.json"  && ./CarlaUE4.sh` in order to use the NVIDIA GPU locally.
+
+### RoadPainter
+
+In order to use the `RoadPainter`, a CARLA build from source is necessary. The official instructions on how to build CARLA from source can be found [here](https://carla.readthedocs.io/en/latest/build_linux/).
+
+#### Installation:
+
+##### Unreal Engine:
+
+If step 1 in the `Unreal Engine` section throws the following error, store your GitHub credentials for https with `gh auth login`:
+
 ```
 Failed to download 'http://cdn.unrealengine.com/dependencies/UnrealEngine-3528311-b7bac00897a54aa8bf466ab3906cb532/56304ecbe66a10d054956a5d7d80624fec86a588': The remote server returned an error: (403) Forbidden. (WebException)
 ```
+
 **Important**: Don't forget to switch to the `0.9.13` tag before executing step 3. If `git checkout 0.9.13` throws `error: pathspec '0.9.13' did not match any file(s) known to git`, fetch the tag with `git fetch origin refs/tags/0.9.13` and checkout `FETCH_HEAD` or use `git fetch --all --tags`
 If the 403 Forbidden error occurs in step 3 or while changing to the 0.9.13 tag, go to branch [4.26](https://github.com/EpicGames/UnrealEngine/commits/4.26) in the Unreal Engine repo and download the latest version of `Engine/Build/Commit.gitdeps.xml` (currently [here](https://github.com/EpicGames/UnrealEngine/blob/1598cf219e46e521f6049ebb6822a534071b2782/Engine/Build/Commit.gitdeps.xml)) and replace it locally in your repo, which you downloaded in step 1. Epics post on this issue can be found [here](https://forums.unrealengine.com/t/upcoming-disruption-of-service-impacting-unreal-engine-users-on-github/1155880).
 
-#### Build CARLA section:
-Follow the documentation until `Build CARLA` section. If on Ubuntu 22.04 and you currently use carla 0.9.13, which needs clang 8 to build, a solution is to compile the PythonAPI and the server in a docker container. 
-- install [rootless docker](https://docs.docker.com/engine/security/rootless/) for the user in the docker container to access specific files (i think rootless docker is not needed, however i didn't test it):
-  - run `sudo apt-get install -y uidmap`
-  - run `sudo apt-get install -y dbus-user-session` and relogin
-  - if the system-wide Docker daemon is already running, consider disabling it and afterwards restarting: `sudo systemctl disable --now docker.service docker.socket`
-  - run `dockerd-rootless-setuptool.sh install`
-  - run `systemctl --user enable docker` and `sudo loginctl enable-linger $(whoami)` to start the docker daemon and restart afterwards
-- build the dockerfile with `docker build -t rpainter .`. The dockerfile should look like follows:
-```
+##### Building CARLA:
+
+Follow the documentation until `Build CARLA` section. If your are on Ubuntu 22.04 and you currently use CARLA 0.9.13, which needs Clang 8 to build, a solution is to compile the PythonAPI and the server in a Docker container.
+- Install [rootless Docker](https://docs.docker.com/engine/security/rootless/) for the user in the docker container to access specific files:
+  1. Run `sudo apt-get install -y uidmap`.
+  1. Run `sudo apt-get install -y dbus-user-session` and log in again.
+  1. If the system-wide Docker daemon is already running, consider disabling and restarting it: `sudo systemctl disable --now docker.service docker.socket`.
+  1. Run `dockerd-rootless-setuptool.sh install`
+  1. Run `systemctl --user enable docker` and `sudo loginctl enable-linger $(whoami)` to start the docker daemon and restart afterwards.
+- Build the dockerfile with `docker build -t rpainter .`. The Dockerfile should look like follows:
+
+```Dockerfile
 FROM nvidia/opengl:base-ubuntu18.04
 
 RUN apt-get update && \
@@ -216,26 +234,38 @@ RUN pip install --user setuptools && \
 
 RUN useradd -u 1001 user
 ```
-- start the docker container: `docker run -v /path/to/carla:/opt/carla:rw -v /path/to/UnrealEngine_4.26:/opt/UnrealEngine_4.26:rw -v /tmp/.X11-unix:/tmp/.X11-unix -v /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d --gpus='all,"capabilities=compute,utility,graphics,display"' --network=host --name road_painter --privileged --ipc=host -e DISPLAY=$DISPLAY -it rpainter`
-- run `chown -R user:user /opt/carla` (ignore the files, where the operation is not permitted, it will work either way)
-- run `chown -R user:user /opt/UnrealEngine_4.26/` (ignore the files, where the operation is not permitted, it will work either way)
-- run `cd /home && mkdir user && chown -R user:user user/`
-- open a new terminal and run `docker exec -it --user user road_painter bash`
-- set Unreal Engine environment variable: `export UE4_ROOT=/opt/UnrealEngine_4.26`
-- start the unreal engine editor with `cd /opt/carla && make launch`
 
-### Maps, which can be simulated in the docker container
-- Town01
-- TownXX_Opt, while XX can be any number from 01 up to 07, 10 and if the additional maps are installed 11 and 12.
+- Start the docker container: `docker run -v /path/to/carla:/opt/carla:rw -v /path/to/UnrealEngine_4.26:/opt/UnrealEngine_4.26:rw -v /tmp/.X11-unix:/tmp/.X11-unix -v /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d --gpus='all,"capabilities=compute,utility,graphics,display"' --network=host --name road_painter --privileged --ipc=host -e DISPLAY=$DISPLAY -it rpainter`
+- Run `chown -R user:user /opt/carla` (ignore the files, where the operation is not permitted, it will work either way).
+- Run `chown -R user:user /opt/UnrealEngine_4.26/` (ignore the files, where the operation is not permitted, it will work either way).
+- Run `cd /home && mkdir user && chown -R user:user user/`.
+- Open a new terminal and run `docker exec -it --user user road_painter bash`.
+- Set Unreal Engine environment variable: `export UE4_ROOT=/opt/UnrealEngine_4.26`.
+- Start the unreal engine editor with `cd /opt/carla && make launch`.
 
-### Run without Docker
+#### Usage
+Follow the [tutorial](https://carla.readthedocs.io/en/latest/tuto_M_custom_road_painter/) on how to use the road painter. Before doing the tutorial you may want to change the map. To do so go under `file -> Open level -> Content/Carla/Maps/` and then choose the map.
 
-The following code changes have to be done:
-- In `infrastructure.py`, change the NETWORK mode to `host`, connect the carla Client to `127.17.0.1` and remove any calls of the `get_address()` function
-- Optionally to avoid overhead in `infrastructure.py`, change the server image to `ubuntu` and set the command for the server container in `create_server_container()` to `sleep infinity`
-- In `runner.py`, change the host's IP address to `127.17.0.1`
+##### Establish the road painter, master material and render target
 
-Then download the CARLA simulator and execute it with `export VK_ICD_FILENAMES="/usr/share/vulkan/icd.d/nvidia_icd.json"  && ./CarlaUE4.sh` in order to use the NVIDIA GPU locally
+- Step 1: If the road painter actor can not be dragged into the scene, then go to the `window` drop down menu on the top left, then to `levels` and open the lock for `Persistent Level`.
+- Step 2: No file called `RenderTarget`, therefore used `RenderTexture`.
+- Step 3: The file is located in `Content/Carla/Static/GenericMaterials/RoadPainterMaterials`.
+
+##### Paint the road
+
+- Step 1: If the roads in `world outliner` are greyed out, go to the `window` drop down menu on the top left, then to `levels` and open the lock for `TXX_Layout`.
+
+![Screenshot of a road in a CARLA world with black asphalt and white lane markings.](doc/img/advanced-settings_road-painter_1.png)
+
+The following changes have been done in the picture:
+
+- **Roads**: Selected all roads, went to the detail panel and applied `Black` to Element 0 in _Materials_.
+- **Lane markings**: Followed the _update the appearance of lane markings_ section in the tutorial and chose a color close to white. and then instead of step 3, searched for `Road_Marking` in the _world outlier_, selected all and then applied `Tutorial_LaneMarkings` to Element 0 in _Materials_.
+
+##### Loading the map:
+
+In the Unreal Editor, `File -> Export All` allows the project to be exported as `.fbx`. This [tutorial](https://carla.readthedocs.io/en/latest/tuto_M_add_map_package/#map-ingestion-in-a-carla-package) covers how to ingest a map in a binary CARLA version a .fbx and .xodr file. The corresponding .xodr file can be found at `.../carla/Unreal/CarlaUE4/Content/Carla/Maps/OpenDrive/`.
 
 ### Visual Studio Code
 

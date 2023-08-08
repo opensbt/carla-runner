@@ -50,7 +50,7 @@ Now it is possible to start the runner via the commands `~/projects/carla-runner
 
 ### Docker
 
-Instructions to install Docker are available [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository). The NVIDIA Container Toolkit can be installed as described [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installation-guide).
+Instructions to install Docker are available [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository). Make sure to also perform the post-installation steps required to manage Docker as a non-root user (see [here](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)). The NVIDIA Container Toolkit can be installed as described [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installation-guide).
 
 ### Functional Mock-up Interface (FMI)
 

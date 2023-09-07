@@ -19,6 +19,9 @@ class Runner:
     _agent_name: str = None
     _metric_name: str = None
 
+    _resolution: float = 0.1
+    _synchronous: bool = True
+
     MAX_RESTARTS = 3
     SUCCESS_INDICATOR = "[Executor] SUCCESS:"
     FAILURE_INDICATOR = "[Executor] ERROR:"
@@ -28,12 +31,16 @@ class Runner:
                  server: Container,
                  client: Container,
                  agent: str,
-                 metric:str):
+                 metric: str,
+                 resolution: float,
+                 synchronous: bool):
         self._infrastructure = infrastructure
         self._server = server
         self._client = client
         self._agent_name = agent
         self._metric_name = metric
+        self._resolution = resolution
+        self._synchronous = synchronous
 
     def run(self, queue, evaluations):
         while not queue.empty():
@@ -48,8 +55,11 @@ class Runner:
                     "--scenarios {}".format(self._infrastructure.SCENARIO_DIR),
                     "--pattern {}".format(pattern),
                     "--agent {}".format(self._agent_name),
-                    "--metric {}".format(self._metric_name)
+                    "--metric {}".format(self._metric_name),
+                    "--resolution {}".format(self._resolution)
                 ])
+                if self._synchronous:
+                    configuration = "{} --synchronous".format(configuration)
                 if self._infrastructure.visualization:
                     configuration = "{} --visualize".format(configuration)
 

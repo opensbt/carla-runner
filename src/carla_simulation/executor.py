@@ -36,6 +36,7 @@ class Executor:
     _timeout_carla = 10
     _rendering_carla = False
     _resolution_carla = 0.1
+    _synchronous_carla = True
 
     _agent_class = None
     _metric_class = None
@@ -43,7 +44,7 @@ class Executor:
     _recording_dir = None
     _scenario_dir = None
 
-    def __init__(self, host, scenario_dir, recording_dir, agent, metric, visualize):
+    def __init__(self, host, scenario_dir, recording_dir, agent, metric, resolution, synchronous, visualize):
         self._host_carla = host
 
         self._recording_dir = recording_dir
@@ -54,6 +55,9 @@ class Executor:
 
         self._rendering_carla = visualize
 
+        self._resolution_carla = resolution
+        self._synchronous_carla = synchronous
+
     def execute(self, pattern):
         try:
             simulator = self.get_simulator(
@@ -61,7 +65,8 @@ class Executor:
                 self._port_carla,
                 self._timeout_carla,
                 self._rendering_carla,
-                self._resolution_carla
+                self._resolution_carla,
+                self._synchronous_carla
             )
             scenarios = self.get_scenarios(self._scenario_dir, pattern)
             recorder = self.get_recorder(self._recording_dir)
@@ -90,13 +95,14 @@ class Executor:
         else:
             print("[Executor] SUCCESS: Completed all tasks.")
 
-    def get_simulator(self, host, port, timeout, rendering = True, resolution = 0.1):
+    def get_simulator(self, host, port, timeout, rendering = True, resolution = 0.1, synchronous = True):
         return Simulator(
             host = host,
             port = port,
             timeout = timeout,
             rendering = rendering,
-            resolution = resolution
+            resolution = resolution,
+            synchronous = synchronous
         )
 
     def get_scenarios(self, directory, pattern):
@@ -117,6 +123,11 @@ class Executor:
 
     def get_recorder(self, directory):
         return Recorder(directory)
+
+def convertFloatOrNone(string):
+    if (string == "None"):
+        return None
+    return float(string)
 
 def main():
     parser = argparse.ArgumentParser(description='Execute a set of scenarios.')
@@ -139,11 +150,17 @@ def main():
         '--pattern', help='Pattern for selecting the scenarios.', required=True
     )
     parser.add_argument(
-        '--visualize', help='Pattern for selecting the scenarios.', required=False, action='store_true'
+        '--resolution', help='The resolution of the simulation tick time.', required=True, type=convertFloatOrNone
+    )
+    parser.add_argument(
+        '--synchronous', help='Whether the simulation should be synchronous (between server and client).', required=False, action='store_true'
+    )
+    parser.add_argument(
+        '--visualize', help='Visualize the scenarios.', required=False, action='store_true'
     )
     args = parser.parse_args()
 
-    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.visualize)
+    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.resolution, args.synchronous, args.visualize)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

@@ -10,14 +10,15 @@ import multiprocessing as mp
 from carla_simulation.infrastructure import Infrastructure
 from carla_simulation.runner import Runner
 
-
 class Balancer:
 
     _infrastructure = None
     _agent_name = None
     _metric_name = None
+    _resolution: float = 0.1
+    _synchronous: bool = True
 
-    def __init__(self, directory, agent, metric = 'RawData', jobs = 1, visualization = False, keep_carla_servers=False):
+    def __init__(self, directory, agent, metric = 'RawData', jobs = 1, visualization = False, keep_carla_servers=False, resolution = 0.1, synchronous = True):
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
@@ -26,6 +27,8 @@ class Balancer:
         )
         self._agent_name = agent
         self._metric_name = metric
+        self._resolution = resolution
+        self._synchronous = synchronous
 
     def start(self):
         self._infrastructure.start()
@@ -52,7 +55,9 @@ class Balancer:
                     server,
                     client,
                     self._agent_name,
-                    self._metric_name
+                    self._metric_name,
+                    self._resolution,
+                    self._synchronous
                 )
                 mp.Process(
                     target=runner.run,

@@ -10,7 +10,9 @@ class Simulator:
 
     _host = None
 
-    def __init__(self, host, port, timeout, resolution = 0.1, rendering = False):
+    def __init__(self, host, port, timeout, rendering = False, resolution = 0.1, synchronous = True):
+        print("[Simulator] Simulation mode: Synchronous [%s], Resolution (fixed_delta_seconds) [%s]." % (synchronous, resolution))
+
         self._host = host
 
         self.client = carla.Client(host, port)
@@ -21,13 +23,13 @@ class Simulator:
         settings = world.get_settings()
         settings.no_rendering_mode = not rendering
         settings.fixed_delta_seconds = resolution
-        settings.synchronous_mode = True
+        settings.synchronous_mode = synchronous
         world.apply_settings(settings)
 
         traffic_manager = self.client.get_trafficmanager(
             self.get_traffic_manager_port()
         )
-        traffic_manager.set_synchronous_mode(True)
+        traffic_manager.set_synchronous_mode(synchronous)
 
     def get_traffic_manager_port(self):
         return 8000 + int(self._host.split('.')[-1])

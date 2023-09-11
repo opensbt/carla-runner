@@ -10,6 +10,7 @@ from rosco.srv import *
 from rosco.msg import *
 from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
+from carla_simulation.controllers.manual_control import HumanAgent
 
 from carla_simulation.utils.sensing import process_lidar_data
 from carla_simulation.utils.sensing import process_location_data
@@ -23,6 +24,7 @@ class FMIAgent(AutonomousAgent):
     _do_step_service = None
     _previous_speed = [0.5, 0.5, 0.5]
     _ego_vehicle = None
+    _manual_controller = None
 
     def __init__(self, simulator, ego_vehicle: carla.Vehicle):
         super().__init__("")
@@ -42,6 +44,11 @@ class FMIAgent(AutonomousAgent):
         print('calling init/master service')
         init_master('/opt/workspace/src/rosco/share/config.json')
 
+        # Initialize the agent for the manual controller
+        self._manual_controller = HumanAgent("")
+        #print("\n initialized\n")
+        #self._manual_controller.setup("")
+
         # Initialize the doStepsUntil service.
         rospy.wait_for_service('master/doStepsUntil')
         self._do_step_service = rospy.ServiceProxy('master/doStepsUntil', DoStepsUntilService, persistent=True)
@@ -51,7 +58,9 @@ class FMIAgent(AutonomousAgent):
         if self._visual is not None:
             self._visual.run(input_data)
 
-        signals_in = self.sense(input_data)
+        keyboard_data = self._manual_controller.run_step(None, 0)
+
+        signals_in = self.sense(input_data, keyboard_data)
 
         signals_out = self._do_step_service(
             signals_in,
@@ -62,8 +71,92 @@ class FMIAgent(AutonomousAgent):
 
         return control
 
-    def sense(self, input_data):
+    def booleanToBinary(self, booleanValue):
+        if booleanValue:
+            return 1.0
+        else:
+            return 0.0
+        
+    def sense(self, input_data, xbox_mapping):
         signals = SignalsMessage()
+
+        # Controller input
+        signals.floatSignals.append(FloatSignal(
+            "LeftStick_X",
+            xbox_mapping["left_stick_X"] * 32768.0
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "LeftStick_Y",
+            xbox_mapping["left_stick_Y"] * 32768.0
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "RightStick_X",
+            xbox_mapping["right_stick_X"] * 32768.0
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "RightStick_Y",
+            xbox_mapping["right_stick_Y"] * 32768.0
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonX",
+            self.booleanToBinary(xbox_mapping["button_X"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonY",
+            self.booleanToBinary(xbox_mapping["button_Y"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonA",
+            self.booleanToBinary(xbox_mapping["button_A"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonB",
+            self.booleanToBinary(xbox_mapping["button_B"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonR1",
+            self.booleanToBinary(xbox_mapping["button_R1"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonL1",
+            self.booleanToBinary(xbox_mapping["button_L1"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonR2",
+            self.booleanToBinary(xbox_mapping["button_R2"]) * 1024.0
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonL2",
+            self.booleanToBinary(xbox_mapping["button_L2"]) * 1024.0
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonHome",
+            self.booleanToBinary(xbox_mapping["button_home"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonStart",
+            self.booleanToBinary(xbox_mapping["button_start"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "ButtonSelect",
+            self.booleanToBinary(xbox_mapping["button_select"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "DPadLeft",
+            self.booleanToBinary(xbox_mapping["dpad_left"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "DPadRight",
+            self.booleanToBinary(xbox_mapping["dpad_right"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "DPadUp",
+            self.booleanToBinary(xbox_mapping["dpad_up"])
+        ))
+        signals.floatSignals.append(FloatSignal(
+            "DPadDown",
+            self.booleanToBinary(xbox_mapping["dpad_down"])
+        ))
 
         # Laser distance
         signals.floatSignals.append(FloatSignal(

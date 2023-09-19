@@ -21,6 +21,7 @@ class Runner:
 
     _resolution: float = 0.1
     _synchronous: bool = True
+    _enable_manual_control : bool = False
 
     MAX_RESTARTS = 3
     SUCCESS_INDICATOR = "[Executor] SUCCESS:"
@@ -33,7 +34,8 @@ class Runner:
                  agent: str,
                  metric: str,
                  resolution: float,
-                 synchronous: bool):
+                 synchronous: bool,
+                 enable_manual_control : bool):
         self._infrastructure = infrastructure
         self._server = server
         self._client = client
@@ -41,6 +43,7 @@ class Runner:
         self._metric_name = metric
         self._resolution = resolution
         self._synchronous = synchronous
+        self._enable_manual_control = enable_manual_control
 
     def run(self, queue, evaluations):
         while not queue.empty():
@@ -62,6 +65,8 @@ class Runner:
                     configuration = "{} --synchronous".format(configuration)
                 if self._infrastructure.visualization:
                     configuration = "{} --visualize".format(configuration)
+                if self._enable_manual_control:
+                    configuration = "{} --enable_manual_control".format(configuration)
 
                 _, stream = self._client.exec_run(
                     cmd='/bin/bash -c "{}"'.format(

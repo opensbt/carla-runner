@@ -12,13 +12,14 @@ balancer = Balancer(
     visualization=True,
     keep_carla_servers=False,
     resolution = 0.1,
-    synchronous = True
+    synchronous = True,
+    enable_manual_control = False
 )
 
 try:
     balancer.start()
     evaluations = balancer.run()
-    #print(evaluations)
+    print(evaluations)
 except Exception as exception:
     logging.error(traceback.format_exc())
 finally:

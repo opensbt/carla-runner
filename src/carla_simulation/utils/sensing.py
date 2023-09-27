@@ -12,7 +12,7 @@ from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 def process_lidar_data(input_data, sensor_id, min_distance):
     minimum = min_distance
     for point in input_data[sensor_id][1]:
-            tmp = norm(point[:-1])/10.0
+            tmp = norm(point[:-1])
             if (tmp < minimum):
                 minimum = tmp
     return minimum

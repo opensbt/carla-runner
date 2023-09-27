@@ -13,7 +13,7 @@ balancer = Balancer(
     keep_carla_servers=False,
     resolution = 0.1,
     synchronous = True,
-    enable_manual_control = False
+    enable_manual_control = True
 )
 
 try:

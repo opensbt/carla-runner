@@ -49,7 +49,7 @@ class FMIAgent(AutonomousAgent):
         # Initialize the agent for the manual controller
         self._manual_controller = HumanAgent("")
         #print("\n initialized\n")
-        #self._manual_controller.setup("")
+        self._manual_controller.setup("")
 
         # Initialize the doStepsUntil service.
         rospy.wait_for_service('master/doStepsUntil')
@@ -78,7 +78,7 @@ class FMIAgent(AutonomousAgent):
             return 1.0
         else:
             return 0.0
-        
+
     def sense(self, input_data, xbox_mapping):
         signals = SignalsMessage()
 
@@ -164,17 +164,17 @@ class FMIAgent(AutonomousAgent):
         # Laser distance
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontLaser",
-            process_lidar_data(input_data, 'lidar', self.SENSOR_MIN_DISTANCE)
+            process_lidar_data(input_data, 'lidar', self.SENSOR_MIN_DISTANCE) * 100
         ))
 
         # Ultrasound distances
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontUS_left",
-            process_lidar_data(input_data, 'lidar_left', self.SENSOR_MIN_DISTANCE)
+            process_lidar_data(input_data, 'lidar_left', self.SENSOR_MIN_DISTANCE) * 1000
         ))
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontUS_right",
-            process_lidar_data(input_data, 'lidar_right', self.SENSOR_MIN_DISTANCE)
+            process_lidar_data(input_data, 'lidar_right', self.SENSOR_MIN_DISTANCE) * 1000
         ))
 
         # Velocity feedback
@@ -187,9 +187,9 @@ class FMIAgent(AutonomousAgent):
         distance_right, distance_left = process_location_data(self._ego_vehicle)
         signals.floatSignals.append(FloatSignal("LD_Distance_Right", distance_right))
         signals.floatSignals.append(FloatSignal("LD_Distance_Left", distance_left))
-        signals.boolSignals.append(BoolSignal("LD_server_connected", True))
-        signals.boolSignals.append(BoolSignal("LD_present_right", True))
-        signals.boolSignals.append(BoolSignal("LD_present_left", True))
+        signals.floatSignals.append(FloatSignal("LD_server_connected", 1.0))
+        signals.floatSignals.append(FloatSignal("LD_present_right", 1.0))
+        signals.floatSignals.append(FloatSignal("LD_present_left", 1.0))
 
         return signals
 
@@ -268,7 +268,7 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 1, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 10.0, 'lower_fov': 0.0,
-                    'horizontal_fov': 90.0, 'atmosphere_attenuation_rate': 0.004, 
+                    'horizontal_fov': 90.0, 'atmosphere_attenuation_rate': 0.004,
                     'noise_stddev': 0.0, 'id': 'lidar'
                 }
             )
@@ -279,7 +279,7 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 8, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
-                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004, 
+                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004,
                     'noise_stddev': 0.0, 'id': 'lidar_left'
                 }
             )
@@ -290,7 +290,7 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 8, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
-                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004, 
+                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004,
                     'noise_stddev': 0.0, 'id': 'lidar_right'
                 }
             )

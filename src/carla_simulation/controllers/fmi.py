@@ -17,7 +17,9 @@ from carla_simulation.utils.sensing import process_location_data
 
 class FMIAgent(AutonomousAgent):
 
-    SENSOR_MIN_DISTANCE = 2.0
+    SENSOR_MAX_DISTANCE = 20.0
+    VEHICLE_SCALE = 10
+    ROAD_SCALE = 1.25
 
     _agent = None
     _visual = None
@@ -164,17 +166,17 @@ class FMIAgent(AutonomousAgent):
         # Laser distance
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontLaser",
-            process_lidar_data(input_data, 'lidar', self.SENSOR_MIN_DISTANCE) * 100
+            process_lidar_data(input_data, 'lidar', self.SENSOR_MAX_DISTANCE) * 100 / self.VEHICLE_SCALE + 70
         ))
 
         # Ultrasound distances
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontUS_left",
-            process_lidar_data(input_data, 'lidar_left', self.SENSOR_MIN_DISTANCE) * 1000
+            process_lidar_data(input_data, 'lidar_left', self.SENSOR_MAX_DISTANCE) * 1000 / self.VEHICLE_SCALE + 70
         ))
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontUS_right",
-            process_lidar_data(input_data, 'lidar_right', self.SENSOR_MIN_DISTANCE) * 1000
+            process_lidar_data(input_data, 'lidar_right', self.SENSOR_MAX_DISTANCE) * 1000 / self.VEHICLE_SCALE + 70
         ))
 
         # Velocity feedback
@@ -185,8 +187,8 @@ class FMIAgent(AutonomousAgent):
 
         # Lane detection
         distance_right, distance_left = process_location_data(self._ego_vehicle)
-        signals.floatSignals.append(FloatSignal("LD_Distance_Right", distance_right))
-        signals.floatSignals.append(FloatSignal("LD_Distance_Left", distance_left))
+        signals.floatSignals.append(FloatSignal("LD_Distance_Right", distance_right * self.ROAD_SCALE))
+        signals.floatSignals.append(FloatSignal("LD_Distance_Left", distance_left * self.ROAD_SCALE))
         signals.floatSignals.append(FloatSignal("LD_server_connected", 1.0))
         signals.floatSignals.append(FloatSignal("LD_present_right", 1.0))
         signals.floatSignals.append(FloatSignal("LD_present_left", 1.0))

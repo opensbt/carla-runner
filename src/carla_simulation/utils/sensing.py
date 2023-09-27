@@ -9,8 +9,8 @@ from numpy.linalg import norm
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 
-def process_lidar_data(input_data, sensor_id, min_distance):
-    minimum = min_distance
+def process_lidar_data(input_data, sensor_id, max_distance):
+    minimum = max_distance
     for point in input_data[sensor_id][1]:
             tmp = norm(point[:-1])
             if (tmp < minimum):

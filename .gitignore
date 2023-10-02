@@ -2,11 +2,13 @@
 .vscode/
 
 # Python
-env/
-carla_env/
+*env/
 **/__pycache__/
 *.egg-info
 dist/
 
 # CARLA
 cache/
+
+# No locally changed test file
+test.py

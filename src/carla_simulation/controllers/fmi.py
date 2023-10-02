@@ -10,8 +10,8 @@ from rosco.srv import *
 from rosco.msg import *
 from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
-from carla_simulation.controllers.manual_control import HumanAgent
 
+from carla_simulation.utils.manual_control import parse_keyboard_events_to_xbox
 from carla_simulation.utils.sensing import process_lidar_data
 from carla_simulation.utils.sensing import process_location_data
 
@@ -26,7 +26,6 @@ class FMIAgent(AutonomousAgent):
     _do_step_service = None
     _previous_speed = [0.5, 0.5, 0.5]
     _ego_vehicle = None
-    _manual_controller = None
     _enable_manual_control = False
 
     def __init__(self, simulator, ego_vehicle: carla.Vehicle):
@@ -48,10 +47,8 @@ class FMIAgent(AutonomousAgent):
         print('calling init/master service')
         init_master('/opt/workspace/src/rosco/share/config.json')
 
-        # Initialize the agent for the manual controller
-        self._manual_controller = HumanAgent("")
-        #print("\n initialized\n")
-        self._manual_controller.setup("")
+        if self._enable_manual_control:
+            print("The manual keyboard control was enabled.")
 
         # Initialize the doStepsUntil service.
         rospy.wait_for_service('master/doStepsUntil')
@@ -62,9 +59,7 @@ class FMIAgent(AutonomousAgent):
         if self._visual is not None:
             self._visual.run(input_data)
 
-        keyboard_data = self._manual_controller.run_step(None, 0)
-
-        signals_in = self.sense(input_data, keyboard_data)
+        signals_in = self.sense(input_data)
 
         signals_out = self._do_step_service(
             signals_in,
@@ -81,11 +76,11 @@ class FMIAgent(AutonomousAgent):
         else:
             return 0.0
 
-    def sense(self, input_data, xbox_mapping):
+    def sense(self, input_data):
         signals = SignalsMessage()
 
         if self._enable_manual_control:
-            # Controller input
+            xbox_mapping = parse_keyboard_events_to_xbox()
             signals.floatSignals.append(FloatSignal(
                 "LeftStick_X",
                 xbox_mapping["left_stick_X"] * 32768.0

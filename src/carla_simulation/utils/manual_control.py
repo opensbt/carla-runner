@@ -6,18 +6,15 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 """
-This module provides a human agent to control the ego vehicle via keyboard.
+This module provides a parser that takes the current keyboard input and returns it as Xbox controller inputs.
+This enables manual control with which the ego vehicle can be control by a human user via keyboard.
 """
 
 try:
     import pygame
-    from pygame.locals import KMOD_CTRL
-    from pygame.locals import KMOD_SHIFT
     from pygame.locals import K_DOWN
-    from pygame.locals import K_ESCAPE
     from pygame.locals import K_LEFT
     from pygame.locals import K_RIGHT
-    from pygame.locals import K_SPACE
     from pygame.locals import K_UP
     from pygame.locals import K_a
     from pygame.locals import K_c
@@ -45,40 +42,10 @@ try:
 except ImportError:
     raise RuntimeError('cannot import pygame, make sure pygame package is installed')
 
-import carla
 
-from srunner.autoagents.autonomous_agent import AutonomousAgent
-
-
-class HumanAgent(AutonomousAgent):
-    """
-    Human agent to control the ego vehicle via keyboard
-    """
-
-    def setup(self, path_to_conf_file):
+def parse_keyboard_events_to_xbox():
         """
-        Setup the agent parameters
-        """
-
-        self._controller = KeyboardControl()
-        print("HumanAgent is set up for manual control.")
-
-    def run_step(self, input_data, timestamp):
-        """
-        Execute one step of navigation.
-        """
-
-        return self._controller.parse_events()
-
-
-class KeyboardControl():
-    """
-    Keyboard control for a human agent.
-    """
-
-    def parse_events(self):
-        """
-        Parse the keyboard events to xbox controller inputs.
+        Parse the current keyboard events to xbox controller inputs.
         """
 
         keys = pygame.key.get_pressed()

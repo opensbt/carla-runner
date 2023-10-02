@@ -6,14 +6,14 @@ from carla_simulation.balancer import Balancer
 balancer = Balancer(
     # If the path changes, the container needs to be rebuilt.
     # Delete all client containers for this to happen (docker container rm <client-container-name>, e.g., carla-client-0).
-    directory='/home/sebastian/work_repos/Simulation/Examples/Scenarios',
+    directory='/path/to/your/test/scenarios',
     agent='FMIAgent',
     jobs=1,
     visualization=True,
     keep_carla_servers=False,
     resolution = 0.1,
     synchronous = True,
-    enable_manual_control = True
+    enable_manual_control = False
 )
 
 try:

@@ -3,6 +3,8 @@ import traceback
 
 from carla_simulation.balancer import Balancer
 
+# Please use "git update-index --assume-unchanged test.py" if you use and change this file to disable pushing your local changes for it on the server!
+
 balancer = Balancer(
     # If the path changes, the container needs to be rebuilt.
     # Delete all client containers for this to happen (docker container rm <client-container-name>, e.g., carla-client-0).

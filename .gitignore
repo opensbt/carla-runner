@@ -9,6 +9,3 @@ dist/
 
 # CARLA
 cache/
-
-# No locally changed test file
-test.py

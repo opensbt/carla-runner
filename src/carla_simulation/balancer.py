@@ -15,16 +15,17 @@ class Balancer:
     _infrastructure = None
     _agent_name = None
     _metric_name = None
-    _resolution: float = 0.1
-    _synchronous: bool = True
+    _resolution : float = 0.1
+    _synchronous : bool = True
     _enable_manual_control : bool = False
 
-    def __init__(self, directory, agent, metric = 'RawData', jobs = 1, visualization = False, keep_carla_servers=False, resolution = 0.1, synchronous = True, enable_manual_control = False):
+    def __init__(self, directory, agent, metric = 'RawData', jobs = 1, visualization = False, keep_carla_servers=False, resolution = 0.1, synchronous = True, enable_manual_control = False, quality = "Medium"):
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
             visualization = visualization,
-            keep_carla_servers= keep_carla_servers
+            keep_carla_servers= keep_carla_servers,
+            quality = quality
         )
         self._agent_name = agent
         self._metric_name = metric

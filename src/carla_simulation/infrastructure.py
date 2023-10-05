@@ -54,13 +54,16 @@ class Infrastructure:
 
     CARLA_TIMEOUT = 20
     MAXIMUM_CONNECT_TRIES = 3
+    
+    POSSIBLE_QUALITY_LEVELS = ["Low", "Medium", "Epic"]
 
     def __init__(self,
                  jobs=1,
                  scenarios=SCENARIO_DIR,
                  recordings=RECORDING_DIR,
                  visualization=False,
-                 keep_carla_servers=False
+                 keep_carla_servers=False,
+                 quality="Medium"
                  ):
         self.jobs = jobs
         self.network = self.NETWORK
@@ -71,6 +74,15 @@ class Infrastructure:
         self.servers: List[Container] = []
         self.visualization = visualization
         self.keep_carla_servers = keep_carla_servers
+        if quality in self.POSSIBLE_QUALITY_LEVELS:
+            self.quality = quality
+            print("Infrastructure: simulation quality was set to: " + self.quality)
+        else:
+            self.quality = "Medium"
+            print("Infrastructure: requested simulation quality '" +  quality 
+                  + "' does not exist. Therefore, the default is used: '" + self.quality 
+                  + "'. Available levels: '" + "' - '".join(self.POSSIBLE_QUALITY_LEVELS) + "'.")
+        print("If you have changed the simulation quality, please rebuild the docker containers. Otherwise the infrastructure will not be affected.")
 
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
@@ -238,7 +250,7 @@ class Infrastructure:
                     '/bin/bash',
                     './CarlaUE4.sh',
                     '-RenderOffScreen',
-                    '-quality-level=Medium',
+                    '-quality-level=' + self.quality,
                 ]
             )
 

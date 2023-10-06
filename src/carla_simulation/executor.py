@@ -92,7 +92,7 @@ class Executor:
                 with open(path, 'w') as file:
                     file.write(json.dumps(evaluation))
                 os.remove(recording)
-        except Exception as e:
+        except Exception:
             print(traceback.format_exc())
             print("[Executor] ERROR: Exception encountered.")
             sys.stdout.flush()
@@ -138,38 +138,64 @@ def convertFloatOrNone(string):
 def main():
     parser = argparse.ArgumentParser(description='Execute a set of scenarios.')
     parser.add_argument(
-        '--host', help='Hostname of the CARLA server.', required=True
+        '--host',
+        help='Hostname of the CARLA server.',
+        required=True
     )
     parser.add_argument(
-        '--scenarios', help='Directory containing all scenarios.', required=True
+        '--scenarios',
+        help='Directory containing all scenarios.',
+        required=True
     )
     parser.add_argument(
-        '--recordings', help='Directory to store the recordings.', required=True
+        '--recordings',
+        help='Directory to store the recordings.',
+        required=True
     )
     parser.add_argument(
-        '--agent', help='Agent to execute.', required=True
+        '--agent',
+        help='Agent to execute.',
+        required=True
     )
     parser.add_argument(
-        '--metric', help='Metric module to apply.', required=True
+        '--metric',
+        help='Metric module to apply.',
+        required=True
     )
     parser.add_argument(
-        '--pattern', help='Pattern for selecting the scenarios.', required=True
+        '--pattern',
+        help='Pattern for selecting the scenarios.',
+        required=True
     )
     parser.add_argument(
-        '--resolution', help='The resolution of the simulation tick time.', required=True, type=convertFloatOrNone
+        '--resolution',
+        help='The resolution of the simulation tick time.',
+        required=True,
+        type=convertFloatOrNone
     )
     parser.add_argument(
-        '--synchronous', help='Whether the simulation should be synchronous (between server and client).', required=False, action='store_true'
+        '--synchronous',
+        help='Whether the simulation should be synchronous (between server and client).',
+        required=False,
+        action='store_true'
     )
     parser.add_argument(
-        '--visualize', help='Visualize the scenarios.', required=False, action='store_true'
+        '--visualize',
+        help='Visualize the scenarios.',
+        required=False,
+        action='store_true'
     )
     parser.add_argument(
-        '--enable_manual_control', help='Enable manual control of the vehicle with the keyboard during simulation.', required=False, action='store_true'
+        '--enable_manual_control',
+        help='Enable manual control of the vehicle with the keyboard during simulation.',
+        required=False,
+        action='store_true'
     )
     args = parser.parse_args()
 
-    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.resolution, args.synchronous, args.visualize, args.enable_manual_control)
+    e = Executor(args.host, args.scenarios, args.recordings, args.agent,
+                 args.metric, args.resolution, args.synchronous, args.visualize,
+                 args.enable_manual_control)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

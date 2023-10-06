@@ -27,9 +27,14 @@ class Simulator:
         settings.substepping = True
         settings.max_substeps = 10
         settings.max_substep_delta_time = resolution / settings.max_substeps
+
         world.apply_settings(settings)
-        print("[Simulator] Simulation mode: Synchronous [%s], Resolution (fixed_delta_seconds) [%s], max_substeps [%s], max_substep_delta_time [%s]" % 
-              (synchronous, resolution, settings.max_substeps, settings.max_substep_delta_time))
+        print('[Simulator] Mode: Synchronous [{}], Temporal Resolution [{}],'\
+              ' Maximal Substeps [{}], Substep Resolution [{}]'.format(
+                  synchronous,
+                  resolution,
+                  settings.max_substeps,
+                  settings.max_substep_delta_time))
 
         traffic_manager = self.client.get_trafficmanager(
             self.get_traffic_manager_port()
@@ -41,6 +46,6 @@ class Simulator:
 
     def get_client(self):
         return self.client
-    
+
     def is_manual_control_enabled(self):
         return self._enable_manual_control

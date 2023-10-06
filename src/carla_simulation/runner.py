@@ -19,8 +19,8 @@ class Runner:
     _agent_name: str = None
     _metric_name: str = None
 
-    _resolution: float = 0.1
-    _synchronous: bool = True
+    _temporal_resolution: float = 0.1
+    _synchronous_execution: bool = True
     _enable_manual_control : bool = False
 
     MAX_RESTARTS = 3
@@ -33,16 +33,16 @@ class Runner:
                  client: Container,
                  agent: str,
                  metric: str,
-                 resolution: float,
-                 synchronous: bool,
+                 temporal_resolution: float,
+                 synchronous_execution: bool,
                  enable_manual_control : bool):
         self._infrastructure = infrastructure
         self._server = server
         self._client = client
         self._agent_name = agent
         self._metric_name = metric
-        self._resolution = resolution
-        self._synchronous = synchronous
+        self._temporal_resolution = temporal_resolution
+        self._synchronous_execution = synchronous_execution
         self._enable_manual_control = enable_manual_control
 
     def run(self, queue, evaluations):
@@ -59,9 +59,9 @@ class Runner:
                     "--pattern {}".format(pattern),
                     "--agent {}".format(self._agent_name),
                     "--metric {}".format(self._metric_name),
-                    "--resolution {}".format(self._resolution)
+                    "--resolution {}".format(self._temporal_resolution)
                 ])
-                if self._synchronous:
+                if self._synchronous_execution:
                     configuration = "{} --synchronous".format(configuration)
                 if self._infrastructure.visualization:
                     configuration = "{} --visualize".format(configuration)

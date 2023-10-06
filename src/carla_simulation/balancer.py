@@ -15,22 +15,25 @@ class Balancer:
     _infrastructure = None
     _agent_name = None
     _metric_name = None
-    _resolution : float = 0.1
-    _synchronous : bool = True
+    _temporal_resolution : float = 0.1
+    _synchronous_execution : bool = True
     _enable_manual_control : bool = False
 
-    def __init__(self, directory, agent, metric = 'RawData', jobs = 1, visualization = False, keep_carla_servers=False, resolution = 0.1, synchronous = True, enable_manual_control = False, quality = "Medium"):
+    def __init__(self, directory, agent, metric = 'RawData', jobs = 1,
+                 visualization = False, keep_carla_servers=False,
+                 temporal_resolution = 0.1, synchronous_execution = True,
+                 enable_manual_control = False, rendering_quality = "Medium"):
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
             visualization = visualization,
-            keep_carla_servers= keep_carla_servers,
-            quality = quality
+            keep_carla_servers = keep_carla_servers,
+            rendering_quality = rendering_quality
         )
         self._agent_name = agent
         self._metric_name = metric
-        self._resolution = resolution
-        self._synchronous = synchronous
+        self._temporal_resolution = temporal_resolution
+        self._synchronous_execution = synchronous_execution
         self._enable_manual_control = enable_manual_control
 
     def start(self):
@@ -59,8 +62,8 @@ class Balancer:
                     client,
                     self._agent_name,
                     self._metric_name,
-                    self._resolution,
-                    self._synchronous,
+                    self._temporal_resolution,
+                    self._synchronous_execution,
                     self._enable_manual_control
                 )
                 mp.Process(

@@ -17,14 +17,23 @@ from carla_simulation.utils.sensing import process_location_data
 
 class FMIAgent(AutonomousAgent):
 
-    SENSOR_MAX_DISTANCE = 20.0
+    SENSORS_MAX_DISTANCE = 20.0
+    SENSORS_OFFSET = 70.0
+
+    VEHICLE_MAX_SPEED = 0.4
     VEHICLE_SCALE = 10
+    VEHICLE_OFFSET_STEERING = 6000.0
+    VEHICLE_MAX_STEERING = 1800.0
+
     ROAD_SCALE = 1.25
+
+    CONTROLLER_STICK_RESOLUTION = 32768.0
+    CONTROLLER_SHOULDER_RESOLUTION = 1024.0
 
     _agent = None
     _visual = None
     _do_step_service = None
-    _previous_speed = [0.5, 0.5, 0.5]
+    _previous_speed = [VEHICLE_MAX_SPEED, VEHICLE_MAX_SPEED, VEHICLE_MAX_SPEED]
     _ego_vehicle = None
     _enable_manual_control = False
 
@@ -70,12 +79,6 @@ class FMIAgent(AutonomousAgent):
 
         return control
 
-    def booleanToBinary(self, booleanValue):
-        if booleanValue:
-            return 1.0
-        else:
-            return 0.0
-
     def sense(self, input_data):
         signals = SignalsMessage()
 
@@ -83,110 +86,134 @@ class FMIAgent(AutonomousAgent):
             xbox_mapping = parse_keyboard_events_to_xbox()
             signals.floatSignals.append(FloatSignal(
                 "LeftStick_X",
-                xbox_mapping["left_stick_X"] * 32768.0
+                xbox_mapping["left_stick_X"] * self.CONTROLLER_STICK_RESOLUTION
             ))
             signals.floatSignals.append(FloatSignal(
                 "LeftStick_Y",
-                xbox_mapping["left_stick_Y"] * 32768.0
+                xbox_mapping["left_stick_Y"] * self.CONTROLLER_STICK_RESOLUTION
             ))
             signals.floatSignals.append(FloatSignal(
                 "RightStick_X",
-                xbox_mapping["right_stick_X"] * 32768.0
+                xbox_mapping["right_stick_X"] * self.CONTROLLER_STICK_RESOLUTION
             ))
             signals.floatSignals.append(FloatSignal(
                 "RightStick_Y",
-                xbox_mapping["right_stick_Y"] * 32768.0
+                xbox_mapping["right_stick_Y"] * self.CONTROLLER_STICK_RESOLUTION
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonX",
-                self.booleanToBinary(xbox_mapping["button_X"])
+                float(xbox_mapping["button_X"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonY",
-                self.booleanToBinary(xbox_mapping["button_Y"])
+                float(xbox_mapping["button_Y"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonA",
-                self.booleanToBinary(xbox_mapping["button_A"])
+                float(xbox_mapping["button_A"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonB",
-                self.booleanToBinary(xbox_mapping["button_B"])
+                float(xbox_mapping["button_B"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonR1",
-                self.booleanToBinary(xbox_mapping["button_R1"])
+                float(xbox_mapping["button_R1"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonL1",
-                self.booleanToBinary(xbox_mapping["button_L1"])
+                float(xbox_mapping["button_L1"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonR2",
-                self.booleanToBinary(xbox_mapping["button_R2"]) * 1024.0
+                float(xbox_mapping["button_R2"]) * self.CONTROLLER_SHOULDER_RESOLUTION
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonL2",
-                self.booleanToBinary(xbox_mapping["button_L2"]) * 1024.0
+                float(xbox_mapping["button_L2"]) * self.CONTROLLER_SHOULDER_RESOLUTION
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonHome",
-                self.booleanToBinary(xbox_mapping["button_home"])
+                float(xbox_mapping["button_home"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonStart",
-                self.booleanToBinary(xbox_mapping["button_start"])
+                float(xbox_mapping["button_start"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "ButtonSelect",
-                self.booleanToBinary(xbox_mapping["button_select"])
+                float(xbox_mapping["button_select"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "DPadLeft",
-                self.booleanToBinary(xbox_mapping["dpad_left"])
+                float(xbox_mapping["dpad_left"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "DPadRight",
-                self.booleanToBinary(xbox_mapping["dpad_right"])
+                float(xbox_mapping["dpad_right"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "DPadUp",
-                self.booleanToBinary(xbox_mapping["dpad_up"])
+                float(xbox_mapping["dpad_up"])
             ))
             signals.floatSignals.append(FloatSignal(
                 "DPadDown",
-                self.booleanToBinary(xbox_mapping["dpad_down"])
+                float(xbox_mapping["dpad_down"])
             ))
 
         # Laser distance
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontLaser",
-            process_lidar_data(input_data, 'lidar', self.SENSOR_MAX_DISTANCE) * 100 / self.VEHICLE_SCALE + 70
+            process_lidar_data(
+                input_data,
+                'lidar',
+                self.SENSORS_MAX_DISTANCE
+            ) * 100 / self.VEHICLE_SCALE + self.SENSORS_OFFSET
         ))
 
         # Ultrasound distances
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontUS_left",
-            process_lidar_data(input_data, 'lidar_left', self.SENSOR_MAX_DISTANCE) * 1000 / self.VEHICLE_SCALE + 70
+            process_lidar_data(
+                input_data,
+                'lidar_left',
+                self.SENSORS_MAX_DISTANCE
+            ) * 1000 / self.VEHICLE_SCALE + self.SENSORS_OFFSET
         ))
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontUS_right",
-            process_lidar_data(input_data, 'lidar_right', self.SENSOR_MAX_DISTANCE) * 1000 / self.VEHICLE_SCALE + 70
+            process_lidar_data(
+                input_data,
+                'lidar_right',
+                self.SENSORS_MAX_DISTANCE
+            ) * 1000 / self.VEHICLE_SCALE + self.SENSORS_OFFSET
         ))
 
         # Velocity feedback
         signals.floatSignals.append(FloatSignal(
             "VelocityIn",
-            0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0]
+            self.VEHICLE_MAX_SPEED \
+                if self._previous_speed[0] > self.VEHICLE_MAX_SPEED \
+                else self._previous_speed[0]
         ))
 
         # Lane detection
         distance_right, distance_left = process_location_data(self._ego_vehicle)
-        signals.floatSignals.append(FloatSignal("LD_Distance_Right", distance_right * self.ROAD_SCALE))
-        signals.floatSignals.append(FloatSignal("LD_Distance_Left", distance_left * self.ROAD_SCALE))
-        signals.floatSignals.append(FloatSignal("LD_server_connected", 1.0))
-        signals.floatSignals.append(FloatSignal("LD_present_right", 1.0))
-        signals.floatSignals.append(FloatSignal("LD_present_left", 1.0))
+        signals.floatSignals.append(FloatSignal(
+            "LD_Distance_Right",
+            distance_right * self.ROAD_SCALE))
+        signals.floatSignals.append(FloatSignal(
+            "LD_Distance_Left",
+            distance_left * self.ROAD_SCALE))
+        signals.floatSignals.append(FloatSignal(
+            "LD_server_connected",
+            float(True)))
+        signals.floatSignals.append(FloatSignal(
+            "LD_present_right",
+            float(True)))
+        signals.floatSignals.append(FloatSignal(
+            "LD_present_left",
+            float(True)))
 
         return signals
 
@@ -202,15 +229,13 @@ class FMIAgent(AutonomousAgent):
 
         if steering_value is None:
             print("SteeringValue not found. Assuming no steering.")
-            steering_value = 6000.0
+            steering_value = self.VEHICLE_MIN_STEERING
 
         if motor_value is None:
             print("MotorValue not found. Assuming no speed.")
             motor_value = 0.0
 
-        # Converting steering to -1.0 to 1.0
-        # 6000 is middle, and maxiumum deviation is 1800 to either side
-        steering = (steering_value - 6000.0)/1800.0
+        steering = (steering_value - self.VEHICLE_OFFSET_STEERING)/self.VEHICLE_MAX_STEERING
 
         throttle = 0.0
         brake = 0.0
@@ -233,8 +258,8 @@ class FMIAgent(AutonomousAgent):
         self._previous_speed.pop()
         self._previous_speed.insert(0, motor_value)
 
-        if throttle > 0.4:
-            throttle = 0.4
+        if throttle > self.VEHICLE_MAX_SPEED:
+            throttle = self.VEHICLE_MAX_SPEED
 
         return carla.VehicleControl(throttle=throttle,
             steer=steering,

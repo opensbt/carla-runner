@@ -46,7 +46,8 @@ class Executor:
     _recording_dir = None
     _scenario_dir = None
 
-    def __init__(self, host, scenario_dir, recording_dir, agent, metric, resolution, synchronous, visualize, enable_manual_control):
+    def __init__(self, host, scenario_dir, recording_dir, agent, metric,
+                 resolution, synchronous, visualize, enable_manual_control):
         self._host_carla = host
 
         self._recording_dir = recording_dir
@@ -100,14 +101,16 @@ class Executor:
         else:
             print("[Executor] SUCCESS: Completed all tasks.")
 
-    def get_simulator(self, host, port, timeout, rendering = True, resolution = 0.1, synchronous = True, enable_manual_control = False):
+    def get_simulator(self, host, port, timeout, rendering = True,
+                      resolution = 0.1, synchronous = True,
+                      enable_manual_control = False):
         return Simulator(
             host = host,
             port = port,
             timeout = timeout,
             rendering = rendering,
-            resolution = resolution,
-            synchronous = synchronous,
+            temporal_resolution = resolution,
+            synchronous_execution = synchronous,
             enable_manual_control = enable_manual_control
         )
 
@@ -129,11 +132,6 @@ class Executor:
 
     def get_recorder(self, directory):
         return Recorder(directory)
-
-def convertFloatOrNone(string):
-    if (string == "None"):
-        return None
-    return float(string)
 
 def main():
     parser = argparse.ArgumentParser(description='Execute a set of scenarios.')
@@ -170,8 +168,9 @@ def main():
     parser.add_argument(
         '--resolution',
         help='The resolution of the simulation tick time.',
-        required=True,
-        type=convertFloatOrNone
+        default=None,
+        required=False,
+        type=float
     )
     parser.add_argument(
         '--synchronous',

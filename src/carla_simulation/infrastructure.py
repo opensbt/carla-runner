@@ -82,7 +82,7 @@ class Infrastructure:
             print("[Infrastructure] Requested simulation quality '" +  rendering_quality
                   + "' does not exist. Therefore, the default is used: '" + self.rendering_quality
                   + "'. Available levels: '" + "' - '".join(self.POSSIBLE_QUALITY_LEVELS) + "'.")
-        print("If you have changed the simulation quality, please rebuild the docker containers."
+        print("If you have changed the simulation quality, please rebuild the Docker containers."
               + " Otherwise the infrastructure will not be affected.")
 
     def start(self):

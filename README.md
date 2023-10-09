@@ -195,13 +195,13 @@ If the 403 Forbidden error occurs in step 3 or while changing to the 0.9.13 tag,
 ##### Building CARLA:
 
 Follow the documentation until `Build CARLA` section. If your are on Ubuntu 22.04 and you currently use CARLA 0.9.13, which needs Clang 8 to build, a solution is to compile the PythonAPI and the server in a Docker container.
-- Install [rootless Docker](https://docs.docker.com/engine/security/rootless/) for the user in the docker container to access specific files:
+- Install [rootless Docker](https://docs.docker.com/engine/security/rootless/) for the user in the Docker container to access specific files:
   1. Run `sudo apt-get install -y uidmap`.
   1. Run `sudo apt-get install -y dbus-user-session` and log in again.
   1. If the system-wide Docker daemon is already running, consider disabling and restarting it: `sudo systemctl disable --now docker.service docker.socket`.
   1. Run `dockerd-rootless-setuptool.sh install`
-  1. Run `systemctl --user enable docker` and `sudo loginctl enable-linger $(whoami)` to start the docker daemon and restart afterwards.
-- Build the dockerfile with `docker build -t rpainter .`. The Dockerfile should look like follows:
+  1. Run `systemctl --user enable docker` and `sudo loginctl enable-linger $(whoami)` to start the Docker daemon and restart afterwards.
+- Build the Dockerfile with `docker build -t rpainter .`. The Dockerfile should look like follows:
 
 ```Dockerfile
 FROM nvidia/opengl:base-ubuntu18.04

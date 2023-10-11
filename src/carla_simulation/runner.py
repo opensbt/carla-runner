@@ -19,6 +19,10 @@ class Runner:
     _agent_name: str = None
     _metric_name: str = None
 
+    _temporal_resolution: float = 0.1
+    _synchronous_execution: bool = True
+    _enable_manual_control : bool = False
+
     MAX_RESTARTS = 3
     SUCCESS_INDICATOR = "[Executor] SUCCESS:"
     FAILURE_INDICATOR = "[Executor] ERROR:"
@@ -28,12 +32,18 @@ class Runner:
                  server: Container,
                  client: Container,
                  agent: str,
-                 metric:str):
+                 metric: str,
+                 temporal_resolution: float,
+                 synchronous_execution: bool,
+                 enable_manual_control : bool):
         self._infrastructure = infrastructure
         self._server = server
         self._client = client
         self._agent_name = agent
         self._metric_name = metric
+        self._temporal_resolution = temporal_resolution
+        self._synchronous_execution = synchronous_execution
+        self._enable_manual_control = enable_manual_control
 
     def run(self, queue, evaluations):
         while not queue.empty():
@@ -48,10 +58,15 @@ class Runner:
                     "--scenarios {}".format(self._infrastructure.SCENARIO_DIR),
                     "--pattern {}".format(pattern),
                     "--agent {}".format(self._agent_name),
-                    "--metric {}".format(self._metric_name)
+                    "--metric {}".format(self._metric_name),
+                    "--resolution {}".format(self._temporal_resolution)
                 ])
+                if self._synchronous_execution:
+                    configuration = "{} --synchronous".format(configuration)
                 if self._infrastructure.visualization:
                     configuration = "{} --visualize".format(configuration)
+                if self._enable_manual_control:
+                    configuration = "{} --enable_manual_control".format(configuration)
 
                 _, stream = self._client.exec_run(
                     cmd='/bin/bash -c "{}"'.format(

@@ -36,6 +36,9 @@ class Executor:
     _timeout_carla = 10
     _rendering_carla = False
     _resolution_carla = 0.1
+    _synchronous_carla = True
+
+    _enable_manual_control = False
 
     _agent_class = None
     _metric_class = None
@@ -43,7 +46,8 @@ class Executor:
     _recording_dir = None
     _scenario_dir = None
 
-    def __init__(self, host, scenario_dir, recording_dir, agent, metric, visualize):
+    def __init__(self, host, scenario_dir, recording_dir, agent, metric,
+                 resolution, synchronous, visualize, enable_manual_control):
         self._host_carla = host
 
         self._recording_dir = recording_dir
@@ -54,6 +58,11 @@ class Executor:
 
         self._rendering_carla = visualize
 
+        self._resolution_carla = resolution
+        self._synchronous_carla = synchronous
+
+        self._enable_manual_control = enable_manual_control
+
     def execute(self, pattern):
         try:
             simulator = self.get_simulator(
@@ -61,7 +70,9 @@ class Executor:
                 self._port_carla,
                 self._timeout_carla,
                 self._rendering_carla,
-                self._resolution_carla
+                self._resolution_carla,
+                self._synchronous_carla,
+                self._enable_manual_control
             )
             scenarios = self.get_scenarios(self._scenario_dir, pattern)
             recorder = self.get_recorder(self._recording_dir)
@@ -82,7 +93,7 @@ class Executor:
                 with open(path, 'w') as file:
                     file.write(json.dumps(evaluation))
                 os.remove(recording)
-        except Exception as e:
+        except Exception:
             print(traceback.format_exc())
             print("[Executor] ERROR: Exception encountered.")
             sys.stdout.flush()
@@ -90,13 +101,17 @@ class Executor:
         else:
             print("[Executor] SUCCESS: Completed all tasks.")
 
-    def get_simulator(self, host, port, timeout, rendering = True, resolution = 0.1):
+    def get_simulator(self, host, port, timeout, rendering = True,
+                      resolution = 0.1, synchronous = True,
+                      enable_manual_control = False):
         return Simulator(
             host = host,
             port = port,
             timeout = timeout,
             rendering = rendering,
-            resolution = resolution
+            temporal_resolution = resolution,
+            synchronous_execution = synchronous,
+            enable_manual_control = enable_manual_control
         )
 
     def get_scenarios(self, directory, pattern):
@@ -121,29 +136,65 @@ class Executor:
 def main():
     parser = argparse.ArgumentParser(description='Execute a set of scenarios.')
     parser.add_argument(
-        '--host', help='Hostname of the CARLA server.', required=True
+        '--host',
+        help='Hostname of the CARLA server.',
+        required=True
     )
     parser.add_argument(
-        '--scenarios', help='Directory containing all scenarios.', required=True
+        '--scenarios',
+        help='Directory containing all scenarios.',
+        required=True
     )
     parser.add_argument(
-        '--recordings', help='Directory to store the recordings.', required=True
+        '--recordings',
+        help='Directory to store the recordings.',
+        required=True
     )
     parser.add_argument(
-        '--agent', help='Agent to execute.', required=True
+        '--agent',
+        help='Agent to execute.',
+        required=True
     )
     parser.add_argument(
-        '--metric', help='Metric module to apply.', required=True
+        '--metric',
+        help='Metric module to apply.',
+        required=True
     )
     parser.add_argument(
-        '--pattern', help='Pattern for selecting the scenarios.', required=True
+        '--pattern',
+        help='Pattern for selecting the scenarios.',
+        required=True
     )
     parser.add_argument(
-        '--visualize', help='Pattern for selecting the scenarios.', required=False, action='store_true'
+        '--resolution',
+        help='The resolution of the simulation tick time.',
+        default=None,
+        required=False,
+        type=float
+    )
+    parser.add_argument(
+        '--synchronous',
+        help='Whether the simulation should be synchronous (between server and client).',
+        required=False,
+        action='store_true'
+    )
+    parser.add_argument(
+        '--visualize',
+        help='Visualize the scenarios.',
+        required=False,
+        action='store_true'
+    )
+    parser.add_argument(
+        '--enable_manual_control',
+        help='Enable manual control of the vehicle with the keyboard during simulation.',
+        required=False,
+        action='store_true'
     )
     args = parser.parse_args()
 
-    e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.visualize)
+    e = Executor(args.host, args.scenarios, args.recordings, args.agent,
+                 args.metric, args.resolution, args.synchronous, args.visualize,
+                 args.enable_manual_control)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

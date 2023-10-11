@@ -11,22 +11,36 @@ from rosco.msg import *
 from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 
+from carla_simulation.utils.manual_control import parse_keyboard_events_to_xbox
 from carla_simulation.utils.sensing import process_lidar_data
 from carla_simulation.utils.sensing import process_location_data
 
 class FMIAgent(AutonomousAgent):
 
-    SENSOR_MIN_DISTANCE = 2.0
+    SENSORS_MAX_DISTANCE = 20.0
+    SENSORS_OFFSET = 70.0
+
+    VEHICLE_MAX_SPEED = 0.4
+    VEHICLE_SCALE = 10
+    VEHICLE_OFFSET_STEERING = 6000.0
+    VEHICLE_MAX_STEERING = 1800.0
+
+    ROAD_SCALE = 1.25
+
+    CONTROLLER_STICK_RESOLUTION = 32768.0
+    CONTROLLER_SHOULDER_RESOLUTION = 1024.0
 
     _agent = None
     _visual = None
     _do_step_service = None
-    _previous_speed = [0.5, 0.5, 0.5]
+    _previous_speed = [VEHICLE_MAX_SPEED, VEHICLE_MAX_SPEED, VEHICLE_MAX_SPEED]
     _ego_vehicle = None
+    _enable_manual_control = False
 
     def __init__(self, simulator, ego_vehicle: carla.Vehicle):
         super().__init__("")
         self._ego_vehicle = ego_vehicle
+        self._enable_manual_control = simulator.is_manual_control_enabled()
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
 
@@ -41,6 +55,9 @@ class FMIAgent(AutonomousAgent):
         init_master = rospy.ServiceProxy('master/init', MasterInitService)
         print('calling init/master service')
         init_master('/opt/workspace/src/rosco/share/config.json')
+
+        if self._enable_manual_control:
+            print("The manual keyboard control was enabled.")
 
         # Initialize the doStepsUntil service.
         rospy.wait_for_service('master/doStepsUntil')
@@ -65,35 +82,138 @@ class FMIAgent(AutonomousAgent):
     def sense(self, input_data):
         signals = SignalsMessage()
 
+        if self._enable_manual_control:
+            xbox_mapping = parse_keyboard_events_to_xbox()
+            signals.floatSignals.append(FloatSignal(
+                "LeftStick_X",
+                xbox_mapping["left_stick_X"] * self.CONTROLLER_STICK_RESOLUTION
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "LeftStick_Y",
+                xbox_mapping["left_stick_Y"] * self.CONTROLLER_STICK_RESOLUTION
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "RightStick_X",
+                xbox_mapping["right_stick_X"] * self.CONTROLLER_STICK_RESOLUTION
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "RightStick_Y",
+                xbox_mapping["right_stick_Y"] * self.CONTROLLER_STICK_RESOLUTION
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonX",
+                float(xbox_mapping["button_X"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonY",
+                float(xbox_mapping["button_Y"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonA",
+                float(xbox_mapping["button_A"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonB",
+                float(xbox_mapping["button_B"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonR1",
+                float(xbox_mapping["button_R1"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonL1",
+                float(xbox_mapping["button_L1"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonR2",
+                float(xbox_mapping["button_R2"]) * self.CONTROLLER_SHOULDER_RESOLUTION
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonL2",
+                float(xbox_mapping["button_L2"]) * self.CONTROLLER_SHOULDER_RESOLUTION
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonHome",
+                float(xbox_mapping["button_home"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonStart",
+                float(xbox_mapping["button_start"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "ButtonSelect",
+                float(xbox_mapping["button_select"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "DPadLeft",
+                float(xbox_mapping["dpad_left"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "DPadRight",
+                float(xbox_mapping["dpad_right"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "DPadUp",
+                float(xbox_mapping["dpad_up"])
+            ))
+            signals.floatSignals.append(FloatSignal(
+                "DPadDown",
+                float(xbox_mapping["dpad_down"])
+            ))
+
         # Laser distance
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontLaser",
-            process_lidar_data(input_data, 'lidar', self.SENSOR_MIN_DISTANCE)
+            process_lidar_data(
+                input_data,
+                'lidar',
+                self.SENSORS_MAX_DISTANCE
+            ) * 100 / self.VEHICLE_SCALE + self.SENSORS_OFFSET
         ))
 
         # Ultrasound distances
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontUS_left",
-            process_lidar_data(input_data, 'lidar_left', self.SENSOR_MIN_DISTANCE)
+            process_lidar_data(
+                input_data,
+                'lidar_left',
+                self.SENSORS_MAX_DISTANCE
+            ) * 1000 / self.VEHICLE_SCALE + self.SENSORS_OFFSET
         ))
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontUS_right",
-            process_lidar_data(input_data, 'lidar_right', self.SENSOR_MIN_DISTANCE)
+            process_lidar_data(
+                input_data,
+                'lidar_right',
+                self.SENSORS_MAX_DISTANCE
+            ) * 1000 / self.VEHICLE_SCALE + self.SENSORS_OFFSET
         ))
 
         # Velocity feedback
         signals.floatSignals.append(FloatSignal(
             "VelocityIn",
-            0.4 if self._previous_speed[0] > 0.4 else self._previous_speed[0]
+            self.VEHICLE_MAX_SPEED \
+                if self._previous_speed[0] > self.VEHICLE_MAX_SPEED \
+                else self._previous_speed[0]
         ))
 
         # Lane detection
         distance_right, distance_left = process_location_data(self._ego_vehicle)
-        signals.floatSignals.append(FloatSignal("LD_Distance_Right", distance_right))
-        signals.floatSignals.append(FloatSignal("LD_Distance_Left", distance_left))
-        signals.boolSignals.append(BoolSignal("LD_server_connected", True))
-        signals.boolSignals.append(BoolSignal("LD_present_right", True))
-        signals.boolSignals.append(BoolSignal("LD_present_left", True))
+        signals.floatSignals.append(FloatSignal(
+            "LD_Distance_Right",
+            distance_right * self.ROAD_SCALE))
+        signals.floatSignals.append(FloatSignal(
+            "LD_Distance_Left",
+            distance_left * self.ROAD_SCALE))
+        signals.floatSignals.append(FloatSignal(
+            "LD_server_connected",
+            float(True)))
+        signals.floatSignals.append(FloatSignal(
+            "LD_present_right",
+            float(True)))
+        signals.floatSignals.append(FloatSignal(
+            "LD_present_left",
+            float(True)))
 
         return signals
 
@@ -109,15 +229,13 @@ class FMIAgent(AutonomousAgent):
 
         if steering_value is None:
             print("SteeringValue not found. Assuming no steering.")
-            steering_value = 6000.0
+            steering_value = self.VEHICLE_MIN_STEERING
 
         if motor_value is None:
             print("MotorValue not found. Assuming no speed.")
             motor_value = 0.0
 
-        # Converting steering to -1.0 to 1.0
-        # 6000 is middle, and maxiumum deviation is 1800 to either side
-        steering = (steering_value - 6000.0)/1800.0
+        steering = (steering_value - self.VEHICLE_OFFSET_STEERING)/self.VEHICLE_MAX_STEERING
 
         throttle = 0.0
         brake = 0.0
@@ -140,8 +258,8 @@ class FMIAgent(AutonomousAgent):
         self._previous_speed.pop()
         self._previous_speed.insert(0, motor_value)
 
-        if throttle > 0.4:
-            throttle = 0.4
+        if throttle > self.VEHICLE_MAX_SPEED:
+            throttle = self.VEHICLE_MAX_SPEED
 
         return carla.VehicleControl(throttle=throttle,
             steer=steering,
@@ -172,7 +290,7 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 1, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 10.0, 'lower_fov': 0.0,
-                    'horizontal_fov': 90.0, 'atmosphere_attenuation_rate': 0.004, 
+                    'horizontal_fov': 90.0, 'atmosphere_attenuation_rate': 0.004,
                     'noise_stddev': 0.0, 'id': 'lidar'
                 }
             )
@@ -183,7 +301,7 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 8, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
-                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004, 
+                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004,
                     'noise_stddev': 0.0, 'id': 'lidar_left'
                 }
             )
@@ -194,7 +312,7 @@ class FMIAgent(AutonomousAgent):
                     'roll': 0.0, 'pitch': 0.0, 'yaw': 180.0,
                     'channels': 8, 'range': 20.0, 'points_per_second': 100,
                     'rotation_frequency': 0.0, 'upper_fov': 5.0, 'lower_fov': -5.0,
-                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004, 
+                    'horizontal_fov': 10, 'atmosphere_attenuation_rate': 0.004,
                     'noise_stddev': 0.0, 'id': 'lidar_right'
                 }
             )

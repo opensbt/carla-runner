@@ -4,12 +4,12 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 import multiprocessing
 import os
-import carla
-import carla_simulation
-import docker
 import subprocess
 import threading
 import concurrent.futures
+import docker
+import carla
+import carla_simulation
 
 import importlib.resources as pkg_resources
 
@@ -55,12 +55,15 @@ class Infrastructure:
     CARLA_TIMEOUT = 20
     MAXIMUM_CONNECT_TRIES = 3
 
+    POSSIBLE_QUALITY_LEVELS = ["Low", "Medium", "Epic"]
+
     def __init__(self,
                  jobs=1,
                  scenarios=SCENARIO_DIR,
                  recordings=RECORDING_DIR,
                  visualization=False,
-                 keep_carla_servers=False
+                 keep_carla_servers=False,
+                 rendering_quality="Medium"
                  ):
         self.jobs = jobs
         self.network = self.NETWORK
@@ -71,6 +74,16 @@ class Infrastructure:
         self.servers: List[Container] = []
         self.visualization = visualization
         self.keep_carla_servers = keep_carla_servers
+        if rendering_quality in self.POSSIBLE_QUALITY_LEVELS:
+            self.rendering_quality = rendering_quality
+            print("[Infrastructure] Rendering quality was set to: " + self.rendering_quality)
+        else:
+            self.rendering_quality = "Medium"
+            print("[Infrastructure] Requested simulation quality '" +  rendering_quality
+                  + "' does not exist. Therefore, the default is used: '" + self.rendering_quality
+                  + "'. Available levels: '" + "' - '".join(self.POSSIBLE_QUALITY_LEVELS) + "'.")
+        print("If you have changed the simulation quality, please rebuild the Docker containers."
+              + " Otherwise the infrastructure will not be affected.")
 
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
@@ -238,7 +251,7 @@ class Infrastructure:
                     '/bin/bash',
                     './CarlaUE4.sh',
                     '-RenderOffScreen',
-                    '-quality-level=Medium',
+                    '-quality-level=' + self.rendering_quality,
                 ]
             )
 

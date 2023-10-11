@@ -40,13 +40,12 @@ class Runner:
         self._fault = fault
 
     def run(self, queue, evaluations):
-        #print("hallo")
         while not queue.empty():
             pattern = queue.get()
             success = False
             attempts = 0
             while not success:
-                #print(f"[Runner] Running Scenario {pattern}, Attempt {attempts}.")
+                print(f"[Runner] Running Scenario {pattern}, Attempt {attempts}.")
                 configuration = " ".join([
                     "--host {}".format(self._infrastructure.get_address(self._server)),
                     "--recordings {}".format(self._infrastructure.RECORDING_DIR),
@@ -75,8 +74,8 @@ class Runner:
                 for data in stream:
                     last_chars += data.decode()
                     last_chars = last_chars[-1000:]
-                    #print(data.decode(), end='')
-                
+                    print(data.decode(), end='')
+
                 if self.FAILURE_INDICATOR in last_chars:
                     print(f"[Runner] Executor ran into an problem while in scenario {pattern}, agent {self._agent_name}.")
                     print("[Runner] Trying to start the carla server ...")
@@ -92,15 +91,15 @@ class Runner:
                     continue
                 #elif self.SUCCESS_INDICATOR not in last_chars:
                     #print("WARNING: Executor feedback not found, assuming success.")
-                print("run done")
-                
+                print("[Runner] Done: {}".format(pattern))
+
                 pattern = pattern.replace('xosc', 'json')
                 with os.scandir(self._infrastructure.recordings) as entries:
                     for entry in entries:
                         if entry.name.endswith(pattern) and entry.is_file():
                             with open(entry, 'r') as file:
-                                obj = json.loads(file.read())
-                                evaluations.append(obj)
+                                metrics = json.loads(file.read())
+                                evaluations[pattern] = metrics
                             os.remove(entry)
 
                 success = True

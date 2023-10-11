@@ -65,22 +65,13 @@ class FMIAgent(AutonomousAgent):
         self._deactivate_faultinjector_service = rospy.ServiceProxy('master/deactivateFaultInjector', DeactivateFaultInjector, persistent=True)
         print('initialized deactivate faultinjector service')
 
-        # Initialize ActivateFaultinjector Service
-        rospy.wait_for_service('master/activateFaultInjector')
-        self._activate_faultinjector_service = rospy.ServiceProxy('master/activateFaultInjector', ActivateFaultInjector, persistent=True)
-        print('initialized activate faultinjector service')
-
-        # Initialize DeactivateFaultinjector Service
-        rospy.wait_for_service('master/deactivateFaultInjector')
-        self._deactivate_faultinjector_service = rospy.ServiceProxy('master/deactivateFaultInjector', DeactivateFaultInjector, persistent=True)
-        print('initialized deactivate faultinjector service')
+        self._deactivate_faultinjector_service()
 
     def setFault(fault):
         print("from fmi, fault set: " + fault)
         with open(fault) as f:
                 data = yaml.safe_load(f)
                 FMIAgent._fault = data['faultInjection']
-
 
     def run_step(self, input_data, _):
         if self._visual is not None:
@@ -89,26 +80,22 @@ class FMIAgent(AutonomousAgent):
 
         signals_out = self._do_step_service(
             signals_in,
-            rospy.get_rostime()           
+            rospy.get_rostime()
         )
-        
+
         for float_signal in signals_out.result.floatSignals:
-            #if int_signal.name == 'AliveReturnDebug':   
-            #    print(int_signal)    
-            if float_signal.name == 'AliveCheckDebug':   
-                print(float_signal)  
-            if float_signal.name == 'AlivereturnDebug':   
-                print(float_signal) 
-            #if int_signal.name == 'DelayOut':   
-            #    print(int_signal)
+            if float_signal.name == 'VelocityDebug':
+                print(float_signal)
+            if float_signal.name == 'ClockDebug':
+                print(float_signal)
         for int_signal in signals_out.result.intSignals:
-            if int_signal.name == 'DelayOut':   
-                print(int_signal)   
+            if int_signal.name == 'DelayOut':
+                print(int_signal)
                 #with open(signals_out) as f:
         #        data = yaml.safe_load(f)
                 #print(data.get("result").get("intSignals"))
-                #print(data["result"])    
-                            
+                #print(data["result"])
+
         control = self.act(signals_out)
 
         return control
@@ -118,11 +105,10 @@ class FMIAgent(AutonomousAgent):
         #print(self._fault)
         timestamp = GameTime.get_time()
         starttime = float(self._fault['starttime'])
-        endtime = float(self._fault['endtime'])+starttime
-   
+        endtime = float(self._fault['endtime'])
+
 
         if timestamp > starttime and timestamp < (starttime+0.1):
-
             #    print(data['faultInjection'])
             #dict = yaml.safe_load(self._fault)
             #f = open("demofile2.txt", "r")
@@ -142,7 +128,7 @@ class FMIAgent(AutonomousAgent):
             injected = self._activate_faultinjector_service(faultInjectionStructure)
             #print("activated faultinjection")
 
-        if timestamp > 0.3 and timestamp < 0.4:
+        if timestamp > endtime and timestamp < (endtime+0.1):
         #    print(endtime)
             injected = self._deactivate_faultinjector_service()
         #    print(injected.error)

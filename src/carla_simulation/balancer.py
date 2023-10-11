@@ -49,7 +49,7 @@ class Balancer:
         with mp.Manager() as manager:
             start_time = time.time()
 
-            evaluations = manager.list()
+            evaluations = manager.dict()
             for server, client in zip(servers, clients):
                 runner = Runner(self._infrastructure,
                     server,
@@ -71,4 +71,4 @@ class Balancer:
 
             print('Time: {}s'.format(stop_time - start_time))
 
-            return list(evaluations)
+            return dict(evaluations)

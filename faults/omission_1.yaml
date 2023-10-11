@@ -1,6 +1,0 @@
-faultInjection:
-  faultModel: 'omission'
-  signalNames:
-    - 'Task_Driver_Assistance.TargetVelocityDA'
-  parameters: '{\"enum_id\": 0}'
-#command for injection: python src/rosco/scripts/inject.py -f src/rosco/share/faults/omission_1.yaml

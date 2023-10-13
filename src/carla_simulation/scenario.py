@@ -64,13 +64,6 @@ class Scenario:
                 )
             )
 
-        # Untoggle everything except the road network.
-        environment.show(world, [
-            carla.CityObjectLabel.Roads,
-            carla.CityObjectLabel.RoadLines,
-            carla.CityObjectLabel.GuardRail,
-        ])
-
         # We assume there is only one ego actor, as only one agent is created.
         controller = agent(simulator, vehicles[0])
 

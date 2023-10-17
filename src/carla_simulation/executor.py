@@ -75,9 +75,6 @@ class Executor:
             self.agents.get('FMIAdapter').setFault(self._fault_dir+"/"+pattern)
             agent = self.get_agent()
 
-            for i in range(0, 4):
-                print("Hallo from the other side")
-
             for scenario in scenarios:
                 scenario.simulate(simulator, agent, recorder)
 
@@ -111,7 +108,6 @@ class Executor:
 
     def get_scenarios(self, directory, pattern):
         scenarios = None
-        print(directory)
         with os.scandir(directory) as entries:
             scenarios = [
                 Scenario(entry)
@@ -122,14 +118,12 @@ class Executor:
 
     def get_faults(self, directory, pattern):
         faults = None
-        print(pattern)
         with os.scandir(directory) as entries:
             faults = [
                 entry
                     for entry in entries
                         if entry.name.endswith(pattern) and entry.is_file()
             ]
-            print(len(faults))
         return faults
 
     def get_evaluator(self):
@@ -171,8 +165,6 @@ def main():
 
 
     e = Executor(args.host, args.scenarios, args.recordings, args.agent, args.metric, args.visualize, args.faultInjection)
-    print("hello from executor main")
-    print(args.faultInjection)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

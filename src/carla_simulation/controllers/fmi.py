@@ -3,7 +3,6 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
-import string
 import carla
 import rospy
 import yaml
@@ -13,7 +12,6 @@ from rosco.msg import *
 from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.scenariomanager.timer import GameTime
-from yaml.loader import SafeLoader
 
 from carla_simulation.utils.sensing import process_lidar_data
 from carla_simulation.utils.sensing import process_location_data
@@ -91,23 +89,6 @@ class FMIAgent(AutonomousAgent):
             signals_in,
             rospy.get_rostime()           
         )
-        
-        for float_signal in signals_out.result.floatSignals:
-            #if int_signal.name == 'AliveReturnDebug':   
-            #    print(int_signal)    
-            if float_signal.name == 'AliveCheckDebug':   
-                print(float_signal)  
-            if float_signal.name == 'AlivereturnDebug':   
-                print(float_signal) 
-            #if int_signal.name == 'DelayOut':   
-            #    print(int_signal)
-        for int_signal in signals_out.result.intSignals:
-            if int_signal.name == 'DelayOut':   
-                print(int_signal)   
-                #with open(signals_out) as f:
-        #        data = yaml.safe_load(f)
-                #print(data.get("result").get("intSignals"))
-                #print(data["result"])    
                             
         control = self.act(signals_out)
 
@@ -115,38 +96,23 @@ class FMIAgent(AutonomousAgent):
 
     def sense(self, input_data):
         signals = SignalsMessage()
-        #print(self._fault)
         timestamp = GameTime.get_time()
         starttime = float(self._fault['starttime'])
-        endtime = float(self._fault['endtime'])+starttime
    
 
         if timestamp > starttime and timestamp < (starttime+0.1):
 
-            #    print(data['faultInjection'])
-            #dict = yaml.safe_load(self._fault)
-            #f = open("demofile2.txt", "r")
-            #faultmodel = f.read()
-            #print(faultmodel)
             dict = self._fault
             faultInjectionStructure = FaultInjectionStructure()
-            #faultInjectionStructure = data['faultInjection']
-            #print(dict.get('faultModel'))
-            #print(dict.get('signalNames'))
-            #print(dict.get('parameters'))
-            print(starttime)
-            print("fault injected")
+           
             faultInjectionStructure.faultModel = dict.get("faultModel")
             faultInjectionStructure.signalNames = dict.get('signalNames')
             faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
             injected = self._activate_faultinjector_service(faultInjectionStructure)
-            #print("activated faultinjection")
 
+        # End fault if there is one from run before
         if timestamp > 0.3 and timestamp < 0.4:
-        #    print(endtime)
             injected = self._deactivate_faultinjector_service()
-        #    print(injected.error)
-            print("deactivated faultinjection")
 
         # Laser distance
         signals.floatSignals.append(FloatSignal(

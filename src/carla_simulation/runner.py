@@ -19,7 +19,7 @@ class Runner:
     _agent_name: str = None
     _metric_name: str = None
 
-    _fault = None
+    _fault: str = None
 
     MAX_RESTARTS = 3
     SUCCESS_INDICATOR = "[Executor] SUCCESS:"
@@ -46,7 +46,7 @@ class Runner:
             success = False
             attempts = 0
             while not success:
-                #print(f"[Runner] Running Scenario {pattern}, Attempt {attempts}.")
+                print(f"[Runner] Running Scenario {pattern}, Attempt {attempts}.")
                 configuration = " ".join([
                     "--host {}".format(self._infrastructure.get_address(self._server)),
                     "--recordings {}".format(self._infrastructure.RECORDING_DIR),
@@ -75,7 +75,7 @@ class Runner:
                 for data in stream:
                     last_chars += data.decode()
                     last_chars = last_chars[-1000:]
-                    #print(data.decode(), end='')
+                    print(data.decode(), end='')
                 
                 if self.FAILURE_INDICATOR in last_chars:
                     print(f"[Runner] Executor ran into an problem while in scenario {pattern}, agent {self._agent_name}.")
@@ -90,9 +90,6 @@ class Runner:
 
                     # Continue, to run the scenario again
                     continue
-                #elif self.SUCCESS_INDICATOR not in last_chars:
-                    #print("WARNING: Executor feedback not found, assuming success.")
-                print("run done")
                 
                 pattern = pattern.replace('xosc', 'json')
                 with os.scandir(self._infrastructure.recordings) as entries:
@@ -106,8 +103,8 @@ class Runner:
                 success = True
                 # The scenario is complete and does not need to be executed again
                 break
-            #if not success:
-            #    print(
-            #        f"ERROR: Giving up on scenario {pattern}, agent {self._agent_name}. "
-            #        f"Marking as complete without result.")
+            if not success:
+                print(
+                    f"ERROR: Giving up on scenario {pattern}, agent {self._agent_name}. "
+                    f"Marking as complete without result.")
             queue.task_done()

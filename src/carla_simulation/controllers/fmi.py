@@ -16,8 +16,8 @@ from srunner.scenariomanager.timer import GameTime
 from carla_simulation.utils.sensing import process_lidar_data
 from carla_simulation.utils.sensing import process_location_data
 
-
 FAULT_DIR = "/tmp/faults"
+
 class FMIAgent(AutonomousAgent):
 
     SENSOR_MIN_DISTANCE = 2.0
@@ -63,15 +63,8 @@ class FMIAgent(AutonomousAgent):
         self._deactivate_faultinjector_service = rospy.ServiceProxy('master/deactivateFaultInjector', DeactivateFaultInjector, persistent=True)
         print('initialized deactivate faultinjector service')
 
-        # Initialize ActivateFaultinjector Service
-        rospy.wait_for_service('master/activateFaultInjector')
-        self._activate_faultinjector_service = rospy.ServiceProxy('master/activateFaultInjector', ActivateFaultInjector, persistent=True)
-        print('initialized activate faultinjector service')
-
-        # Initialize DeactivateFaultinjector Service
-        rospy.wait_for_service('master/deactivateFaultInjector')
-        self._deactivate_faultinjector_service = rospy.ServiceProxy('master/deactivateFaultInjector', DeactivateFaultInjector, persistent=True)
-        print('initialized deactivate faultinjector service')
+        self._deactivate_faultinjector_service()
+        print ("deacivate fault if fault from prior run is still activated")
 
     def setFault(fault):
         print("from fmi, fault set: " + fault)
@@ -108,11 +101,8 @@ class FMIAgent(AutonomousAgent):
             faultInjectionStructure.faultModel = dict.get("faultModel")
             faultInjectionStructure.signalNames = dict.get('signalNames')
             faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
-            injected = self._activate_faultinjector_service(faultInjectionStructure)
-
-        # End fault if there is one from run before
-        if timestamp > 0.3 and timestamp < 0.4:
-            injected = self._deactivate_faultinjector_service()
+            self._activate_faultinjector_service(faultInjectionStructure)
+            print("fault injected")
 
         # Laser distance
         signals.floatSignals.append(FloatSignal(

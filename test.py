@@ -1,3 +1,4 @@
+import json
 import logging
 import traceback
 
@@ -9,13 +10,17 @@ balancer = Balancer(
     directory='/tmp/scenarios',
     jobs=1,
     visualization=True,
+    fault="/tmp/faults",
     keep_carla_servers=False
 )
 
 try:
     balancer.start()
     evaluations = balancer.run()
-    print(evaluations)
+
+    with open('output.json', 'w') as file:
+        json.dump(evaluations, file, indent=2)
+
 except Exception as exception:
     logging.error(traceback.format_exc())
 finally:

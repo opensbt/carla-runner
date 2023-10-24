@@ -40,7 +40,6 @@ class Runner:
         self._fault = fault
 
     def run(self, queue, evaluations):
-        #print("hallo")
         while not queue.empty():
             pattern = queue.get()
             success = False
@@ -91,6 +90,8 @@ class Runner:
                     # Continue, to run the scenario again
                     continue
                 
+                print("[Runner] Done: {}".format(pattern))
+
                 pattern = pattern.replace('xosc', 'json')
                 with os.scandir(self._infrastructure.recordings) as entries:
                     for entry in entries:

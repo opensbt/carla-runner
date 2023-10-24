@@ -11,20 +11,33 @@ import multiprocessing as mp
 from carla_simulation.infrastructure import Infrastructure
 from carla_simulation.runner import Runner
 
-
 class Balancer:
 
     _infrastructure = None
+    _agent_name = None
+    _metric_name = None
+    _temporal_resolution : float = 0.1
+    _synchronous_execution : bool = True
+    _enable_manual_control : bool = False
     _fault = None
 
-    def __init__(self, directory, jobs = 1, visualization = False, fault = None, keep_carla_servers=False):
+    def __init__(self, directory, agent, metric = 'RawData', jobs = 1,
+                 visualization = False, fault = None, keep_carla_servers=False,
+                 temporal_resolution = 0.1, synchronous_execution = True,
+                 enable_manual_control = False, rendering_quality = "Medium"):
         self._infrastructure = Infrastructure(
             jobs = jobs,
             scenarios = directory,
             faults = fault,
             visualization = visualization,
-            keep_carla_servers= keep_carla_servers
+            keep_carla_servers = keep_carla_servers,
+            rendering_quality = rendering_quality
         )
+        self._agent_name = agent
+        self._metric_name = metric
+        self._temporal_resolution = temporal_resolution
+        self._synchronous_execution = synchronous_execution
+        self._enable_manual_control = enable_manual_control
         self._fault = fault
 
     def start(self):
@@ -34,9 +47,6 @@ class Balancer:
         self._infrastructure.stop()
 
     def run(self):
-        agent_name = 'FMIAdapter'
-        metric_name = 'RawData'
-
         servers = self._infrastructure.get_servers()
         clients = self._infrastructure.get_clients()
 
@@ -54,9 +64,12 @@ class Balancer:
                 runner = Runner(self._infrastructure,
                     server,
                     client,
-                    agent_name,
-                    metric_name,
-                    self._fault
+                    self._agent_name,
+                    self._metric_name,
+                    self._fault,
+                    self._temporal_resolution,
+                    self._synchronous_execution,
+                    self._enable_manual_control
                 )
                 mp.Process(
                     target=runner.run,

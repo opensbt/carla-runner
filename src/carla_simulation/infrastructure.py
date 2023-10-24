@@ -2,12 +2,14 @@
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
-
+import multiprocessing
 import os
+import subprocess
+import threading
+import concurrent.futures
+import docker
 import carla
 import carla_simulation
-import docker
-import subprocess
 
 import importlib.resources as pkg_resources
 
@@ -16,8 +18,30 @@ from typing import Callable, List
 from docker.models.containers import Container
 
 
-class Infrastructure:
+def background_rosco_launch(client: Container) -> None:
+    exec_result = client.exec_run(
+        cmd='/bin/bash -c "{}"'.format(
+            " && ".join([
+                "source devel/setup.bash",
+                "roslaunch rosco rosco.launch"
+            ])
+        ),
+        workdir='/opt/workspace',
+    )
+    # Wait for the command to finish and retrieve the exit code
+    exit_code = exec_result.exit_code
 
+    # Only print when code is nonzero
+    if exit_code != 0:
+        # Retrieve the logs from the command
+        logs = exec_result.output.decode('utf-8')
+
+        # Print the exit code and logs
+        print(f"\n[Infrastructure] Container {client.name} is unable to start rosco. Exit code {exit_code}\n"
+              f"{logs}")
+
+
+class Infrastructure:
     SERVER_IMAGE = 'carlasim/carla:0.9.13'
     CLIENT_IMAGE = 'carla-client'
     SERVER_PREFIX = 'carla-server'
@@ -29,9 +53,13 @@ class Infrastructure:
     SCENARIO_DIR = '/tmp/scenarios'
     FAULTS_DIR = '/tmp/faults'
 
-    MAP_NAME = 'Town01'
-    CARLA_TIMOUT = 20
+    #MAP_NAME = 'Town01'
+
+
+    CARLA_TIMEOUT = 20
     MAXIMUM_CONNECT_TRIES = 3
+
+    POSSIBLE_QUALITY_LEVELS = ["Low", "Medium", "Epic"]
 
     def __init__(self,
         jobs = 1,
@@ -39,7 +67,8 @@ class Infrastructure:
         recordings = RECORDING_DIR,
         faults = FAULTS_DIR,
         visualization = False,
-        keep_carla_servers = False
+        keep_carla_servers = False,
+        rendering_quality="Medium"
         ):
         self.jobs = jobs
         self.network = self.NETWORK
@@ -51,18 +80,28 @@ class Infrastructure:
         self.servers: List[Container] = []
         self.visualization = visualization
         self.keep_carla_servers = keep_carla_servers
+        if rendering_quality in self.POSSIBLE_QUALITY_LEVELS:
+            self.rendering_quality = rendering_quality
+            print("[Infrastructure] Rendering quality was set to: " + self.rendering_quality)
+        else:
+            self.rendering_quality = "Medium"
+            print("[Infrastructure] Requested simulation quality '" +  rendering_quality
+                  + "' does not exist. Therefore, the default is used: '" + self.rendering_quality
+                  + "'. Available levels: '" + "' - '".join(self.POSSIBLE_QUALITY_LEVELS) + "'.")
+        print("If you have changed the simulation quality, please rebuild the Docker containers."
+              + " Otherwise the infrastructure will not be affected.")
 
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
         os.makedirs(self.recordings, exist_ok=True)
-        print("Getting images ... ", end="")
+        print("Getting images...", end="")
 
         # Ensure server image is pulled
         print(" Pulling...", end="")
         self.client.images.pull(self.SERVER_IMAGE)
 
         # Ensure client image is built
-        print(" Building ... ", end="")
+        print(" Building...", end="")
         with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
             path = str(file.resolve().parents[0])
             self.client.images.build(
@@ -70,7 +109,7 @@ class Infrastructure:
                 path = path,
             )
 
-        print(" Creating containers ... ")
+        print(" Creating containers...")
         for job in range(self.jobs):
             server = self.create_server(
                 id=job
@@ -82,7 +121,7 @@ class Infrastructure:
             )
             self.clients.append(client)
 
-        print("Starting containers ... ", end="")
+        print("Starting containers... ", end="")
         for client in self.clients:
             client.start()
 
@@ -123,7 +162,7 @@ class Infrastructure:
                 print(f".", end='')
 
                 if tries >= self.MAXIMUM_CONNECT_TRIES:
-                    print("Giving up")
+                    print(" Giving up.")
                     raise RuntimeError("Cannot contact carla server. Is it running?")
             tries += 1
 
@@ -147,16 +186,10 @@ class Infrastructure:
         while not self.get_address(client):
             client.reload()
             sleep(1)
-        client.exec_run(
-            cmd='/bin/bash -c "{}"'.format(
-                " && ".join([
-                    "source devel/setup.bash",
-                    "roslaunch rosco rosco.launch"
-                ])
-            ),
-            workdir='/opt/workspace',
-            detach=True
-        )
+        background_thread = threading.Thread(target=background_rosco_launch, args=(client,))
+
+        # Start the thread
+        background_thread.start()
 
     def get_servers(self) -> List[Container]:
         return self.servers
@@ -167,19 +200,25 @@ class Infrastructure:
     def stop(self):
         containers = self.servers + self.clients
         if containers:
-            for container in containers:
-                if container in self.servers and self.keep_carla_servers:
-                    continue
-                try:
-                    print(f"Stopping container {container.name}.")
-                    container.stop()
-                except docker.errors.NotFound:
-                    print(f"Container {container.name} does no longer exist.")
-            containers.clear()
+            # Use more threads to stop the containers concurrently. These threads are only waiting and no processing
+            # anything so ideally there are as many threads as containers
+            with concurrent.futures.ThreadPoolExecutor(multiprocessing.cpu_count()) as executor:
+                executor.map(self.stop_container, containers)
+                containers.clear()
+
+    def stop_container(self, container: Container) -> None:
+        # if carla containers are kept, remove everything
+        # if carla servers are kept, remove only containers which are not servers
+        if not self.keep_carla_servers or container not in self.servers:
+            try:
+                print(f"Stopping container {container.name}.")
+                container.stop()
+            except docker.errors.NotFound:
+                print(f"Container {container.name} does no longer exist.")
 
     def create_container_if_not_exist(self,
                                       container_name: str,
-                                      container_factory: Callable[[],Container]) -> Container:
+                                      container_factory: Callable[[], Container]) -> Container:
         container = None
         try:
             container = self.client.containers.get(container_name)
@@ -233,9 +272,10 @@ class Infrastructure:
                     '/bin/bash',
                     './CarlaUE4.sh',
                     '-RenderOffScreen',
-                    '-quality-level=Low',
+                    '-quality-level=' + self.rendering_quality,
                 ]
             )
+
         return self.create_container_if_not_exist(server_name, create_server_container)
 
     def create_client(self, id = None):
@@ -311,7 +351,7 @@ class Infrastructure:
             while not self.get_address(container):
                 container.reload()
                 sleep(1)
-            print("Installing OpenSBT requirements ... ", end="")
+            print("Installing OpenSBT requirements... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
@@ -323,7 +363,7 @@ class Infrastructure:
                     "SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL": True
                 }
             )
-            print("Installing OpenSBT wheel ... ", end="")
+            print("Installing OpenSBT wheel... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
@@ -333,7 +373,7 @@ class Infrastructure:
                 ),
                 workdir = '/opt/OpenSBT/Runner'
             )
-            print("Building ROS Workspace ... ", end="")
+            print("Building ROS Workspace... ", end="")
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
@@ -345,6 +385,7 @@ class Infrastructure:
             )
 
             return container
+
         return self.create_container_if_not_exist(client_name, create_client_container)
 
     def get_address(self, container):

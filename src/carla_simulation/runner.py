@@ -19,6 +19,10 @@ class Runner:
     _agent_name: str = None
     _metric_name: str = None
 
+    _temporal_resolution: float = 0.1
+    _synchronous_execution: bool = True
+    _enable_manual_control : bool = False
+
     _fault: str = None
 
     MAX_RESTARTS = 3
@@ -30,22 +34,28 @@ class Runner:
                  server: Container,
                  client: Container,
                  agent: str,
-                 metric: str,
-                 fault: str):
+                 metric:  str,
+                 fault: str,
+                 temporal_resolution: float,
+                 synchronous_execution: bool,
+                 enable_manual_control : bool):
         self._infrastructure = infrastructure
         self._server = server
         self._client = client
         self._agent_name = agent
         self._metric_name = metric
+        self._temporal_resolution = temporal_resolution
+        self._synchronous_execution = synchronous_execution
+        self._enable_manual_control = enable_manual_control
         self._fault = fault
 
     def run(self, queue, evaluations):
         while not queue.empty():
             pattern = queue.get()
             success = False
-            attempts = 0
+            restarts = 0
             while not success:
-                print(f"[Runner] Running Scenario {pattern}, Attempt {attempts}.")
+                print(f"[Runner] Running Scenario {pattern}, Attempt {restarts}.")
                 configuration = " ".join([
                     "--host {}".format(self._infrastructure.get_address(self._server)),
                     "--recordings {}".format(self._infrastructure.RECORDING_DIR),
@@ -53,10 +63,15 @@ class Runner:
                     "--pattern {}".format(pattern),
                     "--agent {}".format(self._agent_name),
                     "--metric {}".format(self._metric_name),
+                    "--resolution {}".format(self._temporal_resolution),
                     "--faultInjection {}".format(self._infrastructure.FAULTS_DIR)
                 ])
+                if self._synchronous_execution:
+                    configuration = "{} --synchronous".format(configuration)
                 if self._infrastructure.visualization:
                     configuration = "{} --visualize".format(configuration)
+                if self._enable_manual_control:
+                    configuration = "{} --enable_manual_control".format(configuration)
 
                 _, stream = self._client.exec_run(
                     cmd='/bin/bash -c "{}"'.format(
@@ -75,15 +90,15 @@ class Runner:
                     last_chars += data.decode()
                     last_chars = last_chars[-1000:]
                     print(data.decode(), end='')
-                
-                if self.FAILURE_INDICATOR in last_chars:
+
+                if self.SUCCESS_INDICATOR not in last_chars:
                     print(f"[Runner] Executor ran into an problem while in scenario {pattern}, agent {self._agent_name}.")
-                    print("[Runner] Trying to start the carla server ...")
+                    print("[Runner] Trying to start the carla server...")
                     self._server.start()
                     self._infrastructure.configure_running_server(self._server)
 
-                    attempts += 1
-                    if attempts > self.MAX_RESTARTS:
+                    restarts += 1
+                    if restarts > self.MAX_RESTARTS:
                         # Maximum tries exceeded, aborting
                         break
 

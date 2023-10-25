@@ -56,7 +56,7 @@ class Infrastructure:
     #MAP_NAME = 'Town01'
 
 
-    CARLA_TIMEOUT = 20
+    CARLA_TIMOUT = 20
     MAXIMUM_CONNECT_TRIES = 3
 
     POSSIBLE_QUALITY_LEVELS = ["Low", "Medium", "Epic"]

@@ -84,7 +84,9 @@ class Executor:
             scenarios = self.get_scenarios(self._scenario_dir, pattern)
             recorder = self.get_recorder(self._recording_dir)
             evaluator = self.get_evaluator()
-            self.agents.get('FMIAdapter').setFault(self._fault_dir+"/"+pattern)
+            for a in self.agents:
+                print(a)
+            self.agents.get('FMIAgent').setFault(self._fault_dir+"/"+pattern)
             agent = self.get_agent()
 
             for scenario in scenarios:

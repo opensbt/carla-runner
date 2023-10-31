@@ -94,6 +94,20 @@ class FMIAgent(AutonomousAgent):
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
+        timestamp = GameTime.get_time()
+        starttime = float(self._fault['starttime'])
+   
+        if timestamp > starttime and timestamp < (starttime+0.1):
+
+            dict = self._fault
+            faultInjectionStructure = FaultInjectionStructure()
+           
+            faultInjectionStructure.faultModel = dict.get("faultModel")
+            faultInjectionStructure.signalNames = dict.get('signalNames')
+            faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
+            self._activate_faultinjector_service(faultInjectionStructure)
+            print("fault injected")
+            
         signals_in = self.sense(input_data)
 
         signals_out = self._do_step_service(
@@ -107,20 +121,6 @@ class FMIAgent(AutonomousAgent):
 
     def sense(self, input_data):
         signals = SignalsMessage()
-        timestamp = GameTime.get_time()
-        starttime = float(self._fault['starttime'])
-   
-
-        if timestamp > starttime and timestamp < (starttime+0.1):
-
-            dict = self._fault
-            faultInjectionStructure = FaultInjectionStructure()
-           
-            faultInjectionStructure.faultModel = dict.get("faultModel")
-            faultInjectionStructure.signalNames = dict.get('signalNames')
-            faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
-            self._activate_faultinjector_service(faultInjectionStructure)
-            print("fault injected")
 
         if self._enable_manual_control:
             xbox_mapping = parse_keyboard_events_to_xbox()

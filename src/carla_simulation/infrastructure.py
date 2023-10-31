@@ -53,7 +53,7 @@ class Infrastructure:
     SCENARIO_DIR = '/tmp/scenarios'
     FAULTS_DIR = '/tmp/faults'
 
-    #MAP_NAME = 'Town01'
+    MAP_NAME = 'Town01'
 
 
     CARLA_TIMOUT = 20

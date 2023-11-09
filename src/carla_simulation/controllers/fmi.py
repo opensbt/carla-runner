@@ -43,6 +43,7 @@ class FMIAgent(AutonomousAgent):
     _ego_vehicle = None
     _enable_manual_control = False
     _fault = None
+    _enable_fault_injection = False
 
     def __init__(self, simulator, ego_vehicle: carla.Vehicle):
         super().__init__("")
@@ -86,6 +87,7 @@ class FMIAgent(AutonomousAgent):
 
     def setFault(fault):
         print("from fmi, fault set: " + fault)
+        FMIAgent._enable_fault_injection = True
         with open(fault) as f:
                 data = yaml.safe_load(f)
                 FMIAgent._fault = data['faultInjection']
@@ -94,19 +96,20 @@ class FMIAgent(AutonomousAgent):
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
-        timestamp = GameTime.get_time()
-        starttime = float(self._fault['starttime'])
+        if(self._enable_fault_injection):
+            timestamp = GameTime.get_time()
+            starttime = float(self._fault['starttime'])
    
-        if timestamp > starttime and timestamp < (starttime+0.1):
+            if timestamp > starttime and timestamp < (starttime+0.1):
 
-            dict = self._fault
-            faultInjectionStructure = FaultInjectionStructure()
+                dict = self._fault
+                faultInjectionStructure = FaultInjectionStructure()
            
-            faultInjectionStructure.faultModel = dict.get("faultModel")
-            faultInjectionStructure.signalNames = dict.get('signalNames')
-            faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
-            self._activate_faultinjector_service(faultInjectionStructure)
-            print("fault injected")
+                faultInjectionStructure.faultModel = dict.get("faultModel")
+                faultInjectionStructure.signalNames = dict.get('signalNames')
+                faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
+                self._activate_faultinjector_service(faultInjectionStructure)
+                print("fault injected")
             
         signals_in = self.sense(input_data)
 

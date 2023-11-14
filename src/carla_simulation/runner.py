@@ -73,8 +73,7 @@ class Runner:
                     configuration = "{} --visualize".format(configuration)
                 if self._enable_manual_control:
                     configuration = "{} --enable_manual_control".format(configuration)
-                if self._enable_fault_injection:
-                    configuration = "{} --enable_fault_injection".format(configuration)
+  
 
                 _, stream = self._client.exec_run(
                     cmd='/bin/bash -c "{}"'.format(

@@ -20,10 +20,9 @@ class Balancer:
     _synchronous_execution : bool = True
     _enable_manual_control : bool = False
     _fault = None
-    _enable_fault_injection : bool = False
 
     def __init__(self, directory, agent, metric = 'RawData', jobs = 1,
-                 visualization = False, fault = None, enable_fault_injection = False, keep_carla_servers=False,
+                 visualization = False, fault = None, keep_carla_servers=False,
                  temporal_resolution = 0.1, synchronous_execution = True,
                  enable_manual_control = False, rendering_quality = "Medium"):
         self._infrastructure = Infrastructure(
@@ -40,7 +39,6 @@ class Balancer:
         self._synchronous_execution = synchronous_execution
         self._enable_manual_control = enable_manual_control
         self._fault = fault
-        self._enable_fault_injection = enable_fault_injection
 
     def start(self):
         self._infrastructure.start()
@@ -72,7 +70,6 @@ class Balancer:
                     self._temporal_resolution,
                     self._synchronous_execution,
                     self._enable_manual_control,
-                    self._enable_fault_injection
                 )
                 mp.Process(
                     target=runner.run,

@@ -40,7 +40,6 @@ class Executor:
     _synchronous_carla = True
 
     _enable_manual_control = False
-    _enable_fault_injection = False
 
     _agent_class = None
     _metric_class = None
@@ -52,7 +51,7 @@ class Executor:
     _faults = []
 
     def __init__(self, host, scenario_dir, recording_dir, agent, metric,
-                 resolution, synchronous, visualize, enable_manual_control, enable_fault_injection, faultInjection):
+                 resolution, synchronous, visualize, enable_manual_control, faultInjection):
         self._host_carla = host
 
         self._recording_dir = recording_dir
@@ -68,7 +67,6 @@ class Executor:
         self._synchronous_carla = synchronous
 
         self._enable_manual_control = enable_manual_control
-        self._enable_fault_injection = enable_fault_injection
 
 
     def execute(self, pattern):
@@ -86,7 +84,7 @@ class Executor:
             scenarios = self.get_scenarios(self._scenario_dir, pattern)
             recorder = self.get_recorder(self._recording_dir)
             evaluator = self.get_evaluator()
-            if(self._enable_fault_injection):
+            if len(os.listdir(self._fault_dir)) != 0:
                 self.agents.get('FMIAgent').setFault(self._fault_dir+"/"+pattern)
             agent = self.agents.get('FMIAgent')
 
@@ -213,12 +211,6 @@ def main():
         action='store_true'
     )
     parser.add_argument(
-        '--enable_fault_injection',
-        help='Enable fault injection.',
-        required=False,
-        action='store_true'
-    )
-    parser.add_argument(
         '--faultInjection',
         help='Name of faultinjection.',
         required=False
@@ -229,7 +221,7 @@ def main():
 
     e = Executor(args.host, args.scenarios, args.recordings, args.agent,
                  args.metric, args.resolution, args.synchronous, args.visualize,
-                 args.enable_manual_control, args.enable_fault_injection, args.faultInjection)
+                 args.enable_manual_control, args.faultInjection)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

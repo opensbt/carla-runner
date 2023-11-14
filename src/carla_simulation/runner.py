@@ -22,7 +22,6 @@ class Runner:
     _temporal_resolution: float = 0.1
     _synchronous_execution: bool = True
     _enable_manual_control : bool = False
-    _enable_fault_injection : bool = False
 
     _fault: str = None
 
@@ -39,8 +38,7 @@ class Runner:
                  fault: str,
                  temporal_resolution: float,
                  synchronous_execution: bool,
-                 enable_manual_control : bool,
-                 enable_fault_injection: bool):
+                 enable_manual_control : bool):
         self._infrastructure = infrastructure
         self._server = server
         self._client = client
@@ -50,10 +48,9 @@ class Runner:
         self._synchronous_execution = synchronous_execution
         self._enable_manual_control = enable_manual_control
         self._fault = fault
-        self._enable_fault_injection = enable_fault_injection
 
     def run(self, queue, evaluations):
-        print("enable fault injection: " + str(self._enable_fault_injection))
+
         while not queue.empty():
             pattern = queue.get()
             success = False

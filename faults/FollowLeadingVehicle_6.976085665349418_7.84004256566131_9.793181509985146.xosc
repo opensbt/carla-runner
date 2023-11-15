@@ -1,0 +1,7 @@
+faultInjection:
+  faultModel: delay
+  parameters: '{"delaySteps": 7.84004256566131, "rampSteps": 9.793181509985146}'
+  signalNames:
+  - Task_Driver_Assistance.SteeringAngleDA
+  - Task_Driver_Assistance.TargetVelocityDA
+  starttime: '6.976085665349418'

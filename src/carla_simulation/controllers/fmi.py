@@ -96,21 +96,28 @@ class FMIAgent(AutonomousAgent):
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
+
         if(self._enable_fault_injection):
+
             timestamp = GameTime.get_time()
             starttime = float(self._fault['starttime'])
    
             if timestamp > starttime and timestamp < (starttime+0.1):
 
-                dict = self._fault
                 faultInjectionStructure = FaultInjectionStructure()
            
-                faultInjectionStructure.faultModel = dict.get("faultModel")
-                faultInjectionStructure.signalNames = dict.get('signalNames')
-                faultInjectionStructure.parameters = dict.get('parameters').encode().decode('unicode_escape')
+                faultInjectionStructure.faultModel = self._fault.get("faultModel")
+                faultInjectionStructure.signalNames = self._fault.get('signalNames')
+                faultInjectionStructure.parameters = self._fault.get('parameters').encode().decode('unicode_escape')
                 self._activate_faultinjector_service(faultInjectionStructure)
                 print("fault injected")
-            
+
+            if self._fault.get('endtime') != None:
+                endtime = float(self._fault['endtime'])
+                if timestamp > endtime and timestamp < (endtime+0.1):
+                    self._deactivate_faultinjector_service()
+                    print("fault ended")
+
         signals_in = self.sense(input_data)
 
         signals_out = self._do_step_service(

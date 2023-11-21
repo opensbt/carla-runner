@@ -18,8 +18,6 @@ from carla_simulation.metrics.raw import RawData
 from carla_simulation.controllers.fmi import FMIAgent
 from carla_simulation.controllers.npc import NPCAgent
 
-FAULT_DIR = "/tmp/faults"
-
 class Executor:
 
     agents = {

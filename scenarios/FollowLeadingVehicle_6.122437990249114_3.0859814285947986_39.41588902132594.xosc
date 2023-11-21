@@ -1,7 +1,7 @@
 <OpenSCENARIO>
   <FileHeader revMajor="1" revMinor="0" date="2020-03-20T12:00:00" description="CARLA:FollowLeadingVehicle" author="" />
   <ParameterDeclarations>
-    <ParameterDeclaration name="leadingSpeed" parameterType="double" value="2.0" />
+    <ParameterDeclaration name="leadingSpeed" parameterType="double" value="39.41588902132594" />
     <ParameterDeclaration name="distanceControl" parameterType="double" value="20" />
     <ParameterDeclaration name="waitingSpeed" parameterType="double" value="1.0" />
     <ParameterDeclaration name="positionLeftRight" parameterType="double" value="56" />

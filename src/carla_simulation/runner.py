@@ -52,9 +52,9 @@ class Runner:
     def run(self, queue, evaluations):
 
         #check that every fault has a matching scenario 
-        if len(os.listdir(self._infrastructure.FAULTS_DIR)) != 0:        
-            faults_names = [entry.name for entry in os.scandir(self._infrastructure.FAULTS_DIR) if entry.is_file()]
-            scenario_names = [entry.name for entry in os.scandir(self._infrastructure.SCENARIO_DIR) if entry.is_file()]
+        if os.path.exists(self._infrastructure.faults) and len(os.listdir(self._infrastructure.faults)) != 0:        
+            faults_names = [entry.name for entry in os.scandir(self._infrastructure.faults) if entry.is_file()]
+            scenario_names = [entry.name for entry in os.scandir(self._infrastructure.scenarios) if entry.is_file()]
             if (faults_names != scenario_names):
                 raise Exception("Faults and Scenarios do not match")
         while not queue.empty():

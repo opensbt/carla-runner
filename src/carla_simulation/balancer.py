@@ -35,6 +35,11 @@ class Balancer:
         self._temporal_resolution = temporal_resolution
         self._synchronous_execution = synchronous_execution
         self._enable_manual_control = enable_manual_control
+        if not visualization and enable_manual_control:
+            # Without visualization, pygame is not there to support manual control via keyboard.
+            self._enable_manual_control = False
+            print("Automatic parameter correction: 'enable_manual_control' only makes sense with enabled 'visualization'. "
+                  + "Since visualization was disabled, the system has also disabled manual control via keyboard.")
 
     def start(self):
         self._infrastructure.start()

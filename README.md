@@ -166,7 +166,8 @@ The following effects can be achieved by adjusting the parameters for the sensor
 ### Fault Injection
 
 To use the fault injection, the balancer needs the path to the directory containing the faults similar to the scenarios:
-```b = Balancer(
+```
+b = Balancer(
     directory = '/path/to/scenarios',
     fault='/path/to/faults',
     jobs = 1,

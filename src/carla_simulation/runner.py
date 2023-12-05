@@ -56,7 +56,7 @@ class Runner:
             faults_names = [entry.name for entry in os.scandir(self._infrastructure.faults) if entry.is_file()]
             scenario_names = [entry.name for entry in os.scandir(self._infrastructure.scenarios) if entry.is_file()]
             if (faults_names != scenario_names):
-                raise Exception("Faults and Scenarios do not match")
+                raise Exception("Faults and Scenarios do not match, please check that every fault has a matching scenario and vice versa (or no faults at all).")
         while not queue.empty():
             pattern = queue.get()
             success = False

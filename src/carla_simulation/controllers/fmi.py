@@ -32,6 +32,8 @@ class FMIAgent(AutonomousAgent):
     CONTROLLER_STICK_RESOLUTION = 32768.0
     CONTROLLER_SHOULDER_RESOLUTION = 1024.0
 
+    STEP_SIZE = 0.1
+
     _agent = None
     _visual = None
     _do_step_service = None
@@ -84,7 +86,6 @@ class FMIAgent(AutonomousAgent):
         print ("deacivate fault if fault from prior run is still activated")
 
     def setFault(fault):
-        print("from fmi, fault set: " + fault)
         FMIAgent._enable_fault_injection = True
         with open(fault) as f:
                 data = yaml.safe_load(f)
@@ -96,36 +97,35 @@ class FMIAgent(AutonomousAgent):
             self._visual.run(input_data)
 
         if(self._enable_fault_injection):
-
-            timestamp = GameTime.get_time()
-            starttime = float(self._fault['starttime'])
-
-            if timestamp > starttime and timestamp < (starttime+0.1):
-
-                faultInjectionStructure = FaultInjectionStructure()
-
-                faultInjectionStructure.faultModel = self._fault.get("faultModel")
-                faultInjectionStructure.signalNames = self._fault.get('signalNames')
-                faultInjectionStructure.parameters = self._fault.get('parameters').encode().decode('unicode_escape')
-                self._activate_faultinjector_service(faultInjectionStructure)
-                print("fault injected")
-
-            if self._fault.get('endtime') != None:
-                endtime = float(self._fault['endtime'])
-                if timestamp > endtime and timestamp < (endtime+0.1):
-                    self._deactivate_faultinjector_service()
-                    print("fault ended")
+            self.inject()
 
         signals_in = self.sense(input_data)
-
         signals_out = self._do_step_service(
             signals_in,
             rospy.get_rostime()
         )
-
         control = self.act(signals_out)
-
         return control
+
+
+    def inject(self):
+        timestamp = GameTime.get_time()
+        starttime = float(self._fault['starttime'])
+
+        if timestamp > starttime and timestamp < (starttime + self.STEP_SIZE):
+            faultInjectionStructure = FaultInjectionStructure()
+            faultInjectionStructure.faultModel = self._fault.get("faultModel")
+            faultInjectionStructure.signalNames = self._fault.get('signalNames')
+            faultInjectionStructure.parameters = self._fault.get('parameters').encode().decode('unicode_escape')
+            self._activate_faultinjector_service(faultInjectionStructure)
+            print("Fault injected at " + str(starttime) + ".")
+
+        if self._fault.get('endtime') != None:
+            endtime = float(self._fault['endtime'])
+            if timestamp > endtime and timestamp < (endtime + self.STEP_SIZE):
+                self._deactivate_faultinjector_service()
+                print("Fault ended at " + str(endtime) + ".")
+
 
     def sense(self, input_data):
         signals = SignalsMessage()

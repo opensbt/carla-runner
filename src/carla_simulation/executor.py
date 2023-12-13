@@ -146,12 +146,12 @@ def main():
         required=True
     )
     parser.add_argument(
-        '--scenarios',
+        '--scenarios_dir',
         help='Directory containing all scenarios.',
         required=True
     )
     parser.add_argument(
-        '--recordings',
+        '--recordings_dir',
         help='Directory to store the recordings.',
         required=True
     )
@@ -196,16 +196,16 @@ def main():
         action='store_true'
     )
     parser.add_argument(
-        '--faults',
+        '--faults_dir',
         help='Directory containing all faults.',
         required=False
     )
 
     args = parser.parse_args()
 
-    e = Executor(args.host, args.scenarios, args.recordings, args.agent,
+    e = Executor(args.host, args.scenarios_dir, args.recordings_dir, args.agent,
                  args.metric, args.resolution, args.synchronous, args.visualize,
-                 args.enable_manual_control, args.faults)
+                 args.enable_manual_control, args.faults_dir)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

@@ -66,13 +66,13 @@ class Runner:
                 print(f"[Runner] Running Scenario {pattern}, Attempt {restarts}.")
                 configuration = " ".join([
                     "--host {}".format(self._infrastructure.get_address(self._server)),
-                    "--recordings {}".format(self._infrastructure.RECORDINGS_DIR),
-                    "--scenarios {}".format(self._infrastructure.SCENARIOS_DIR),
+                    "--recordings_dir {}".format(self._infrastructure.RECORDINGS_DIR),
+                    "--scenarios_dir {}".format(self._infrastructure.SCENARIOS_DIR),
                     "--pattern {}".format(pattern),
                     "--agent {}".format(self._agent_name),
                     "--metric {}".format(self._metric_name),
                     "--resolution {}".format(self._temporal_resolution),
-                    "--faults {}".format(self._infrastructure.FAULTS_DIR)
+                    "--faults_dir {}".format(self._infrastructure.FAULTS_DIR)
                 ])
                 if self._synchronous_execution:
                     configuration = "{} --synchronous".format(configuration)

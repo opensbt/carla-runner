@@ -23,7 +23,7 @@ class Runner:
     _synchronous_execution: bool = True
     _enable_manual_control : bool = False
 
-    _fault: str = None
+    _faults_dir: str = None
 
     MAX_RESTARTS = 3
     SUCCESS_INDICATOR = "[Executor] SUCCESS:"
@@ -35,7 +35,7 @@ class Runner:
                  client: Container,
                  agent: str,
                  metric:  str,
-                 fault: str,
+                 faults_dir: str,
                  temporal_resolution: float,
                  synchronous_execution: bool,
                  enable_manual_control : bool):
@@ -47,16 +47,17 @@ class Runner:
         self._temporal_resolution = temporal_resolution
         self._synchronous_execution = synchronous_execution
         self._enable_manual_control = enable_manual_control
-        self._fault = fault
+        self._faults_dir = faults_dir
 
     def run(self, queue, evaluations):
 
-        #check that every fault has a matching scenario 
-        if os.path.exists(self._infrastructure.faults) and len(os.listdir(self._infrastructure.faults)) != 0:        
-            faults_names = [entry.name for entry in os.scandir(self._infrastructure.faults) if entry.is_file()]
-            scenario_names = [entry.name for entry in os.scandir(self._infrastructure.scenarios) if entry.is_file()]
+        #check that every fault has a matching scenario
+        if os.path.exists(self._infrastructure.faults_dir) and len(os.listdir(self._infrastructure.faults_dir)) != 0:
+            faults_names = [entry.name for entry in os.scandir(self._infrastructure.faults_dir) if entry.is_file()]
+            scenario_names = [entry.name for entry in os.scandir(self._infrastructure.scenarios_dir) if entry.is_file()]
             if (faults_names != scenario_names):
-                raise Exception("Faults and Scenarios do not match, please check that every fault has a matching scenario and vice versa (or no faults at all).")
+                raise Exception("Faults and Scenarios do not match."
+                    + " Please check that every fault has a matching scenario and vice versa (or no faults at all).")
         while not queue.empty():
             pattern = queue.get()
             success = False
@@ -65,13 +66,13 @@ class Runner:
                 print(f"[Runner] Running Scenario {pattern}, Attempt {restarts}.")
                 configuration = " ".join([
                     "--host {}".format(self._infrastructure.get_address(self._server)),
-                    "--recordings {}".format(self._infrastructure.RECORDING_DIR),
-                    "--scenarios {}".format(self._infrastructure.SCENARIO_DIR),
+                    "--recordings {}".format(self._infrastructure.RECORDINGS_DIR),
+                    "--scenarios {}".format(self._infrastructure.SCENARIOS_DIR),
                     "--pattern {}".format(pattern),
                     "--agent {}".format(self._agent_name),
                     "--metric {}".format(self._metric_name),
                     "--resolution {}".format(self._temporal_resolution),
-                    "--faultInjection {}".format(self._infrastructure.FAULTS_DIR)
+                    "--faults {}".format(self._infrastructure.FAULTS_DIR)
                 ])
                 if self._synchronous_execution:
                     configuration = "{} --synchronous".format(configuration)
@@ -79,7 +80,6 @@ class Runner:
                     configuration = "{} --visualize".format(configuration)
                 if self._enable_manual_control:
                     configuration = "{} --enable_manual_control".format(configuration)
-  
 
                 _, stream = self._client.exec_run(
                     cmd='/bin/bash -c "{}"'.format(
@@ -112,11 +112,11 @@ class Runner:
 
                     # Continue, to run the scenario again
                     continue
-                
+
                 print("[Runner] Done: {}".format(pattern))
 
                 pattern = pattern.replace('xosc', 'json')
-                with os.scandir(self._infrastructure.recordings) as entries:
+                with os.scandir(self._infrastructure.recordings_dir) as entries:
                     for entry in entries:
                         if entry.name.endswith(pattern) and entry.is_file():
                             with open(entry, 'r') as file:

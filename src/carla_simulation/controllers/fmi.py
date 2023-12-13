@@ -17,8 +17,6 @@ from carla_simulation.utils.manual_control import parse_keyboard_events_to_xbox
 from carla_simulation.utils.sensing import process_lidar_data
 from carla_simulation.utils.sensing import process_location_data
 
-FAULT_DIR = "/tmp/faults"
-
 class FMIAgent(AutonomousAgent):
 
     SENSORS_MAX_DISTANCE = 20.0
@@ -101,11 +99,11 @@ class FMIAgent(AutonomousAgent):
 
             timestamp = GameTime.get_time()
             starttime = float(self._fault['starttime'])
-   
+
             if timestamp > starttime and timestamp < (starttime+0.1):
 
                 faultInjectionStructure = FaultInjectionStructure()
-           
+
                 faultInjectionStructure.faultModel = self._fault.get("faultModel")
                 faultInjectionStructure.signalNames = self._fault.get('signalNames')
                 faultInjectionStructure.parameters = self._fault.get('parameters').encode().decode('unicode_escape')
@@ -122,9 +120,9 @@ class FMIAgent(AutonomousAgent):
 
         signals_out = self._do_step_service(
             signals_in,
-            rospy.get_rostime()           
+            rospy.get_rostime()
         )
-                            
+
         control = self.act(signals_out)
 
         return control
@@ -211,7 +209,7 @@ class FMIAgent(AutonomousAgent):
                 float(xbox_mapping["dpad_down"])
             ))
 
-        
+
 
         # Laser distance
         signals.floatSignals.append(FloatSignal(

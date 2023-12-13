@@ -42,24 +42,22 @@ class Executor:
     _agent_class = None
     _metric_class = None
 
-    _recording_dir = None
-    _scenario_dir = None
-    _fault_dir = None
+    _recordings_dir = None
+    _scenarios_dir = None
+    _faults_dir = None
 
-    _faults = []
-
-    def __init__(self, host, scenario_dir, recording_dir, agent, metric,
-                 resolution, synchronous, visualize, enable_manual_control, faultInjection):
+    def __init__(self, host, scenarios_dir, recordings_dir, agent, metric,
+                 resolution, synchronous, visualize, enable_manual_control, faults_dir):
         self._host_carla = host
 
-        self._recording_dir = recording_dir
-        self._scenario_dir = scenario_dir
+        self._recordings_dir = recordings_dir
+        self._scenarios_dir = scenarios_dir
 
         self._agent_class = self.agents.get(agent)
         self._metric_class = self.metrics.get(metric)
 
         self._rendering_carla = visualize
-        self._fault_dir = faultInjection
+        self._faults_dir = faults_dir
 
         self._resolution_carla = resolution
         self._synchronous_carla = synchronous
@@ -79,12 +77,12 @@ class Executor:
                 self._enable_manual_control
             )
 
-            scenarios = self.get_scenarios(self._scenario_dir, pattern)
-            recorder = self.get_recorder(self._recording_dir)
+            scenarios = self.get_scenarios(self._scenarios_dir, pattern)
+            recorder = self.get_recorder(self._recordings_dir)
             evaluator = self.get_evaluator()
-            if len(os.listdir(self._fault_dir)) != 0:
-                self.agents.get('FMIAgent').setFault(self._fault_dir+"/"+pattern)
             agent = self.agents.get('FMIAgent')
+            if len(os.listdir(self._faults_dir)) != 0:
+                agent.setFault(self._faults_dir+"/"+pattern)
 
             for scenario in scenarios:
                 scenario.simulate(simulator, agent, recorder)
@@ -131,16 +129,6 @@ class Executor:
             ]
         return scenarios
 
-    def get_faults(self, directory, pattern):
-        faults = None
-        with os.scandir(directory) as entries:
-            faults = [
-                entry
-                    for entry in entries
-                        if entry.name.endswith(pattern) and entry.is_file()
-            ]
-        return faults
-
     def get_evaluator(self):
         return self._metric_class()
 
@@ -181,7 +169,6 @@ def main():
         '--pattern',
         help='Pattern for selecting the scenarios.',
         required=True
-        
     )
     parser.add_argument(
         '--resolution',
@@ -209,17 +196,16 @@ def main():
         action='store_true'
     )
     parser.add_argument(
-        '--faultInjection',
-        help='Name of faultinjection.',
+        '--faults',
+        help='Directory containing all faults.',
         required=False
     )
 
     args = parser.parse_args()
 
-
     e = Executor(args.host, args.scenarios, args.recordings, args.agent,
                  args.metric, args.resolution, args.synchronous, args.visualize,
-                 args.enable_manual_control, args.faultInjection)
+                 args.enable_manual_control, args.faults)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

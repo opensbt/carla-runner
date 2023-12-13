@@ -11,11 +11,11 @@ balancer = Balancer(
     # If the path changes or the quality, the container needs to be rebuilt.
     # Delete all client containers for this to happen:
     # `docker container rm <client-container-name>` (e.g., carla-client-0).
-    directory='/home/ganahl/BA/ff1_carla/scenarios',
+    scenarios_dir='/path/to/your/test/scenarios',
     agent='FMIAgent',
     jobs=1,
     visualization=True,
-    fault="/home/ganahl/BA/ff1_carla/faults",
+    faults_dir="/path/to/your/test/faults",
     keep_carla_servers=False,
     temporal_resolution = 0.1,
     synchronous_execution = False,

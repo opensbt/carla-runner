@@ -49,32 +49,31 @@ class Infrastructure:
 
     NETWORK = 'bridge'
 
-    RECORDING_DIR = '/tmp/recordings'
-    SCENARIO_DIR = '/tmp/scenarios'
+    RECORDINGS_DIR = '/tmp/recordings'
+    SCENARIOS_DIR = '/tmp/scenarios'
     FAULTS_DIR = '/tmp/faults'
 
     MAP_NAME = 'Town01'
 
-
-    CARLA_TIMOUT = 20
+    CARLA_TIMEOUT = 20
     MAXIMUM_CONNECT_TRIES = 3
 
     POSSIBLE_QUALITY_LEVELS = ["Low", "Medium", "Epic"]
 
     def __init__(self,
         jobs = 1,
-        scenarios = SCENARIO_DIR,
-        recordings = RECORDING_DIR,
-        faults = FAULTS_DIR,
+        scenarios_dir = SCENARIOS_DIR,
+        recordings_dir = RECORDINGS_DIR,
+        faults_dir = FAULTS_DIR,
         visualization = False,
         keep_carla_servers = False,
         rendering_quality="Medium"
         ):
         self.jobs = jobs
         self.network = self.NETWORK
-        self.scenarios = scenarios
-        self.recordings = recordings
-        self.faults = faults
+        self.scenarios_dir = scenarios_dir
+        self.recordings_dir = recordings_dir
+        self.faults_dir = faults_dir
         self.client = docker.from_env()
         self.clients: List[Container] = []
         self.servers: List[Container] = []
@@ -93,7 +92,7 @@ class Infrastructure:
 
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
-        os.makedirs(self.recordings, exist_ok=True)
+        os.makedirs(self.recordings_dir, exist_ok=True)
         print("Getting images...", end="")
 
         # Ensure server image is pulled
@@ -166,8 +165,8 @@ class Infrastructure:
                     raise RuntimeError("Cannot contact carla server. Is it running?")
             tries += 1
 
-        # Set timout larger to avoid timout errors when the carla server is just slow to respond
-        carla_client.set_timeout(self.CARLA_TIMOUT)
+        # Set timeout larger to avoid timeout errors when the carla server is just slow to respond
+        carla_client.set_timeout(self.CARLA_TIMEOUT)
         server_map = carla_client.get_world().get_map().name.split('/')[-1]
 
         # Check if map is already loaded
@@ -252,14 +251,14 @@ class Infrastructure:
                 ],
                 volumes = [
                     '{}:{}:ro'.format(
-                        self.scenarios,
-                        self.SCENARIO_DIR),
+                        self.scenarios_dir,
+                        self.SCENARIOS_DIR),
                     '{}:{}:ro'.format(
-                        self.faults,
+                        self.faults_dir,
                         self.FAULTS_DIR),
                     '{}:{}:rw'.format(
-                        self.recordings,
-                        self.RECORDING_DIR
+                        self.recordings_dir,
+                        self.RECORDINGS_DIR
                     ),
                 ],
                 device_requests = [
@@ -311,14 +310,14 @@ class Infrastructure:
                     '/tmp/.X11-unix:/tmp/.X11-unix',
                     '/var/run/docker.sock:/var/run/docker.sock',
                     '{}:{}:ro'.format(
-                        self.scenarios,
-                        self.SCENARIO_DIR),
+                        self.scenarios_dir,
+                        self.SCENARIOS_DIR),
                     '{}:{}:ro'.format(
-                        self.faults,
+                        self.faults_dir,
                         self.FAULTS_DIR),
                     '{}:{}:rw'.format(
-                        self.recordings,
-                        self.RECORDING_DIR
+                        self.recordings_dir,
+                        self.RECORDINGS_DIR
                     ),
                     '{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
                         ROSCO_PATH = os.environ['ROSCO_PATH']

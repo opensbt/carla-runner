@@ -5,7 +5,6 @@
 
 import os
 import time
-import carla
 import multiprocessing as mp
 
 from carla_simulation.infrastructure import Infrastructure
@@ -19,16 +18,16 @@ class Balancer:
     _temporal_resolution : float = 0.1
     _synchronous_execution : bool = True
     _enable_manual_control : bool = False
-    _fault = None
+    _faults_dir = None
 
-    def __init__(self, directory, agent, metric = 'RawData', jobs = 1,
-                 visualization = False, fault = None, keep_carla_servers=False,
+    def __init__(self, scenarios_dir, agent, metric = 'RawData', jobs = 1,
+                 visualization = False, faults_dir = None, keep_carla_servers=False,
                  temporal_resolution = 0.1, synchronous_execution = True,
                  enable_manual_control = False, rendering_quality = "Medium"):
         self._infrastructure = Infrastructure(
             jobs = jobs,
-            scenarios = directory,
-            faults = fault,
+            scenarios_dir = scenarios_dir,
+            faults_dir = faults_dir,
             visualization = visualization,
             keep_carla_servers = keep_carla_servers,
             rendering_quality = rendering_quality
@@ -37,7 +36,7 @@ class Balancer:
         self._metric_name = metric
         self._temporal_resolution = temporal_resolution
         self._synchronous_execution = synchronous_execution
-        self._fault = fault
+        self._fault_dir = faults_dir
         self._enable_manual_control = enable_manual_control
         if not visualization and enable_manual_control:
             # Without visualization, pygame is not there to support manual control via keyboard.
@@ -56,7 +55,7 @@ class Balancer:
         clients = self._infrastructure.get_clients()
 
         scenarios = mp.JoinableQueue()
-        with os.scandir(self._infrastructure.scenarios) as entries:
+        with os.scandir(self._infrastructure.scenarios_dir) as entries:
             for entry in entries:
                 if entry.name.endswith('.xosc') and entry.is_file():
                     scenarios.put(entry.name)
@@ -71,7 +70,7 @@ class Balancer:
                     client,
                     self._agent_name,
                     self._metric_name,
-                    self._fault,
+                    self._faults_dir,
                     self._temporal_resolution,
                     self._synchronous_execution,
                     self._enable_manual_control,

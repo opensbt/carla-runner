@@ -184,7 +184,7 @@ def main():
     )
     parser.add_argument(
         '--visualize',
-        help='Visualize the scenarios.',
+        help='Visualize the scenario files.',
         required=False,
         action='store_true'
     )
@@ -196,7 +196,7 @@ def main():
     )
     parser.add_argument(
         '--faults_dir',
-        help='Directory containing all faults.',
+        help='Directory containing all YAML fault model files.',
         required=False
     )
 

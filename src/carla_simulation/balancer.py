@@ -36,7 +36,7 @@ class Balancer:
         self._metric_name = metric
         self._temporal_resolution = temporal_resolution
         self._synchronous_execution = synchronous_execution
-        self._fault_dir = faults_dir
+        self._faults_dir = faults_dir
         self._enable_manual_control = enable_manual_control
         if not visualization and enable_manual_control:
             # Without visualization, pygame is not there to support manual control via keyboard.

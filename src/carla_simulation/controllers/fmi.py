@@ -209,8 +209,6 @@ class FMIAgent(AutonomousAgent):
                 float(xbox_mapping["dpad_down"])
             ))
 
-
-
         # Laser distance
         signals.floatSignals.append(FloatSignal(
             "DistanceToFrontLaser",

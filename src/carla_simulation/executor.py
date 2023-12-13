@@ -64,7 +64,6 @@ class Executor:
 
         self._enable_manual_control = enable_manual_control
 
-
     def execute(self, pattern):
         try:
             simulator = self.get_simulator(

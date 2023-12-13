@@ -52,10 +52,8 @@ class FMIAgent(AutonomousAgent):
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
 
-
     def setup(self, _):
         self._agent = None
-
         rospy.init_node('fmi_agent')
 
         # Initialize and call the masterInit service.
@@ -91,7 +89,6 @@ class FMIAgent(AutonomousAgent):
                 data = yaml.safe_load(f)
                 FMIAgent._fault = data['faultInjection']
 
-
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
@@ -106,7 +103,6 @@ class FMIAgent(AutonomousAgent):
         )
         control = self.act(signals_out)
         return control
-
 
     def inject(self):
         timestamp = GameTime.get_time()
@@ -125,7 +121,6 @@ class FMIAgent(AutonomousAgent):
             if timestamp > endtime and timestamp < (endtime + self.STEP_SIZE):
                 self._deactivate_faultinjector_service()
                 print("Fault ended at " + str(endtime) + ".")
-
 
     def sense(self, input_data):
         signals = SignalsMessage()

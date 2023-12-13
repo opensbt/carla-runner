@@ -61,7 +61,7 @@ class FMIAgent(AutonomousAgent):
         # Initialize and call the masterInit service.
         rospy.wait_for_service('master/init')
         init_master = rospy.ServiceProxy('master/init', MasterInitService)
-        print('calling init/master service')
+        print('Initialized and called the init/master service.')
         init_master('/opt/workspace/src/rosco/share/config.json')
 
         if self._enable_manual_control:
@@ -70,20 +70,20 @@ class FMIAgent(AutonomousAgent):
         # Initialize the doStepsUntil service.
         rospy.wait_for_service('master/doStepsUntil')
         self._do_step_service = rospy.ServiceProxy('master/doStepsUntil', DoStepsUntilService, persistent=True)
-        print('initialized do step service')
+        print('Initialized the do step service.')
 
         # Initialize ActivateFaultinjector Service
         rospy.wait_for_service('master/activateFaultInjector')
         self._activate_faultinjector_service = rospy.ServiceProxy('master/activateFaultInjector', ActivateFaultInjector, persistent=True)
-        print('initialized activate faultinjector service')
+        print('Initialized the activate faultinjector service.')
 
         # Initialize DeactivateFaultinjector Service
         rospy.wait_for_service('master/deactivateFaultInjector')
         self._deactivate_faultinjector_service = rospy.ServiceProxy('master/deactivateFaultInjector', DeactivateFaultInjector, persistent=True)
-        print('initialized deactivate faultinjector service')
+        print('Initialized the deactivate faultinjector service.')
 
         self._deactivate_faultinjector_service()
-        print ("deacivate fault if fault from prior run is still activated")
+        print ("Deactivate fault if a fault from a run prior is still activated.")
 
     def setFault(fault):
         FMIAgent._enable_fault_injection = True

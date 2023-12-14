@@ -171,7 +171,7 @@ class Infrastructure:
 
         # Check if map is already loaded
         if server_map != self.MAP_NAME:
-            #print(f" Loading Map... ", end='')
+            print(f" Loading Map... ", end='')
             carla_client.load_world(self.MAP_NAME)
         else:
             # Map is already present, so we are not reloading to save time.

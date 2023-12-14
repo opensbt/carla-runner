@@ -175,7 +175,7 @@ b = Balancer(
 )
 ```
 Faults and Scenarios names must match so that every fault has a matching scenario and vice versa.
-The faults are defined as YAML as shown in https://git.fortiss.org/fortissimo/rosco#fault-injection.
+The faults are defined as YAML as described in https://git.fortiss.org/fortissimo/rosco#fault-injection.
 
 ## Advanced Settings
 

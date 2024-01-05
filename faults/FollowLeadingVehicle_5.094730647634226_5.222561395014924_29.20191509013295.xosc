@@ -1,6 +1,0 @@
-faultInjection:
-  faultModel: omission
-  parameters: '{\"enum_id\": 1}'
-  signalNames:
-  - Task_Driver_Assistance.TargetVelocityDA
-  starttime: '5.094730647634226'

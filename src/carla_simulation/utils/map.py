@@ -3,13 +3,13 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
-import carla
 import xml.etree.ElementTree as et
 
 
-def prepare(client, xosc):
+def prepare(client, xosc = None, scenario_map = None):
     # Get map required for XOSC.
-    scenario_map = et.parse(xosc.path).find('RoadNetwork/LogicFile').get('filepath')
+    if xosc is not None:
+        scenario_map = et.parse(xosc.path).find('RoadNetwork/LogicFile').get('filepath')
 
     # Get map currently loaded in CARLA.
     server_map = client.get_world().get_map().name.split('/')[-1]

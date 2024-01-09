@@ -167,6 +167,18 @@ class Infrastructure:
 
         # Set timeout larger to avoid timeout errors when the carla server is just slow to respond
         carla_client.set_timeout(self.CARLA_TIMEOUT)
+        server_map = carla_client.get_world().get_map().name.split('/')[-1]
+
+        # Check if map is already loaded
+        if server_map != self.MAP_NAME:
+            print(f" Loading Map... ", end='')
+            carla_client.load_world(self.MAP_NAME)
+        else:
+            # Map is already present, so we are not reloading to save time.
+            # This means that actors from previous scenarios will stay on the map.
+            # However, scenario.py will remove them, before loading new actors.
+            print(f" Map present. ", end='')
+
         print("Done")
 
     def configure_running_client(self, client: Container) -> None:

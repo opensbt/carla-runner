@@ -83,11 +83,11 @@ class FMIAgent(AutonomousAgent):
         self._deactivate_faultinjector_service()
         print ("Deactivate fault if a fault from a run prior is still activated.")
 
-    def setFault(fault):
-        FMIAgent._enable_fault_injection = True
+    def set_fault(self, fault):
+        self._enable_fault_injection = True
         with open(fault) as f:
                 data = yaml.safe_load(f)
-                FMIAgent._fault = data['faultInjection']
+                self._fault = data['faultInjection']
 
     def run_step(self, input_data, _):
         if self._visual is not None:

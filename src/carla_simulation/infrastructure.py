@@ -166,7 +166,6 @@ class Infrastructure:
             tries += 1
 
         # Set timeout larger to avoid timeout errors when the carla server is just slow to respond
-        #ist korrekter cliuent für prepare
         carla_client.set_timeout(self.CARLA_TIMEOUT)
         map.prepare(carla_client,scenario_map=self.MAP_NAME)
 

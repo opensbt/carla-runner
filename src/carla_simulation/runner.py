@@ -50,11 +50,16 @@ class Runner:
         self._faults_dir = faults_dir
 
     def run(self, queue, evaluations):
-
-        #check that every fault has a matching scenario
-        if self._infrastructure.faults_dir and os.path.exists(self._infrastructure.faults_dir) and len(os.listdir(self._infrastructure.faults_dir)) != 0:
-            faults_names = [entry.name for entry in os.scandir(self._infrastructure.faults_dir) if entry.is_file()]
-            scenario_names = [entry.name for entry in os.scandir(self._infrastructure.scenarios_dir) if entry.is_file()]
+        # Check that every fault has a matching scenario
+        if self._infrastructure.faults_dir and \
+            os.path.exists(self._infrastructure.faults_dir) and \
+                len(os.listdir(self._infrastructure.faults_dir)) != 0:
+            faults_names = [
+                entry.name
+                    for entry in os.scandir(self._infrastructure.faults_dir) if entry.is_file()]
+            scenario_names = [
+                entry.name
+                    for entry in os.scandir(self._infrastructure.scenarios_dir) if entry.is_file()]
             if (faults_names != scenario_names):
                 raise Exception("Faults and Scenarios do not match."
                     + " Please check that every fault has a matching scenario and vice versa (or no faults at all).")

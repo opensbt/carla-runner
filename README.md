@@ -168,13 +168,14 @@ The following effects can be achieved by adjusting the parameters for the sensor
 To use the fault injection, the balancer needs the path to the directory containing the faults similar to the scenarios:
 ```
 b = Balancer(
-    directory = '/path/to/scenarios',
-    fault='/path/to/faults',
+    scenarios_dir = '/path/to/scenarios',
+    faults_dir='/path/to/faults',
     jobs = 1,
     visualization = True
 )
 ```
-Faults and Scenarios names must match so that every fault has a matching scenario and vice versa.
+Fault and scenarios names must match so that every fault has a matching scenario and vice versa.
+
 The faults are defined as YAML as described in https://git.fortiss.org/fortissimo/rosco#fault-injection.
 
 ## Advanced Settings

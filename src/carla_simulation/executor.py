@@ -81,7 +81,7 @@ class Executor:
             evaluator = self.get_evaluator()
             agent = self.agents.get('FMIAgent')
             if len(os.listdir(self._faults_dir)) != 0:
-                agent.setFault(self._faults_dir+"/"+pattern)
+                agent.set_fault(self._faults_dir+"/"+pattern)
 
             for scenario in scenarios:
                 scenario.simulate(simulator, agent, recorder)

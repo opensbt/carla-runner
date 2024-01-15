@@ -80,11 +80,13 @@ class Executor:
             recorder = self.get_recorder(self._recordings_dir)
             evaluator = self.get_evaluator()
             agent = self.agents.get('FMIAgent')
+
+            fault = None
             if len(os.listdir(self._faults_dir)) != 0:
-                agent.set_fault(self._faults_dir+"/"+pattern)
+                fault = self._faults_dir + "/" + pattern
 
             for scenario in scenarios:
-                scenario.simulate(simulator, agent, recorder)
+                scenario.simulate(simulator, agent, recorder, fault)
 
             recordings = recorder.get_recordings()
 

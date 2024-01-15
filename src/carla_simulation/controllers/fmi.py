@@ -45,12 +45,14 @@ class FMIAgent(AutonomousAgent):
     _fault = None
     _enable_fault_injection = False
 
-    def __init__(self, simulator, ego_vehicle: carla.Vehicle):
+    def __init__(self, simulator, ego_vehicle: carla.Vehicle, fault = None):
         super().__init__("")
         self._ego_vehicle = ego_vehicle
         self._enable_manual_control = simulator.is_manual_control_enabled()
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
+        if fault is not None:
+            self.set_fault(fault)
 
     def setup(self, _):
         self._agent = None

@@ -16,7 +16,7 @@ import importlib.resources as pkg_resources
 from time import sleep
 from typing import Callable, List
 from docker.models.containers import Container
-
+from carla_simulation.utils import  map
 
 def background_rosco_launch(client: Container) -> None:
     exec_result = client.exec_run(
@@ -49,8 +49,11 @@ class Infrastructure:
 
     NETWORK = 'bridge'
 
-    RECORDING_DIR = '/tmp/recordings'
-    SCENARIO_DIR = '/tmp/scenarios'
+    RECORDINGS_DIR = '/tmp/recordings'
+    SCENARIOS_DIR = '/tmp/scenarios'
+    FAULTS_DIR = '/tmp/faults'
+
+    MAP_NAME = 'Town01'
 
     CARLA_TIMEOUT = 20
     MAXIMUM_CONNECT_TRIES = 3
@@ -58,17 +61,19 @@ class Infrastructure:
     POSSIBLE_QUALITY_LEVELS = ["Low", "Medium", "Epic"]
 
     def __init__(self,
-                 jobs=1,
-                 scenarios=SCENARIO_DIR,
-                 recordings=RECORDING_DIR,
-                 visualization=False,
-                 keep_carla_servers=False,
-                 rendering_quality="Medium"
-                 ):
+        jobs = 1,
+        scenarios_dir = SCENARIOS_DIR,
+        recordings_dir = RECORDINGS_DIR,
+        faults_dir = FAULTS_DIR,
+        visualization = False,
+        keep_carla_servers = False,
+        rendering_quality="Medium"
+        ):
         self.jobs = jobs
         self.network = self.NETWORK
-        self.scenarios = scenarios
-        self.recordings = recordings
+        self.scenarios_dir = scenarios_dir
+        self.recordings_dir = recordings_dir
+        self.faults_dir = faults_dir
         self.client = docker.from_env()
         self.clients: List[Container] = []
         self.servers: List[Container] = []
@@ -87,7 +92,7 @@ class Infrastructure:
 
     def start(self):
         subprocess.run('xhost +local:root', shell=True)
-        os.makedirs(self.recordings, exist_ok=True)
+        os.makedirs(self.recordings_dir, exist_ok=True)
         print("Getting images...", end="")
 
         # Ensure server image is pulled
@@ -162,8 +167,9 @@ class Infrastructure:
 
         # Set timeout larger to avoid timeout errors when the carla server is just slow to respond
         carla_client.set_timeout(self.CARLA_TIMEOUT)
+        map.prepare(carla_client,scenario_map=self.MAP_NAME)
 
-        print(" Done.")
+        print("Done")
 
     def configure_running_client(self, client: Container) -> None:
         while not self.get_address(client):
@@ -222,6 +228,7 @@ class Infrastructure:
             return self.client.containers.run(
                 self.SERVER_IMAGE,
                 name = server_name,
+                restart_policy = {"Name": "on-failure", "MaximumRetryCount": 10},
                 detach = True,
                 privileged = True,
                 remove = False,
@@ -234,11 +241,14 @@ class Infrastructure:
                 ],
                 volumes = [
                     '{}:{}:ro'.format(
-                        self.scenarios,
-                        self.SCENARIO_DIR),
+                        self.scenarios_dir,
+                        self.SCENARIOS_DIR),
+                    '{}:{}:ro'.format(
+                        self.faults_dir,
+                        self.FAULTS_DIR),
                     '{}:{}:rw'.format(
-                        self.recordings,
-                        self.RECORDING_DIR
+                        self.recordings_dir,
+                        self.RECORDINGS_DIR
                     ),
                 ],
                 device_requests = [
@@ -290,11 +300,14 @@ class Infrastructure:
                     '/tmp/.X11-unix:/tmp/.X11-unix',
                     '/var/run/docker.sock:/var/run/docker.sock',
                     '{}:{}:ro'.format(
-                        self.scenarios,
-                        self.SCENARIO_DIR),
+                        self.scenarios_dir,
+                        self.SCENARIOS_DIR),
+                    '{}:{}:ro'.format(
+                        self.faults_dir,
+                        self.FAULTS_DIR),
                     '{}:{}:rw'.format(
-                        self.recordings,
-                        self.RECORDING_DIR
+                        self.recordings_dir,
+                        self.RECORDINGS_DIR
                     ),
                     '{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
                         ROSCO_PATH = os.environ['ROSCO_PATH']

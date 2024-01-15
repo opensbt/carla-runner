@@ -20,7 +20,7 @@ class NPCAgent(AutonomousAgent):
     _route_assigned = False
     _visual = None
 
-    def __init__(self, simulator, _):
+    def __init__(self, simulator, ego_vehicle: carla.Vehicle, fault = None):
         super().__init__("")
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')

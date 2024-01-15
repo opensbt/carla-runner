@@ -22,7 +22,7 @@ class Scenario:
     def __init__(self, xosc):
         self._xosc = xosc
 
-    def simulate(self, simulator, agent, recorder):
+    def simulate(self, simulator, agent, recorder, fault = None):
         client = simulator.get_client()
 
         map.prepare(client, self._xosc)
@@ -65,7 +65,7 @@ class Scenario:
             )
 
         # We assume there is only one ego actor, as only one agent is created.
-        controller = agent(simulator, vehicles[0])
+        controller = agent(simulator, vehicles[0], fault)
 
         scenario = OpenScenario(
             world,

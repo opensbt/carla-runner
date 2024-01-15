@@ -163,6 +163,21 @@ The following effects can be achieved by adjusting the parameters for the sensor
 | The environmental or roadway conditions may change suddenly, causing the system to reach the limits of its ODD sooner than expected. | The lane suddenly stops in front of a desert. |
 | The highway chauffeur system may be incapable of safely bringing the vehicle to a stop in the middle of a maneuver. | During a lane keep maneuver another vehicle cuts right in front of the ego vehicle and fully brakes. |
 
+### Fault Injection
+
+To use the fault injection, the balancer needs the path to the directory containing the faults similar to the scenarios:
+```
+b = Balancer(
+    scenarios_dir = '/path/to/scenarios',
+    faults_dir='/path/to/faults',
+    jobs = 1,
+    visualization = True
+)
+```
+Fault and scenarios names must match so that every fault has a matching scenario and vice versa.
+
+The faults are defined as YAML as described in https://git.fortiss.org/fortissimo/rosco#fault-injection.
+
 ## Advanced Settings
 
 ### Run without Docker

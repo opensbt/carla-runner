@@ -5,11 +5,13 @@
 
 import carla
 import rospy
+import yaml
 
 from rosco.srv import *
 from rosco.msg import *
 from carla_simulation.visualizations.real import CameraView
 from srunner.autoagents.autonomous_agent import AutonomousAgent
+from srunner.scenariomanager.timer import GameTime
 
 from carla_simulation.utils.manual_control import parse_keyboard_events_to_xbox
 from carla_simulation.utils.sensing import process_lidar_data
@@ -30,30 +32,36 @@ class FMIAgent(AutonomousAgent):
     CONTROLLER_STICK_RESOLUTION = 32768.0
     CONTROLLER_SHOULDER_RESOLUTION = 1024.0
 
+    STEP_SIZE = 0.1
+
     _agent = None
     _visual = None
     _do_step_service = None
+    _activate_faultinjector_service = None
+    _deactivate_faultinjector_service = None
     _previous_speed = [VEHICLE_MAX_SPEED, VEHICLE_MAX_SPEED, VEHICLE_MAX_SPEED]
     _ego_vehicle = None
     _enable_manual_control = False
+    _fault = None
+    _enable_fault_injection = False
 
-    def __init__(self, simulator, ego_vehicle: carla.Vehicle):
+    def __init__(self, simulator, ego_vehicle: carla.Vehicle, fault = None):
         super().__init__("")
         self._ego_vehicle = ego_vehicle
         self._enable_manual_control = simulator.is_manual_control_enabled()
         if not simulator.get_client().get_world().get_settings().no_rendering_mode:
             self._visual = CameraView('center')
-
+        if fault is not None:
+            self.set_fault(fault)
 
     def setup(self, _):
         self._agent = None
-
         rospy.init_node('fmi_agent')
 
         # Initialize and call the masterInit service.
         rospy.wait_for_service('master/init')
         init_master = rospy.ServiceProxy('master/init', MasterInitService)
-        print('calling init/master service')
+        print('Initialized and called the init/master service.')
         init_master('/opt/workspace/src/rosco/share/config.json')
 
         if self._enable_manual_control:
@@ -62,22 +70,59 @@ class FMIAgent(AutonomousAgent):
         # Initialize the doStepsUntil service.
         rospy.wait_for_service('master/doStepsUntil')
         self._do_step_service = rospy.ServiceProxy('master/doStepsUntil', DoStepsUntilService, persistent=True)
-        print('initialized do step service')
+        print('Initialized the do step service.')
+
+        # Initialize ActivateFaultinjector Service
+        rospy.wait_for_service('master/activateFaultInjector')
+        self._activate_faultinjector_service = rospy.ServiceProxy('master/activateFaultInjector', ActivateFaultInjector, persistent=True)
+        print('Initialized the activate faultinjector service.')
+
+        # Initialize DeactivateFaultinjector Service
+        rospy.wait_for_service('master/deactivateFaultInjector')
+        self._deactivate_faultinjector_service = rospy.ServiceProxy('master/deactivateFaultInjector', DeactivateFaultInjector, persistent=True)
+        print('Initialized the deactivate faultinjector service.')
+
+        self._deactivate_faultinjector_service()
+        print ("Deactivate fault if a fault from a run prior is still activated.")
+
+    def set_fault(self, fault):
+        self._enable_fault_injection = True
+        with open(fault) as f:
+                data = yaml.safe_load(f)
+                self._fault = data['faultInjection']
 
     def run_step(self, input_data, _):
         if self._visual is not None:
             self._visual.run(input_data)
 
-        signals_in = self.sense(input_data)
+        if(self._enable_fault_injection):
+            self.inject()
 
+        signals_in = self.sense(input_data)
         signals_out = self._do_step_service(
             signals_in,
             rospy.get_rostime()
         )
-
         control = self.act(signals_out)
-
         return control
+
+    def inject(self):
+        timestamp = GameTime.get_time()
+        starttime = float(self._fault['starttime'])
+
+        if timestamp > starttime and timestamp < (starttime + self.STEP_SIZE):
+            faultInjectionStructure = FaultInjectionStructure()
+            faultInjectionStructure.faultModel = self._fault.get("faultModel")
+            faultInjectionStructure.signalNames = self._fault.get('signalNames')
+            faultInjectionStructure.parameters = self._fault.get('parameters').encode().decode('unicode_escape')
+            self._activate_faultinjector_service(faultInjectionStructure)
+            print("Fault injected at " + str(starttime) + ".")
+
+        if self._fault.get('endtime') != None:
+            endtime = float(self._fault['endtime'])
+            if timestamp > endtime and timestamp < (endtime + self.STEP_SIZE):
+                self._deactivate_faultinjector_service()
+                print("Fault ended at " + str(endtime) + ".")
 
     def sense(self, input_data):
         signals = SignalsMessage()

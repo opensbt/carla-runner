@@ -1,3 +1,4 @@
+import json
 import logging
 import traceback
 
@@ -10,13 +11,14 @@ balancer = Balancer(
     # If the path changes or the quality, the container needs to be rebuilt.
     # Delete all client containers for this to happen:
     # `docker container rm <client-container-name>` (e.g., carla-client-0).
-    directory='/path/to/your/test/scenarios',
+    scenarios_dir='/path/to/your/test/scenarios',
     agent='FMIAgent',
     jobs=1,
     visualization=True,
+    faults_dir="/path/to/your/test/faults",
     keep_carla_servers=False,
     temporal_resolution = 0.1,
-    synchronous_execution = True,
+    synchronous_execution = False,
     enable_manual_control = False,
     rendering_quality = "Medium" # Low, Medium, Epic
 )
@@ -24,7 +26,10 @@ balancer = Balancer(
 try:
     balancer.start()
     evaluations = balancer.run()
-    print(evaluations)
+
+    with open('output.json', 'w') as file:
+        json.dump(evaluations, file, indent=2)
+
 except Exception as exception:
     logging.error(traceback.format_exc())
 finally:

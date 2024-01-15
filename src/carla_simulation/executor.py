@@ -18,7 +18,6 @@ from carla_simulation.metrics.raw import RawData
 from carla_simulation.controllers.fmi import FMIAgent
 from carla_simulation.controllers.npc import NPCAgent
 
-
 class Executor:
 
     agents = {
@@ -43,20 +42,22 @@ class Executor:
     _agent_class = None
     _metric_class = None
 
-    _recording_dir = None
-    _scenario_dir = None
+    _recordings_dir = None
+    _scenarios_dir = None
+    _faults_dir = None
 
-    def __init__(self, host, scenario_dir, recording_dir, agent, metric,
-                 resolution, synchronous, visualize, enable_manual_control):
+    def __init__(self, host, scenarios_dir, recordings_dir, agent, metric,
+                 resolution, synchronous, visualize, enable_manual_control, faults_dir):
         self._host_carla = host
 
-        self._recording_dir = recording_dir
-        self._scenario_dir = scenario_dir
+        self._recordings_dir = recordings_dir
+        self._scenarios_dir = scenarios_dir
 
         self._agent_class = self.agents.get(agent)
         self._metric_class = self.metrics.get(metric)
 
         self._rendering_carla = visualize
+        self._faults_dir = faults_dir
 
         self._resolution_carla = resolution
         self._synchronous_carla = synchronous
@@ -74,13 +75,18 @@ class Executor:
                 self._synchronous_carla,
                 self._enable_manual_control
             )
-            scenarios = self.get_scenarios(self._scenario_dir, pattern)
-            recorder = self.get_recorder(self._recording_dir)
+
+            scenarios = self.get_scenarios(self._scenarios_dir, pattern)
+            recorder = self.get_recorder(self._recordings_dir)
             evaluator = self.get_evaluator()
-            agent = self.get_agent()
+            agent = self.agents.get('FMIAgent')
+
+            fault = None
+            if len(os.listdir(self._faults_dir)) != 0:
+                fault = self._faults_dir + "/" + pattern
 
             for scenario in scenarios:
-                scenario.simulate(simulator, agent, recorder)
+                scenario.simulate(simulator, agent, recorder, fault)
 
             recordings = recorder.get_recordings()
 
@@ -141,12 +147,12 @@ def main():
         required=True
     )
     parser.add_argument(
-        '--scenarios',
+        '--scenarios_dir',
         help='Directory containing all scenarios.',
         required=True
     )
     parser.add_argument(
-        '--recordings',
+        '--recordings_dir',
         help='Directory to store the recordings.',
         required=True
     )
@@ -180,7 +186,7 @@ def main():
     )
     parser.add_argument(
         '--visualize',
-        help='Visualize the scenarios.',
+        help='Visualize the scenario files.',
         required=False,
         action='store_true'
     )
@@ -190,11 +196,17 @@ def main():
         required=False,
         action='store_true'
     )
+    parser.add_argument(
+        '--faults_dir',
+        help='Directory containing all YAML fault model files.',
+        required=False
+    )
+
     args = parser.parse_args()
 
-    e = Executor(args.host, args.scenarios, args.recordings, args.agent,
+    e = Executor(args.host, args.scenarios_dir, args.recordings_dir, args.agent,
                  args.metric, args.resolution, args.synchronous, args.visualize,
-                 args.enable_manual_control)
+                 args.enable_manual_control, args.faults_dir)
     e.execute(args.pattern)
 
 if __name__ == '__main__':

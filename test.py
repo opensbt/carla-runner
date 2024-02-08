@@ -15,10 +15,6 @@ balancer = Balancer(
     agent='FMIAgent',
     jobs=1,
     visualization=True,
-    faults_dir="/path/to/your/test/faults",
-    keep_carla_servers=False,
-    temporal_resolution = 0.1,
-    synchronous_execution = False,
     enable_manual_control = False,
     rendering_quality = "Medium" # Low, Medium, Epic
 )

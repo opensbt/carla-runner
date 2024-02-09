@@ -42,7 +42,7 @@ def background_rosco_launch(client: Container) -> None:
 
 
 class Infrastructure:
-    SERVER_IMAGE = 'carlasim/carla:0.9.13'
+    SERVER_IMAGE = 'carlasim/carla:0.9.15'
     CLIENT_IMAGE = 'carla-client'
     SERVER_PREFIX = 'carla-server'
     CLIENT_PREFIX = 'carla-client'
@@ -288,7 +288,7 @@ class Infrastructure:
                     ),
                     'PYTHONPATH={}'.format(':'.join([
                         '/opt/OpenSBT/Runner/src',
-                        '/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg',
+                        '/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.15-py3.7-linux-x86_64.egg',
                         '/opt/CARLA/Simulator/PythonAPI/carla/agents',
                         '/opt/CARLA/Simulator/PythonAPI/carla',
                         '/opt/CARLA/Runner'

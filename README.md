@@ -28,8 +28,8 @@ Make sure that the following environment variables are set correctly:
     * `ROSCO_PATH`: https://git.fortiss.org/ff1/rosco.git
     * `OPENSBT_CORE_PATH`: https://git.fortiss.org/opensbt/opensbt-core.git
     * `OPENSBT_RUNNER_PATH`: https://git.fortiss.org/opensbt/carla-runner.git
-    * `CARLA_PATH`: https://github.com/carla-simulator/carla.git (Tag: `0.9.13`)
-    * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git (Tag: `v0.9.13`)
+    * `CARLA_PATH`: https://github.com/carla-simulator/carla.git (Tag: `0.9.15`)
+    * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git (Tag: `v0.9.15`)
 
 If you are using an IDE, this can usually be done through some run configuration options.
 
@@ -44,7 +44,7 @@ export OPENSBT_RUNNER_PATH=$OPENSBT_RUNNER/carla-runner
 export CARLA_PATH=$OPENSBT_RUNNER/carla
 export SCENARIORUNNER_PATH=$OPENSBT_RUNNER/scenario_runner
 
-export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.13-py3.7-linux-x86_64.egg:${CARLA_ROOT}/PythonAPI/carla:${SCENARIO_RUNNER_ROOT}
+export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.15-py3.7-linux-x86_64.egg:${CARLA_ROOT}/PythonAPI/carla:${SCENARIO_RUNNER_ROOT}
 ```
 Now it is possible to start the runner via the commands `~/projects/carla-runner/ && python test.py`
 
@@ -204,12 +204,12 @@ If step 1 in the `Unreal Engine` section throws the following error, store your 
 Failed to download 'http://cdn.unrealengine.com/dependencies/UnrealEngine-3528311-b7bac00897a54aa8bf466ab3906cb532/56304ecbe66a10d054956a5d7d80624fec86a588': The remote server returned an error: (403) Forbidden. (WebException)
 ```
 
-**Important**: Don't forget to switch to the `0.9.13` tag before executing step 3. If `git checkout 0.9.13` throws `error: pathspec '0.9.13' did not match any file(s) known to git`, fetch the tag with `git fetch origin refs/tags/0.9.13` and checkout `FETCH_HEAD` or use `git fetch --all --tags`
-If the 403 Forbidden error occurs in step 3 or while changing to the 0.9.13 tag, go to branch [4.26](https://github.com/EpicGames/UnrealEngine/commits/4.26) in the Unreal Engine repo and download the latest version of `Engine/Build/Commit.gitdeps.xml` (currently [here](https://github.com/EpicGames/UnrealEngine/blob/1598cf219e46e521f6049ebb6822a534071b2782/Engine/Build/Commit.gitdeps.xml)) and replace it locally in your repo, which you downloaded in step 1. Epics post on this issue can be found [here](https://forums.unrealengine.com/t/upcoming-disruption-of-service-impacting-unreal-engine-users-on-github/1155880).
+**Important**: Don't forget to switch to the `0.9.15` tag before executing step 3. If `git checkout 0.9.15` throws `error: pathspec '0.9.15' did not match any file(s) known to git`, fetch the tag with `git fetch origin refs/tags/0.9.15` and checkout `FETCH_HEAD` or use `git fetch --all --tags`
+If the 403 Forbidden error occurs in step 3 or while changing to the 0.9.15 tag, go to branch [4.26](https://github.com/EpicGames/UnrealEngine/commits/4.26) in the Unreal Engine repo and download the latest version of `Engine/Build/Commit.gitdeps.xml` (currently [here](https://github.com/EpicGames/UnrealEngine/blob/1598cf219e46e521f6049ebb6822a534071b2782/Engine/Build/Commit.gitdeps.xml)) and replace it locally in your repo, which you downloaded in step 1. Epics post on this issue can be found [here](https://forums.unrealengine.com/t/upcoming-disruption-of-service-impacting-unreal-engine-users-on-github/1155880).
 
 ##### Building CARLA:
 
-Follow the documentation until `Build CARLA` section. If your are on Ubuntu 22.04 and you currently use CARLA 0.9.13, which needs Clang 8 to build, a solution is to compile the PythonAPI and the server in a Docker container.
+Follow the documentation until `Build CARLA` section. If your are on Ubuntu 22.04 and you currently use CARLA 0.9.15, which needs Clang 8 to build, a solution is to compile the PythonAPI and the server in a Docker container.
 - Install [rootless Docker](https://docs.docker.com/engine/security/rootless/) for the user in the Docker container to access specific files:
   1. Run `sudo apt-get install -y uidmap`.
   1. Run `sudo apt-get install -y dbus-user-session` and log in again.

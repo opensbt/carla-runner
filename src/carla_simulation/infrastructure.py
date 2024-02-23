@@ -344,8 +344,7 @@ class Infrastructure:
             container.exec_run(
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
-                        "pip install -r /opt/OpenSBT/Runner/requirements.txt",
-                        "pip install -r /opt/OpenSBT/Core/requirements.txt",
+                        "pip install --ignore-installed -r /opt/OpenSBT/Runner/requirements.txt",
                     ])
                 ),
                 environment = {
@@ -357,7 +356,7 @@ class Infrastructure:
                 cmd = '/bin/bash -c "{}"'.format(
                     " && ".join([
                         "python3.8 -m build",
-                        "pip install --force-reinstall /opt/OpenSBT/Runner/dist/*.whl",
+                        "pip install --ignore-installed --force-reinstall /opt/OpenSBT/Runner/dist/*.whl",
                     ])
                 ),
                 workdir = '/opt/OpenSBT/Runner'

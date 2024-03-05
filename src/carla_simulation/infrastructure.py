@@ -101,11 +101,13 @@ class Infrastructure:
 
         # Ensure client image is built
         print(" Building...", end="")
+        build_args = {"TOKEN": os.environ.get("gitpass")}
         with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
             path = str(file.resolve().parents[0])
             self.client.images.build(
                 tag = self.CLIENT_IMAGE,
                 path = path,
+                buildargs = build_args
             )
 
         print(" Creating containers...")

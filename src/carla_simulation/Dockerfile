@@ -48,3 +48,8 @@ RUN apt update && \
 RUN python3.8 -m pip install --upgrade pip
 
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+
+ARG TOKEN
+ENV PAT=$TOKEN
+RUN apt-get update && apt-get install -y git
+RUN git clone https://oauth2:${PAT}@git.fortiss.org/fortissimo/rosco.git rosco

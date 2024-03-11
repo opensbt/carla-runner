@@ -321,9 +321,6 @@ class Infrastructure:
                     '{SCENARIORUNNER_PATH}:/opt/CARLA/Runner:ro'.format(
                         SCENARIORUNNER_PATH = os.environ['SCENARIORUNNER_PATH']
                     ),
-                    '{OPENSBT_CORE_PATH}:/opt/OpenSBT/Core:rw'.format(
-                        OPENSBT_CORE_PATH = os.environ['OPENSBT_CORE_PATH']
-                    ),
                     '{OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw'.format(
                         OPENSBT_RUNNER_PATH = os.environ['OPENSBT_RUNNER_PATH']
                     ),

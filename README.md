@@ -26,7 +26,6 @@ Make sure that the following environment variables are set correctly:
 
 * All `*_PATH` variables must point to the respective local repositories to be cloned from the following URLs:
     * `ROSCO_PATH`: https://git.fortiss.org/ff1/rosco.git
-    * `OPENSBT_CORE_PATH`: https://git.fortiss.org/opensbt/opensbt-core.git
     * `OPENSBT_RUNNER_PATH`: https://git.fortiss.org/opensbt/carla-runner.git
     * `CARLA_PATH`: https://github.com/carla-simulator/carla.git (Tag: `0.9.15`)
     * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git (Tag: `v0.9.15`)
@@ -39,7 +38,6 @@ the following bash commands can be used to set up the environment for launching 
 OPENSBT_RUNNER=~/projects/carla-runner
 
 export ROSCO_PATH=$OPENSBT_RUNNER/rosco
-export OPENSBT_CORE_PATH=$OPENSBT_RUNNER/opensbt-core
 export OPENSBT_RUNNER_PATH=$OPENSBT_RUNNER/carla-runner
 export CARLA_PATH=$OPENSBT_RUNNER/carla
 export SCENARIORUNNER_PATH=$OPENSBT_RUNNER/scenario_runner
@@ -302,7 +300,6 @@ If you use [Visual Studio Code](https://code.visualstudio.com/), the following l
                 "SHARE_PATH": "/opt/ROSCo/share",
                 "CARLA_PATH": "/opt/CARLA/Simulator",
                 "SCENARIORUNNER_PATH": "/opt/CARLA/ScenarioRunner",
-                "OPENSBT_CORE_PATH": "/opt/OpenSBT/Core",
                 "OPENSBT_RUNNER_PATH": "/opt/OpenSBT/Runner",
             }
         }

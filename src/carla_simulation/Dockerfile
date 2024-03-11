@@ -52,4 +52,7 @@ RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 ARG TOKEN
 ENV PAT=$TOKEN
 RUN apt-get update && apt-get install -y git
-RUN git clone https://oauth2:${PAT}@git.fortiss.org/fortissimo/rosco.git rosco
+RUN git clone -b 26-improve-setup-put-dependencies-in-the-image https://oauth2:${PAT}@git.fortiss.org/fortissimo/rosco.git /opt/workspace/src/rosco
+RUN git clone https://github.com/carla-simulator/carla.git /opt/CARLA/Simulator
+RUN git clone https://git.fortiss.org/opensbt/opensbt-core.git /opt/OpenSBT/Core
+RUN git clone https://github.com/carla-simulator/scenario_runner.git /opt/CARLA/Runner

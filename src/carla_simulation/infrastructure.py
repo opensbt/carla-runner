@@ -276,6 +276,39 @@ class Infrastructure:
 
         def create_client_container() -> Container:
             print(f"Creating client container {client_name}. ", end='')
+            volume_mapping = [
+                '/tmp/.X11-unix:/tmp/.X11-unix',
+                    '/var/run/docker.sock:/var/run/docker.sock',
+                    '{}:{}:ro'.format(
+                        self.scenarios_dir,
+                        self.SCENARIOS_DIR),
+                    '{}:{}:ro'.format(
+                        self.faults_dir,
+                        self.FAULTS_DIR),
+                    '{}:{}:rw'.format(
+                        self.recordings_dir,
+                        self.RECORDINGS_DIR
+                        ),
+                    '{SHARE_PATH}:/opt/workspace/share:rw'.format(
+                        SHARE_PATH = os.environ['SHARE_PATH']
+                        )
+            ]
+            if 'ROSCO_PATH' in os.environ:
+                        volume_mapping.append('{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
+                            ROSCO_PATH = os.environ['ROSCO_PATH']
+                        ))
+            if 'CARLA_PATH' in os.environ:
+                        volume_mapping.append('{CARLA_PATH}:/opt/CARLA/Simulator:ro'.format(
+                            CARLA_PATH = os.environ['CARLA_PATH']
+                        ))
+            if 'SCENARIORUNNER_PATH' in os.environ:
+                        volume_mapping.append('{SCENARIORUNNER_PATH}:/opt/CARLA/Runner:ro'.format(
+                            SCENARIORUNNER_PATH = os.environ['SCENARIORUNNER_PATH']
+                        ))
+            if 'OPENSBT_RUNNER_PATH' in os.environ:
+                        volume_mapping.append('{OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw'.format(
+                            OPENSBT_RUNNER_PATH = os.environ['OPENSBT_RUNNER_PATH']
+                        ))
             container = self.client.containers.run(
                 self.CLIENT_IMAGE,
                 name = client_name,
@@ -298,38 +331,7 @@ class Infrastructure:
                     'CARLA_ROOT=/opt/CARLA/Simulator',
                     'SCENARIO_RUNNER_ROOT=/opt/CARLA/Runner',
                 ],
-                volumes = [
-                    '/tmp/.X11-unix:/tmp/.X11-unix',
-                    '/var/run/docker.sock:/var/run/docker.sock',
-                    '{}:{}:ro'.format(
-                        self.scenarios_dir,
-                        self.SCENARIOS_DIR),
-                    '{}:{}:ro'.format(
-                        self.faults_dir,
-                        self.FAULTS_DIR),
-                    '{}:{}:rw'.format(
-                        self.recordings_dir,
-                        self.RECORDINGS_DIR
-                    ),
-                    #'{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
-                    #    ROSCO_PATH = os.environ['ROSCO_PATH']
-                    #),
-                    '{SHARE_PATH}:/opt/workspace/share:rw'.format(
-                        SHARE_PATH = os.environ['SHARE_PATH']
-                    #),
-                    #'{CARLA_PATH}:/opt/CARLA/Simulator:ro'.format(
-                    #    CARLA_PATH = os.environ['CARLA_PATH']
-                    ),
-                    #'{SCENARIORUNNER_PATH}:/opt/CARLA/Runner:ro'.format(
-                    #    SCENARIORUNNER_PATH = os.environ['SCENARIORUNNER_PATH']
-                    #),
-                    #'{OPENSBT_CORE_PATH}:/opt/OpenSBT/Core:rw'.format(
-                    #    OPENSBT_CORE_PATH = os.environ['OPENSBT_CORE_PATH']
-                    #),
-                    '{OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw'.format(
-                        OPENSBT_RUNNER_PATH = os.environ['OPENSBT_RUNNER_PATH']
-                    ),
-                ],
+                volumes = volume_mapping,
                 device_requests = [
                     docker.types.DeviceRequest(
                         count=-1,

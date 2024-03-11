@@ -312,7 +312,7 @@ class Infrastructure:
                     '{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
                         ROSCO_PATH = os.environ['ROSCO_PATH']
                     ),
-                    '{SHARE_PATH}:/opt/workspace/share:rw'.format(
+                    '{SHARE_PATH}:/opt/workspace/src/rosco/share:rw'.format(
                         SHARE_PATH = os.environ['SHARE_PATH']
                     ),
                     '{CARLA_PATH}:/opt/CARLA/Simulator:ro'.format(

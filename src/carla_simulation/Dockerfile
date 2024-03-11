@@ -9,7 +9,8 @@ RUN apt update && \
         software-properties-common \
         ca-certificates \
         gpg \
-        wget
+        wget \
+        curl
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
         gpg --dearmor - | \
         tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
@@ -23,6 +24,7 @@ RUN apt update && \
         python3-pip
 
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive \
     apt install -y \

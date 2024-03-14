@@ -291,6 +291,9 @@ class Infrastructure:
                         ),
                     '{SHARE_PATH}:/opt/workspace/share:rw'.format(
                         SHARE_PATH = os.environ['SHARE_PATH']
+                        ),
+                    '{ROSCO_LAUNCH_PATH}:/opt/workspace/src/rosco/launch/rosco.launch:ro'.format(
+                        ROSCO_LAUNCH_PATH = os.environ['ROSCO_LAUNCH_PATH']
                         )
             ]
             if 'ROSCO_PATH' in os.environ:
@@ -308,10 +311,6 @@ class Infrastructure:
             if 'OPENSBT_RUNNER_PATH' in os.environ:
                         volume_mapping.append('{OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw'.format(
                             OPENSBT_RUNNER_PATH = os.environ['OPENSBT_RUNNER_PATH']
-                        ))
-            if 'ROSCO_LAUNCH_PATH' in os.environ:
-                        volume_mapping.append('{ROSCO_LAUNCH_PATH}:/opt/workspace/src/rosco/launch/rosco.launch:ro'.format(
-                            ROSCO_LAUNCH_PATH = os.environ['ROSCO_LAUNCH_PATH']
                         ))
             container = self.client.containers.run(
                 self.CLIENT_IMAGE,

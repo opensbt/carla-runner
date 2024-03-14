@@ -101,7 +101,7 @@ class Infrastructure:
 
         # Ensure client image is built
         print(" Building...", end="")
-        build_args = {"TOKEN": os.environ.get("gitpass")}
+        build_args = {"TOKEN": os.environ.get("TOKEN")}
         with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
             path = str(file.resolve().parents[0])
             self.client.images.build(
@@ -308,6 +308,10 @@ class Infrastructure:
             if 'OPENSBT_RUNNER_PATH' in os.environ:
                         volume_mapping.append('{OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw'.format(
                             OPENSBT_RUNNER_PATH = os.environ['OPENSBT_RUNNER_PATH']
+                        ))
+            if 'ROSCO_LAUNCH_PATH' in os.environ:
+                        volume_mapping.append('{ROSCO_LAUNCH_PATH}:/opt/workspace/src/rosco/launch/rosco.launch:ro'.format(
+                            ROSCO_LAUNCH_PATH = os.environ['ROSCO_LAUNCH_PATH']
                         ))
             container = self.client.containers.run(
                 self.CLIENT_IMAGE,

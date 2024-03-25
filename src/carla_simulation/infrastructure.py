@@ -289,16 +289,16 @@ class Infrastructure:
                         self.recordings_dir,
                         self.RECORDINGS_DIR
                         ),
-                    '{SHARE_PATH}:/opt/workspace/share:rw'.format(
-                        SHARE_PATH = os.environ['SHARE_PATH']
-                        ),
-                    '{ROSCO_LAUNCH_PATH}:/opt/workspace/src/rosco/launch/rosco.launch:ro'.format(
-                        ROSCO_LAUNCH_PATH = os.environ['ROSCO_LAUNCH_PATH']
-                        )
             ]
             if 'ROSCO_PATH' in os.environ:
                         volume_mapping.append('{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
                             ROSCO_PATH = os.environ['ROSCO_PATH']
+                        ))
+            volume_mapping.append('{ROSCO_LAUNCH_PATH}:/opt/workspace/src/rosco/launch/rosco.launch:ro'.format(
+                        ROSCO_LAUNCH_PATH = os.environ['ROSCO_LAUNCH_PATH']
+                        ))
+            volume_mapping.append('{SHARE_PATH}:/opt/workspace/src/rosco/share:rw'.format(
+                        SHARE_PATH = os.environ['SHARE_PATH']
                         ))
             if 'CARLA_PATH' in os.environ:
                         volume_mapping.append('{CARLA_PATH}:/opt/CARLA/Simulator:ro'.format(

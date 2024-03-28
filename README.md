@@ -21,12 +21,13 @@ b.stop()
 ## Prerequisites
 
 ### Environment
-
 Make sure that the following environment variables are set correctly:
+ * `TOKEN`: gitlab_acces_token
+ * `SHARE_PATH`: path to the FMUs of your test system
+ * `LAUNCH_PATH`: path to the launch file of your test system
 
-* All `*_PATH` variables must point to the respective local repositories to be cloned from the following URLs:
+ * To use local repositories, they can be cloned from the following URLs, but are not necessary:
     * `ROSCO_PATH`: https://git.fortiss.org/ff1/rosco.git
-    * `OPENSBT_CORE_PATH`: https://git.fortiss.org/opensbt/opensbt-core.git
     * `OPENSBT_RUNNER_PATH`: https://git.fortiss.org/opensbt/carla-runner.git
     * `CARLA_PATH`: https://github.com/carla-simulator/carla.git (Tag: `0.9.15`)
     * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git (Tag: `v0.9.15`)
@@ -34,17 +35,19 @@ Make sure that the following environment variables are set correctly:
 If you are using an IDE, this can usually be done through some run configuration options.
 
 As example when cloning the  OpenSBT Runner into `~/projects/carla-runner`, and then cloning all other repos inside the runner,
-the following bash commands can be used to set up the environment for launching the software via the bash terminal.
+the following bash commands can be used to set up the environment overwritten for launching the software via the bash terminal.
+In the example, all possible repositories are overwritten, even though only the variables `TOKEN`,`SHARE_PATH` and `LAUNCH_PATH` are necessary to start the runner.
 ```bash
 OPENSBT_RUNNER=~/projects/carla-runner
 
+export TOKEN=gitlab_acces_token
+export SHARE_PATH=path/to/FMUs/of/test_system
+export LAUNCH_PATH=path/to/launch_file/of/test_system
 export ROSCO_PATH=$OPENSBT_RUNNER/rosco
-export OPENSBT_CORE_PATH=$OPENSBT_RUNNER/opensbt-core
 export OPENSBT_RUNNER_PATH=$OPENSBT_RUNNER/carla-runner
 export CARLA_PATH=$OPENSBT_RUNNER/carla
 export SCENARIORUNNER_PATH=$OPENSBT_RUNNER/scenario_runner
 
-export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.15-py3.7-linux-x86_64.egg:${CARLA_ROOT}/PythonAPI/carla:${SCENARIO_RUNNER_ROOT}
 ```
 Now it is possible to start the runner via the commands `~/projects/carla-runner/ && python test.py`
 

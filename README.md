@@ -2,7 +2,7 @@
 
 Evaluate scenarios using a highly parallelizable CARLA setup!
 
-```
+```python
 from carla_simulation.balancer import Balancer
 
 b = Balancer(
@@ -22,34 +22,36 @@ b.stop()
 
 ### Environment
 Make sure that the following environment variables are set correctly:
- * `TOKEN`: gitlab_acces_token
- * `SHARE_PATH`: path to the FMUs of your test system
- * `LAUNCH_PATH`: path to the launch file of your test system
 
- * To use local repositories, they can be cloned from the following URLs, but are not necessary:
-    * `ROSCO_PATH`: https://git.fortiss.org/ff1/rosco.git
-    * `OPENSBT_RUNNER_PATH`: https://git.fortiss.org/opensbt/carla-runner.git
-    * `CARLA_PATH`: https://github.com/carla-simulator/carla.git (Tag: `0.9.15`)
-    * `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git (Tag: `v0.9.15`)
+* `SHARE_PATH`: Path to the FMUs of your test system
+* `LAUNCH_PATH`: Path to the launch file of your test system
 
 If you are using an IDE, this can usually be done through some run configuration options.
 
-As example when cloning the  OpenSBT Runner into `~/projects/carla-runner`, and then cloning all other repos inside the runner,
-the following bash commands can be used to set up the environment overwritten for launching the software via the bash terminal.
-In the example, all possible repositories are overwritten, even though only the variables `TOKEN`,`SHARE_PATH` and `LAUNCH_PATH` are necessary to start the runner.
-```bash
-OPENSBT_RUNNER=~/projects/carla-runner
+_Optional_: To use local versions of the following repositories store their paths in the respective `*_PATH` variables. The directories will automatically replace the versions built into the Docker image:
 
-export TOKEN=gitlab_acces_token
+* `ROSCO_PATH`: https://git.fortiss.org/ff1/rosco.git
+* `OPENSBT_RUNNER_PATH`: https://git.fortiss.org/opensbt/carla-runner.git
+* `CARLA_PATH`: https://github.com/carla-simulator/carla.git (Tag: `0.9.15`)
+* `SCENARIORUNNER_PATH`: https://github.com/carla-simulator/scenario_runner.git (Tag: `v0.9.15`)
+
+For example, when cloning all repositories into `~/test/`, the following bash commands can be used to set up an environment overwriting all possible repositories. Please note that only the variables `SHARE_PATH` and `LAUNCH_PATH` are necessary:
+
+```bash
+ROOT_DIR=~/test/
+
+# Mandatory variables
 export SHARE_PATH=path/to/FMUs/of/test_system
 export LAUNCH_PATH=path/to/launch_file/of/test_system
-export ROSCO_PATH=$OPENSBT_RUNNER/rosco
-export OPENSBT_RUNNER_PATH=$OPENSBT_RUNNER/carla-runner
-export CARLA_PATH=$OPENSBT_RUNNER/carla
-export SCENARIORUNNER_PATH=$OPENSBT_RUNNER/scenario_runner
+
+# Optional variables
+export ROSCO_PATH=$ROOT_DIR/rosco
+export OPENSBT_RUNNER_PATH=$ROOT_DIR/carla-runner
+export CARLA_PATH=$ROOT_DIR/carla
+export SCENARIORUNNER_PATH=$ROOT_DIR/scenario_runner
 
 ```
-Now it is possible to start the runner via the commands `~/projects/carla-runner/ && python test.py`
+Now it is possible to start the runner as follows: `cd ~/test/carla-runner && python test.py`
 
 ### Docker
 
@@ -67,13 +69,13 @@ To build the package, run `python -m build` in the repository's root directory. 
 
 Next, import the package:
 
-```
+```python
 from carla_simulation.balancer import Balancer
 ```
 
 Now, an instance of the `Balancer` can be created:
 
-```
+```python
 b = Balancer(
     directory = '/tmp/scenarios',
     jobs = 1,
@@ -85,7 +87,7 @@ Here, the directory containing the scenarios to be executed must be specified. T
 
 The balancer's infrastructure can be started as follows:
 
-```
+```python
 b.start()
 ```
 
@@ -93,7 +95,7 @@ This can take some time, especially if the necessary Docker images are not yet a
 
 Now, the scenarios can be run:
 
-```
+```python
 evaluation = b.run()
 ```
 
@@ -101,7 +103,7 @@ The `run()` function will execute all scenarios in the directory specified in th
 
 Finally, the balancer's Docker infrastructure can be stopped and removed via its `stop()` function:
 
-```
+```python
 b.stop()
 ```
 
@@ -169,7 +171,8 @@ The following effects can be achieved by adjusting the parameters for the sensor
 ### Fault Injection
 
 To use the fault injection, the balancer needs the path to the directory containing the faults similar to the scenarios:
-```
+
+```python
 b = Balancer(
     scenarios_dir = '/path/to/scenarios',
     faults_dir='/path/to/faults',
@@ -284,30 +287,3 @@ The following changes have been done in the picture:
 ##### Loading the map:
 
 In the Unreal Editor, `File -> Export All` allows the project to be exported as `.fbx`. This [tutorial](https://carla.readthedocs.io/en/latest/tuto_M_add_map_package/#map-ingestion-in-a-carla-package) covers how to ingest a map in a binary CARLA version a .fbx and .xodr file. The corresponding .xodr file can be found at `.../carla/Unreal/CarlaUE4/Content/Carla/Maps/OpenDrive/`.
-
-### Visual Studio Code
-
-If you use [Visual Studio Code](https://code.visualstudio.com/), the following launch file might be useful reference:
-
-```json
-{
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Start",
-            "type": "python",
-            "request": "launch",
-            "program": "test.py",
-            "console": "integratedTerminal",
-            "justMyCode": false,
-            "env": {
-                "ROSCO_PATH": "/opt/ROSCo",
-                "SHARE_PATH": "/opt/ROSCo/share",
-                "CARLA_PATH": "/opt/CARLA/Simulator",
-                "SCENARIORUNNER_PATH": "/opt/CARLA/ScenarioRunner",
-                "OPENSBT_RUNNER_PATH": "/opt/OpenSBT/Runner",
-            }
-        }
-    ]
-}
-```

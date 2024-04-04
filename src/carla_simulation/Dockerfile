@@ -50,12 +50,18 @@ RUN python3.8 -m pip install --upgrade pip
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 
 WORKDIR /
+
+RUN apt update && \
+    apt install -y \
+        git
+
 ARG TOKEN
 ENV TOKEN=$TOKEN
-RUN apt-get update && apt-get install -y git
 RUN git clone https://github.com/carla-simulator/carla.git /opt/CARLA/Simulator
 RUN git clone https://github.com/carla-simulator/scenario_runner.git /opt/CARLA/Runner
 RUN git clone https://oauth2:${TOKEN}@git.fortiss.org/fortissimo/ff1_testing/ff1_carla.git /opt/OpenSBT/Runner
 RUN git clone https://oauth2:${TOKEN}@git.fortiss.org/fortissimo/rosco.git /opt/workspace/src/rosco
+
 WORKDIR /opt/workspace/src/rosco
+
 RUN git checkout tags/2.0

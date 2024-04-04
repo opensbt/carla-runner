@@ -2,6 +2,7 @@
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
+
 import multiprocessing
 import os
 import subprocess
@@ -296,22 +297,18 @@ class Infrastructure:
                     SHARE_PATH = os.environ['SHARE_PATH']
                     )
             ]
-            if 'ROSCO_PATH' in os.environ:
-                volume_mapping.append('{ROSCO_PATH}:/opt/workspace/src/rosco:rw'.format(
-                    ROSCO_PATH = os.environ['ROSCO_PATH']
-                ))
-            if 'CARLA_PATH' in os.environ:
-                volume_mapping.append('{CARLA_PATH}:/opt/CARLA/Simulator:ro'.format(
-                    CARLA_PATH = os.environ['CARLA_PATH']
-                ))
-            if 'SCENARIORUNNER_PATH' in os.environ:
-                volume_mapping.append('{SCENARIORUNNER_PATH}:/opt/CARLA/Runner:ro'.format(
-                    SCENARIORUNNER_PATH = os.environ['SCENARIORUNNER_PATH']
-                ))
-            if 'OPENSBT_RUNNER_PATH' in os.environ:
-                volume_mapping.append('{OPENSBT_RUNNER_PATH}:/opt/OpenSBT/Runner:rw'.format(
-                    OPENSBT_RUNNER_PATH = os.environ['OPENSBT_RUNNER_PATH']
-                ))
+            optional_mappings = {
+                'ROSCO_PATH': '/opt/workspace/src/rosco:rw',
+                'CARLA_PATH': '/opt/CARLA/Simulator:ro',
+                'SCENARIORUNNER_PATH': '/opt/CARLA/Runner:ro',
+                'OPENSBT_RUNNER_PATH': '/opt/OpenSBT/Runner:rw'
+            }
+            for optional_var, optional_map in optional_mappings.items():
+                if optional_var in os.environ:
+                    volume_mapping.append('{OPTIONAL_VAR}:{OPTIONAL_MAP}'.format(
+                        OPTIONAL_VAR = os.environ[optional_var],
+                        OPTIONAL_MAP = optional_map
+                    ))
             container = self.client.containers.run(
                 self.CLIENT_IMAGE,
                 name = client_name,
@@ -326,7 +323,6 @@ class Infrastructure:
                     ),
                     'PYTHONPATH={}'.format(':'.join([
                         '/opt/OpenSBT/Runner/src',
-                        '/opt/CARLA/Simulator/PythonAPI/carla/dist/carla-0.9.15-py3.7-linux-x86_64.egg',
                         '/opt/CARLA/Simulator/PythonAPI/carla/agents',
                         '/opt/CARLA/Simulator/PythonAPI/carla',
                         '/opt/CARLA/Runner'

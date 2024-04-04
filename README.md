@@ -305,7 +305,6 @@ If you use [Visual Studio Code](https://code.visualstudio.com/), the following l
                 "SHARE_PATH": "/opt/ROSCo/share",
                 "CARLA_PATH": "/opt/CARLA/Simulator",
                 "SCENARIORUNNER_PATH": "/opt/CARLA/ScenarioRunner",
-                "OPENSBT_CORE_PATH": "/opt/OpenSBT/Core",
                 "OPENSBT_RUNNER_PATH": "/opt/OpenSBT/Runner",
             }
         }

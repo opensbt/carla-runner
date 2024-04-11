@@ -55,8 +55,6 @@ RUN apt update && \
     apt install -y \
         git
 
-ARG TOKEN
-ENV TOKEN=$TOKEN
 RUN git clone https://github.com/carla-simulator/carla.git /opt/CARLA/Simulator
 RUN git clone https://github.com/carla-simulator/scenario_runner.git /opt/CARLA/Runner
 RUN git clone https://git.fortiss.org/opensbt/carla-runner.git /opt/OpenSBT/Runner

@@ -102,16 +102,11 @@ class Infrastructure:
 
         # Ensure client image is built
         print(" Building...", end="")
-        if "TOKEN" in os.environ:
-            build_args = {"TOKEN": os.environ.get("TOKEN")}
-        else:
-            build_args = None
         with pkg_resources.path(carla_simulation, 'Dockerfile') as file:
             path = str(file.resolve().parents[0])
             self.client.images.build(
                 tag = self.CLIENT_IMAGE,
-                path = path,
-                buildargs = build_args
+                path = path
             )
 
         print(" Creating containers...")

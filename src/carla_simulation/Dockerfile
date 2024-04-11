@@ -48,3 +48,18 @@ RUN apt update && \
 RUN python3.8 -m pip install --upgrade pip
 
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+
+WORKDIR /
+
+RUN apt update && \
+    apt install -y \
+        git
+
+RUN git clone https://github.com/carla-simulator/carla.git /opt/CARLA/Simulator
+RUN git clone https://github.com/carla-simulator/scenario_runner.git /opt/CARLA/Runner
+RUN git clone https://git.fortiss.org/opensbt/carla-runner.git /opt/OpenSBT/Runner
+RUN git clone https://git.fortiss.org/ff1/rosco.git /opt/workspace/src/rosco
+
+WORKDIR /opt/workspace/src/rosco
+
+RUN git checkout tags/2.0
